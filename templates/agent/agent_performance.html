@@ -1,0 +1,228 @@
+{% extends 'dashboard/base.html' %}
+
+{% block css %}
+<link href="{{ MEDIA_URL }}dashboard/plugins/data-tables/DT_bootstrap.css" rel="stylesheet">
+<link href="{{ MEDIA_URL }}dashboard/plugins/advanced-datatable/css/demo_table.css" rel="stylesheet">
+<link href="{{ MEDIA_URL }}dashboard/plugins/advanced-datatable/css/demo_page.css" rel="stylesheet">
+{% endblock %}
+
+{% block js %}
+<script src="{{ MEDIA_URL }}dashboard/plugins/data-tables/jquery.dataTables.js"></script>
+<script src="{{ MEDIA_URL }}dashboard/plugins/data-tables/DT_bootstrap.js"></script>
+<script src="{{ MEDIA_URL }}dashboard/plugins/data-tables/dynamic_table_init.js"></script>
+<script src="{{ MEDIA_URL }}dashboard/plugins/edit-table/edit-table.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function(){
+
+        $("input[name=options]:radio").change(function () {
+            var value = $(this).val();
+
+            if (value == "1") {
+                $('#today').toggle(true);
+                $('#week').toggle(false);
+                $('#month').toggle(false);
+            } else if (value == "2") {
+                $('#today').toggle(false);
+                $('#week').toggle(true);
+                $('#month').toggle(false);
+            } else if (value == "3") {
+                $('#today').toggle(false);
+                $('#week').toggle(false);
+                $('#month').toggle(true);
+            };
+        })
+    })
+</script>
+
+{% endblock %}
+
+{% block breadcumb %}
+<div class="pull-left breadcrumb_admin clear_both">
+    <div class="pull-left page_title theme_color">
+        <h1>dashboard</h1>
+        <h2 class="">Agent Performance</h2>
+    </div>
+    <div class="pull-right">
+        <ol class="breadcrumb">
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="active">Agent Performance</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="col-md-12 col-sm-12">
+            <section class="panel default blue_title h2">
+                <div class="panel-heading">Agents {{ agent.user.first_name }} {{ agent.user.last_name }} Performance
+                </div>
+                <div class="panel-body">
+                    <p>Name : {{ agent.user.first_name }} {{ agent.user.last_name }}</p>
+                    <p>Department : {{ agent.department }}</p>
+                    <p>Date Joined : -</p>
+                </div>
+            </section>
+        </div>
+        <div class="col-md-12 col-sm-12">
+            <!-- BEGIN PORTLET-->
+            <div class="portlet light">
+                <div class="portlet-title">
+                    <div class="caption caption-md">
+                        <i class="icon-bar-chart theme-font-color hide"></i>
+                        <span class="caption-subject theme-font-color bold uppercase">Agent Performance</span>
+                        <span class="caption-helper hide">weekly stats...</span>
+                    </div>
+                    <div class="actions">
+                        <div class="btn-group btn-group-devided" data-toggle="buttons">
+                            <label class="btn btn-transparent grey-salsa btn-circle btn-sm active">
+                            <input type="radio" name="options" value="1" class="toggle" id="option1">Today</label>
+                            <label class="btn btn-transparent grey-salsa btn-circle btn-sm">
+                            <input type="radio" name="options" value="2" class="toggle" id="option2">Week</label>
+                            <label class="btn btn-transparent grey-salsa btn-circle btn-sm">
+                            <input type="radio" name="options" value="3" class="toggle" id="option3">Month</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div id="today">
+                        <div class="table-scrollable table-scrollable-borderless">
+                            <table class="table table-hover table-light">
+                                <thead>
+                                    <tr class="uppercase">
+                                        <th>
+                                            Avg Resolve
+                                        </th>
+                                        <th>
+                                            Assigned Ticket
+                                        </th>
+                                        <th>
+                                            Praise received
+                                        </th>
+                                        <th>
+                                            Shout received
+                                        </th>
+                                        <th>
+                                            Number of Escalated Tickets
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            {{ agent.total_tickets_resolved_today }}
+                                        </td>
+                                        <td>
+                                            {{ agent.total_tickets_assigned_today }}
+                                        </td>
+                                        <td>
+                                            0
+                                        </td>
+                                        <td>
+                                            0
+                                        </td>
+                                        <td>
+                                            {{ agent.escalated_tickets_today }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="week" style="display: none;">
+                        <div class="table-scrollable table-scrollable-borderless">
+                            <table class="table table-hover table-light">
+                                <thead>
+                                    <tr class="uppercase">
+                                        <th>
+                                            Avg Resolve
+                                        </th>
+                                        <th>
+                                            Assigned Ticket
+                                        </th>
+                                        <th>
+                                            Praise received
+                                        </th>
+                                        <th>
+                                            Shout received
+                                        </th>
+                                        <th>
+                                            Number of Escalated Tickets
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            {{ agent.total_tickets_resolved_week }}
+                                        </td>
+                                        <td>
+                                            {{ agent.total_tickets_assigned_week }}
+                                        </td>
+                                        <td>
+                                            0
+                                        </td>
+                                        <td>
+                                            0
+                                        </td>
+                                        <td>
+                                            {{ agent.escalated_tickets_week }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="month" style="display: none;">
+                        <div class="table-scrollable table-scrollable-borderless">
+                            <table class="table table-hover table-light">
+                                <thead>
+                                    <tr class="uppercase">
+                                        <th>
+                                            Avg Resolve
+                                        </th>
+                                        <th>
+                                            Assigned Ticket
+                                        </th>
+                                        <th>
+                                            Praise received
+                                        </th>
+                                        <th>
+                                            Shout received
+                                        </th>
+                                        <th>
+                                            Number of Escalated Tickets
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            {{ agent.total_tickets_resolved_month }}
+                                        </td>
+                                        <td>
+                                            {{ agent.total_tickets_assigned_month }}
+                                        </td>
+                                        <td>
+                                            0
+                                        </td>
+                                        <td>
+                                            0
+                                        </td>
+                                        <td>
+                                            {{ agent.escalated_tickets_month }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- END PORTLET-->
+        </div>
+    </div>
+</div>
+{% endblock %}

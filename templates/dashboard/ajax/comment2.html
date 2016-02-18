@@ -1,0 +1,9 @@
+
+   	<li>
+    	{{i.text}} -- by {{i.user.first_name}} {{i.user.last_name}} on {{i.timestamp}}
+    	{% if i.attachment %} 
+    		<a href="{{MEDIA_URL}}{{i.attachment}}">
+    			{{i.attachment}}
+    		</a> 
+    	{% endif %}
+    </li>

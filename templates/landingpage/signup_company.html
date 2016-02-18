@@ -1,0 +1,210 @@
+{% extends "landingpage/base.html" %}
+{% block js %}
+<script type="text/javascript">
+function signup(obj) {
+    JSON_data = $('#signupform').serializeArray();
+    data = {};
+    for (i=0;i<JSON_data.length;i++) {
+        data[JSON_data[i]['name']] = JSON_data[i]['value'];
+    }
+    $('#signupform input').each(function(){
+        $(this).parent().removeClass('has-error');
+    });
+    $('input[name=captcha_1]').css('border', '');
+    $.ajax({
+        type:"POST",
+        cache:false,
+        url:"{% url 'signup_company' %}",
+        data:data,
+        beforeSend:function(){
+            $(obj).text('Loading...');
+        },
+        success:function(resp){
+            $('#error_message').text('');
+
+            $(obj).text('SignUp');
+            if (resp['status']) {
+                window.location = "{% url 'registration_success' %}";
+            } else {
+                var message_error = [];
+                for (i=0;i<resp['msg'].length;i++) {
+                    if (resp['msg'][i] == 'company_name') {
+                        $('input[name=company_name]').parent().addClass('has-error');
+                        $('#error_other').show();
+                    }
+                    if (resp['msg'][i] == 'address') {
+                        $('textarea[name=address]').parent().addClass('has-error');
+                        $('#error_other').show();
+                    }
+                    if (resp['msg'][i] == 'category') {
+                        $('select[name=category]').closest('.form-group').addClass('has-error');
+                        $('#error_other').show();
+                    }
+                    if (resp['msg'][i] == 'email') {
+                        $('input[name=email1], input[name=email2]').parent().addClass('has-error');
+                        $('#error_other').show();
+                    }
+                    if (resp['msg'][i] == 'password') {
+                        $('input[name=password1], input[name=password2]').parent().addClass('has-error');
+                        $('#error_other').show();
+                    }
+                    if (resp['msg'][i] == 'phone') {
+                        $('input[name=phone]').parent().addClass('has-error');
+                        $('#error_other').show();
+                    }
+                    if (resp['msg'][i] == 'exist email') {
+                        $('input[name=email1]').parent().addClass('has-error');
+                        message_error.push("Email is already registered");
+                    }
+                    if (resp['msg'][i] == 'exist mobile') {
+                        $('input[name=mobile]').parent().addClass('has-error');
+                        message_error.push("Mobile number is already registered");
+                    }
+                    if (resp['msg'][i] == 'captcha') {
+                        alert('Invalid Captcha');
+                    }
+                }
+
+                if (message_error.length > 0) {
+                    $('#error_exists').show();
+                    var error_text = "";
+                    for (var i = 0; i < message_error.length; i++) {
+                        error_text += "<p>"+message_error[i]+"</p>";
+                    };
+
+                    $('#error_message').append(error_text);
+                }
+
+                call_captcha();
+            }
+        }
+    });
+}
+$(document).ready(function(){
+    $('#error_message').text('');
+    call_captcha();
+    $('#signupform input, #signupform textarea').keyup(function(){
+        $(this).parent().removeClass('has-error');
+    });
+
+    $('.close_error_other').click(function(){
+        $('#error_other').toggle(false);
+        $('#error_message').text('');
+    })
+
+    $('.close_error_exists').click(function(){
+        $('#error_exists').toggle(false);
+        $('#error_message').text('');
+    })
+});
+</script>
+{% endblock %}
+
+
+{% block body %}
+<div class="contentpanel">
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-6">
+        <h1>SignUp Company</h1>
+        <div class="alert alert-danger fade in" style="display: none;" id="error_other">
+            <button aria-hidden="true" class="close close_error_other" type="button">×</button>
+            You have some form errors. Please check below.
+        </div>
+        <div class="alert alert-danger fade in" style="display: none;" id="error_exists">
+            <button aria-hidden="true" class="close close_error_exists" type="button">×</button>
+            <div id="error_message"></div>
+        </div>
+        <form id="signupform" role="form" method="POST">{% csrf_token %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label for="company_name">Company Name</label>
+                        <input type="company_name" class="form-control" name="company_name" id="company_name" placeholder="Your Company Name">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label for="address">Address</label>
+                        <textarea class="form-control" name="address" id="address" placeholder="Address"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label for="address">Category</label>
+                        <select id="category" name="category" class="form-control">
+                            <option value="" >-- Select Category --</option>
+                            {% for category in category_list %}
+                                <option value="{{ category.id }}" > {{ category.name }} </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="input-group">
+                          <label class="sr-only" for="email1">Email address</label>
+                          <div class="input-group-addon">@</div>
+                          <input type="email" class="form-control" name="email1" id="email1" placeholder="Enter email">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="input-group">
+                          <label class="sr-only" for="email1">Email address</label>
+                          <div class="input-group-addon">@</div>
+                          <input type="email" class="form-control" name="email2" id="email1" placeholder="Re-Enter email">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="password1">Password</label>
+                        <input type="password" class="form-control" name="password1" id="password1" placeholder="Password">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="password2">Re-Enter Password</label>
+                        <input type="password" class="form-control" name="password2" id="password2" placeholder="Re-Enter Password">
+                    </div>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="phone">Contact Number</label>
+                        <input type="text" class="form-control" name="phone" id="phone" placeholder="Contact Number">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group" style="padding-top:20px;text-align:right;">
+                        <div id="captcha" style="width:200px;margin-left:auto;margin-right:0px;margin-top:10px;height:100px;">
+                        </div>
+                        <i class="icon icon-refresh" style="cursor:pointer;float:right;margin-top:-40px;text-decoration:underline;" onclick="call_captcha();" title="Refresh captcha">refresh</i>
+                        <div class="btn btn-sm btn-success" onclick="signup(this);">SignUp</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="form-group">
+                <span style="font-size:12px;">Creating an account means you’re okay with ChillPublic <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</span>
+            </div>
+
+        </form>
+    </div>
+    <div class="col-md-3"></div>
+</div>
+<div style="height:100px;"></div>
+{% endblock %}

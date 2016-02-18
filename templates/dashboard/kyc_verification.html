@@ -1,0 +1,629 @@
+{% extends 'dashboard/base.html' %}
+
+{% block js %}
+<script src="{{MEDIA_URL}}js/jquery-1.10.2.js"></script>
+<script src="{{MEDIA_URL}}js/jquery-ui.js"></script>
+<script type="text/javascript">
+	
+	$(function() {
+
+		if( $("#id_proof_of_address_non_residence").val() !="" ){
+			$("#proof_of_address_non_residence_file").show()
+		}
+
+		if( $("#id_proff_identity").val() !="" ){
+			$("#proff_identity_option").show();
+		}
+
+		if ($("#id_residence_status").val() == '2' || $("#id_residence_status").val() == '3'){
+			$("#residence_passport").show();
+		}
+		else{
+			$("#residence_passport").hide();
+		}
+
+		if ($("#id_is_permanent_address_0").is(':checked')){
+		    $("#non_residence_option").hide();
+    		$("#id_permanent_address").hide();
+    		$("#proff_address_aplicant").hide();
+    		$("#error_permanent_address").hide();
+		}
+
+		$("#id_is_permanent_address_0").removeClass( "form-control" );
+		$("#id_is_permanent_address_1").removeClass( "form-control" );
+
+		$( "#id_dob" ).datepicker({
+			changeMonth: true,
+			changeYear: true,
+			dateFormat: 'dd/mm/yy',
+			yearRange: '1950:' + + new Date().getFullYear()
+		});
+		$("#id_date").datepicker({dateFormat: 'mm/dd/yy',});
+		$("#id_net_word_date").datepicker({dateFormat: 'mm/dd/yy',});
+		$("#id_occupation").on('change', function(){
+			if ( this.value == '11' ){
+				$("#other_occupation").show();
+			}
+			else{
+				$("#other_occupation").hide();
+			}
+		});
+		$( "#id_pan_card" ).keyup(function( event ){
+			$("#pancard_file").show();
+		});
+		$("#id_proff_identity").on('change', function(){
+
+			// alert(this.value);
+			if( (this.value).length )
+			{
+				$("#str_label_proff_identity").empty();
+				$("#str_label_upload_proff_identity").empty();
+				var z 			= $("#id_proff_identity :selected").text();
+				var str_label 	= "<span> "+z+ " :</span>";
+	    		var str_upload 	= "<span>Upload Your "+z+ " file here:</span>";
+	    		$(str_label).appendTo("#str_label_proff_identity");
+	    		$(str_upload).appendTo("#str_label_upload_proff_identity");
+	    		$("#proff_identity_option").show();
+	    	}
+	    	else{
+	    		$("#proff_identity_option").hide();
+	    	}
+			
+		});
+		$("#id_address_submitted_for_residence").on('change', function(){
+
+			if( (this.value).length )
+			{
+				$("#submit_residence_file_label").empty();
+
+				var z 			= $("#id_address_submitted_for_residence :selected").text();
+	    		var str_upload 	= "<span>Upload Your "+z+ " file here:</span>";
+
+	    		$(str_upload).appendTo("#submit_residence_file_label");
+	    		$("#submit_residence_file_id").show();
+	    	}
+	    	else{
+	    		$("#submit_residence_file_id").hide();
+	    	}
+
+		});
+	});
+	
+</script>
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('#id_first_name').keyup(function(){
+			var RegExpression = /^[a-zA-Z\s]*$/;  
+
+		      if (RegExpression.test($('#id_first_name').val())) {
+
+		      } 
+		      else {
+		      	alert('use letters only');
+		          $('#id_first_name').val("");
+		      }
+		});
+		$('#id_last_name').keyup(function(){
+			var RegExpression = /^[a-zA-Z\s]*$/;  
+
+		      if (RegExpression.test($('#id_last_name').val())) {
+
+		      } 
+		      else {
+		      	alert('use letters only');
+		          $('#id_last_name').val("");
+		      }
+		});
+		$('#id_middle_name').keyup(function(){
+			var RegExpression = /^[a-zA-Z\s]*$/;  
+
+		      if (RegExpression.test($('#id_middle_name').val())) {
+
+		      } 
+		      else {
+		      	alert('use letters only');
+		          $('#id_middle_name').val("");
+		      }
+		});
+	});
+</script>
+<script>
+  $(function() {
+    // $( "#show_kyc_form" ).click(function(){
+    // 	$("#display_kyc").show();
+    // 	$("#show_kyc_form").hide();
+    // });
+    $( "#id_residence_status").on('change', function(){
+    	// alert( this.value ); 
+    	if ( this.value == '3' || this.value == '2'){
+    		$("#residence_passport").show();
+    		$("#id_is_permanent_address_0").prop('disabled', true);
+    	}
+    	else{
+    		$("#residence_passport").hide();
+    		$("#id_is_permanent_address_0").prop('disabled', false);	
+    	} 
+    });
+    $("#id_is_permanent_address_0").click(function(){
+    	var get_residence_address = $("#id_residence_address").val();
+    	if (get_residence_address){
+	    	if($(this).val() == '1'){
+	    		// $("#id_permanent_address").val(get_residence_address);
+	    		$("#non_residence_option").hide();
+	    		$("#id_permanent_address").hide();
+	    		$("#proff_address_aplicant").hide();
+	    		$("#error_permanent_address").hide();
+	    	}
+	    	else{
+	    		$("#id_permanent_address").val('');
+	    		$("#non_residence_option").show();
+	    		$("#proff_address_aplicant").show();
+	    	}
+	    }
+	    else{
+	    	alert('Please fill current residence address');
+	    	return false;
+	    }
+    });
+    $("#id_is_permanent_address_1").click(function(){
+		$("#id_permanent_address").show();
+		$("#id_permanent_address").val('');
+		$("#non_residence_option").show();
+		$("#proff_address_aplicant").show();
+    });
+    $("#id_proof_of_address_non_residence").on('change', function(){
+    	if ( this.value == '1' || this.value == '2' || this.value == '3' || this.value == '4' || this.value == '5'){
+
+    		$('.aaa').empty();
+
+    		var z = $("#id_proof_of_address_non_residence :selected").text();
+    		var str = "<span>Upload Your "+z+ " file here:</span>"
+    		$(str).appendTo(".aaa");
+    		$("#proof_of_address_non_residence_file").show();
+    	}
+    	else{
+    		$("#proof_of_address_non_residence_file").hide();
+    	}
+    });
+  });
+  </script>
+
+<script type="text/javascript">
+	function post_share(id){
+		var department = $("#aa").val();
+		$.ajax({
+            type:"POST",
+            cache:false,
+            data:{
+                "csrfmiddlewaretoken":"{{ csrf_token }}",
+                "kyc_id":id,
+                "department":department,
+            },
+            url:"{% url 'ajax-post-share' %}",
+            success:function(resp){
+                console.log(resp);
+            }
+        });
+	}
+</script>
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+<style type="text/css">
+	#group_proff_identity_option{
+		display: none;
+	}
+	#id_proof_of_address_non_residence li{
+		display: inline;
+		list-style-type: none;
+		padding-right: 20px;
+	}
+	
+	label[for="id_proof_of_address_non_residence_0"]{ 
+		display: none;
+	}
+
+	.box-tab{
+		width:100%; 
+		color:#fff; 
+		padding:10px; 
+		margin-bottom:10px;
+		background: #1e5799; /* Old browsers */
+		background: -moz-linear-gradient(top, #1e5799 0%, #2989d8 100%, #207cca 100%, #7db9e8 100%); /* FF3.6+ */
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#1e5799), color-stop(100%,#2989d8), color-stop(100%,#207cca), color-stop(100%,#7db9e8)); /* Chrome,Safari4+ */
+		background: -webkit-linear-gradient(top, #1e5799 0%,#2989d8 100%,#207cca 100%,#7db9e8 100%); /* Chrome10+,Safari5.1+ */
+		background: -o-linear-gradient(top, #1e5799 0%,#2989d8 100%,#207cca 100%,#7db9e8 100%); /* Opera 11.10+ */
+		background: -ms-linear-gradient(top, #1e5799 0%,#2989d8 100%,#207cca 100%,#7db9e8 100%); /* IE10+ */
+		background: linear-gradient(to bottom, #1e5799 0%,#2989d8 100%,#207cca 100%,#7db9e8 100%); /* W3C */
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#1e5799', endColorstr='#7db9e8',GradientType=0 ); /* IE6-9 */
+	}
+
+	.kyc-status{
+		display:block; 
+		padding-top:5px; 
+		padding-bottom:5px;
+	}
+
+</style>
+{% endblock %}
+
+{% block breadcumb %}
+        <div class="pull-left breadcrumb_admin clear_both">
+            <div class="pull-left page_title theme_color">
+                <h1>dashboard</h1>
+                <h2 class="">KYC Verification</h2>
+            </div>
+            <div class="pull-right">
+                <ol class="breadcrumb">
+                    <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="active">KYC Verification</li>
+                </ol>
+            </div>
+        </div>
+{% endblock %}
+
+{% block body %}
+<div class="col-md-12">
+	<div class="block-web">
+		<div class="header">
+          	<div class="actions"> 
+          		<a class="minimize" href="#"><i class="fa fa-chevron-down"></i></a>
+          		<a class="close-down" href="#"><i class="fa fa-times"></i></a> 
+          	</div>
+          	<h3 class="content-header">KNOW YOUR CUSTOMER (KYC)</h3>
+        </div>
+        <div class="porlets-content">
+
+		    {% if cek_kyc.status  == True %}
+				<div class="panel-heading border">
+					<span class="green_text fa fa-check kyc-status">
+						<strong>KYC Status - </strong> Submitted and Verified
+					</span>
+					<a href="/dashboard/create_pdf/?username={{user.username}}" class="fa fa-download icon kyc-status"> Download KYC Form Data</a>
+		    		<a href="#" class="fa fa-share kyc-status" data-toggle="modal" data-target="#share_kyc">Share KYC</a>
+				</div>
+		    {% endif %}
+
+		    {% if cek_kyc and cek_kyc.status == False %}
+				<div class="panel-heading border">
+					<span class="fa fa-warning kyc-status" style="color:#f0ad4e">
+						<strong>KYC Status - </strong> Submitted but Not Verified
+					</span>
+					<a href="/dashboard/create_pdf/" class="fa fa-download icon kyc-status"> Download KYC Form Data</a>
+				</div>
+				
+		    {% endif %}
+
+		    {% if not cek_kyc %}
+		    	<div class="panel-heading border">
+		    		<span class="red_text fa fa-times kyc-status">
+						<strong>KYC Status - </strong> Not Submitted
+					</span>
+				</div>
+		    {% endif %}
+
+
+        	{% for key, value in form.errors.items %}
+     			<span style="color:red; padding-top:100px;"> - {{ key }} : {{ value.as_text }}</span><br />
+     		{% endfor %}
+
+     		
+     			<div class="box-tab">
+	     			<div style="text-align:center;">
+	     				<span style="float:left;">KYC Form</span>
+	     				<a href="#" style="color:white; text-decoration:none;" data-toggle="modal" data-target="#myModal">View Kyc Instrunction</a>
+	     			</div>
+	     		</div>
+
+        	<form action="." method="POST" class="form-horizontal row-border" id="display_kyc" enctype="multipart/form-data">{% csrf_token %}
+            		<h4 style="background-color:#c0c0c0; padding:10px;">Identity <span class="semi-bold">Details</span></h4>
+		            	<div class="form-group">
+		            		<div class="col-md-8">
+		            			<div class="form-group">
+				            		<label>* Name of Applicant</label> (As appearing in supporting identification Document)
+				            		<div class="row">
+					            		<div class="col-md-4">
+										    {{form.first_name}}
+										    <!-- <span style="color:red;">{{form.first_name.errors.as_text}}</span> -->
+										</div>
+										<div class="col-md-4">
+										    {{form.middle_name}}
+										</div>
+										<div class="col-md-4">
+										    {{form.last_name}}
+										    <!-- <span style="color:red;">{{form.last_name.errors.as_text}}</span> -->
+										</div>
+									</div>
+				            	</div>
+				            	<div class="form-group">
+				            		<label>* {{form.father_name.label_tag}}</label>
+				            		<!-- <span style="color:red;">{{ form.father_name.errors.as_text }}</span> -->
+				            		{{form.father_name}}
+				            	</div>
+		            		</div>
+		            		<div class="col-md-4">
+			            		<label>* {{form.photograph.label_tag}}</label><br />
+			            		<span style="color:#c0c0c0;">{{form.photograph.help_text}}</span><br />
+			            		<!-- <span style="color:red;">{{ form.photograph.errors.as_text }}</span> -->
+			            		{{form.photograph}}
+		            		</div>
+		            	</div>
+		            	<div class="form-group">
+		            		<div class="col-md-3">
+			            		<label>* {{form.gender.label_tag}}</label>
+			            		<!-- <span style="color:red;">{{ form.gender.errors.as_text }}</span> -->
+			            		{{form.gender}}
+			            	</div>
+			            	<div class="col-md-3">
+			            		<label>* {{form.marital_status.label_tag}}</label>
+			            		<!-- <span style="color:red;">{{ form.marital_status.errors.as_text }}</span> -->
+			            		{{form.marital_status}}
+			            	</div>
+			            	<div class="col-md-3">
+			            		<label>* {{form.dob.label_tag}}</label>
+			            		<!-- <span style="color:red;">{{ form.dob.errors.as_text }}</span> -->
+			            		{{form.dob}}
+			            		<p style="font-size:10px;">( {{form.dob.help_text}} )</p>
+			            	</div>
+			            	<div class="col-md-3">
+			            		<label>* {{form.nationality.label_tag}}</label>
+			            		<!-- <span style="color:red;">{{ form.nationality.errors.as_text }}</span> -->
+			            		{{form.nationality}}
+			            	</div>
+		            	</div>
+		            	<div class="form-group">
+		            		<div class="col-md-6">
+			            		<label>* {{form.residence_status.label_tag}}</label>
+			            		<!-- <span style="color:red;">{{ form.residence_status.errors.as_text }}</span> -->
+			            		{{form.residence_status}}
+		            		</div>
+		            		<div class="col-md-6" {% if form.residence_pasport.errors %} {% else %} style="display:none;" {% endif %} id="residence_passport">
+		            			<label>Upload Passport or Other Documens</label>
+		            			<!-- <span style="color:red;">{{ form.residence_pasport.errors.as_text }}</span> -->
+		            			{{form.residence_pasport}}
+		            			{{form.residence_pasport.help_text}}
+		            		</div>
+		            	</div>
+		            	<!-- <span style="color:red">{{form.non_field_errors.as_text}}</span> -->
+		            	<div class="form-group">
+		            		<div class="col-md-6">
+			            		<label>* {{form.pan_card.label_tag}}</label>
+			            		<!-- <span style="color:red;">{{ form.pan_card.errors.as_text }}</span> -->
+			            		{{form.pan_card}}
+		            		</div>
+		            		<div class="col-md-6" 
+		            			{% if cek_kyc.pan_card_file %}
+		            			{% else %}
+		            				{% if form.errors %}  {% else %} style="display:none;" {% endif %} 
+		            			{% endif %}
+		            			id="pancard_file">
+		            			<label>* {{form.pan_card_file.help_text}}</label>
+			            		<!-- <span style="color:red;">{{ form.pan_card_file.errors.as_text }}</span> -->
+			            		{{form.pan_card_file}}
+		            		</div>
+		            	</div>
+		            	<div class="form-group">
+		            		<!-- <span style="color:red;">{{ form.proff_identity.errors }}</span> -->
+		            		<label>{{form.proff_identity.label_tag}}</label>
+		            		{{form.proff_identity}}
+		            	</div>
+
+		            	<div class="form-group" 
+		            	{% if form.proff_identity_code.errors or form.proff_identity_file.errors %}
+		            	{% else %}
+		            	style="display:none;"
+		            	{% endif %} 
+		            	id="proff_identity_option">
+		            		<div class="col-md-6">
+			            		<!-- <span style="color:red;">{{ form.proff_identity_code.errors.as_text }}</span> -->
+			            		<label id="str_label_proff_identity"></label>
+			            		{{form.proff_identity_code}}
+			            	</div>
+			            	<div class="col-md-6">
+			            		<!-- <span style="color:red;">{{ form.proff_identity_file.errors.as_text }}</span> -->
+			            		<label id="str_label_upload_proff_identity"></label>
+			            		{{form.proff_identity_file}}
+			            	</div>
+		            	</div>
+		            	
+
+		            	<h4 style="background-color:#c0c0c0; padding:10px;">Address <span class="semi-bold">Details</span></h4>
+
+		            	<div class="form-group">
+		            		<label>* {{form.residence_address.label_tag}}</label>
+		            		<!-- <span style="color:red;">{{ form.residence_address.errors.as_text }}</span> -->
+		            		{{form.residence_address}}
+		            	</div>
+		            	<div class="form-group">
+		            		<div class="col-md-3">
+		            			<!-- <span style="color:red;">{{ form.residence_address_city.errors }}</span> -->
+			            		<label>{{form.residence_address_city.label_tag}}</label>
+			            		{{form.residence_address_city}}
+			            	</div>
+			            	<div class="col-md-3">
+			            		<label>{{form.residence_address_pin_code.label_tag}}</label>
+			            		{{form.residence_address_pin_code}}
+			            	</div>
+			            	<div class="col-md-3">
+			            		<label>{{form.residence_address_state.label_tag}}</label>
+			            		{{form.residence_address_state}}
+			            	</div>
+			            	<div class="col-md-3">
+			            		<label>{{form.residence_address_country.label_tag}}</label>
+			            		{{form.residence_address_country}}
+			            	</div>
+		            	</div>
+		            	<b>Contact Details</b>
+		            	<div class="form-group">
+		            		<div class="col-md-4">
+		            			<label>Tel (Res)</label>
+		            			<!-- <span style="color:red;">{{ form.contact_details_tel.errors.as_text }}</span> -->
+		            			{{form.contact_details_tel}}
+		            		</div>
+		            		<div class="col-md-4">
+		            			<label>* Mobile.</label>
+		            			<!-- <span style="color:red;">{{form.contact_details_mobile.errors.as_text}}</span> -->
+		            			{{form.contact_details_mobile}}
+		            		</div>
+		            		<div class="col-md-4">
+		            			<label>Email.</label>
+		            			{{form.contact_details_email}}
+		            		</div>
+		            	</div>
+		            	<div class="form-group">
+		            		<div class="col-md-6">
+			            		<label>* {{form.address_submitted_for_residence.label_tag}}</label>
+			            		<!-- <span style="color:red;">{{ form.address_submitted_for_residence.errors.as_text }}</span> -->
+			            		{{form.address_submitted_for_residence}}
+			            	</div>
+			            	<div class="col-md-6" 
+			            	
+			            	id="submit_residence_file_id">
+			            		<label id="submit_residence_file_label"></label>
+			            		<!-- <span style="color:red;">{{ form.address_submitted_for_residece_file.errors.as_text }}</span> -->
+			            		{{ form.address_submitted_for_residece_file }}
+			            	</div>
+		            	</div>
+
+		            	<div class="form-group">
+		            		<label>
+		            			Permanent Address ( (if different from above or overseas address, mandatory for Non-Resident Applicant)
+		            		</label>
+							{{form.is_permanent_address}}
+		            	</div>
+		            	<div class="form-group" id="non_residence_option">
+		            		<div class="col-md-12">
+		            			<label>Address</label>
+		            			{{form.permanent_address}}
+		            		</div>
+		            		<div class="col-md-3">
+		            			<label>City/town/village</label>
+		            			{{form.city1}}
+		            		</div>
+		            		<div class="col-md-3">
+		            			<label>Pin Code</label>
+		            			{{form.pin_code1}}
+		            		</div>
+		            		<div class="col-md-3">
+		            			<label>State</label>
+		            			{{form.state1}}
+		            		</div>
+		            		<div class="col-md-3">
+		            			<label>Country</label>
+		            			{{form.country1}}
+		            		</div>
+		            	</div>
+
+		            	<div class="form-group" id="proff_address_aplicant">
+		            		<div class="col-md-6">
+			            		<label>Proof of Permanent address to be provided by applicant. Please Submit Anyone of the following valid documents</label>
+			            		{{form.proof_of_address_non_residence}}
+			            	</div>
+			            	<div class="col-md-6" 
+			            		{% if form.proof_of_address_non_residence_file.errors %}
+			            		{% else %}style="display:none;"
+			            		{% endif %} id="proof_of_address_non_residence_file">
+			            		<label class="aaa"> </label><br /><br />
+			            		<span style="color:red;" id="error_permanent_address">
+		            				<!-- {{form.proof_of_address_non_residence_file.errors.as_text}} -->
+		            			</span>
+		            			{{form.proof_of_address_non_residence_file}}
+			            	</div>
+		            	</div>
+
+		            	<h4 style="background-color:#c0c0c0; padding:10px;">Others <span class="semi-bold">Details</span></h4>
+
+		            	<div class="form-group">
+		            		<label>{{form.gross_annual_income_detail.label_tag}}</label>
+		            		{{form.gross_annual_income_detail}}
+		            	</div>
+		            	<!-- <div class="form-group">
+		            		<div class="col-md-8">
+			            		<label>{{form.net_worth_in.label_tag}}</label>
+			            		{{form.net_worth_in}}
+			            	</div>
+			            	<div class="col-md-4">
+			            		{{form.net_word_date.help_text}}
+			            		{{form.net_word_date}}
+			            	</div>
+		            	</div> -->
+		            	<div class="form-group">
+		            		<label>{{form.occupation.label_tag}}</label>
+		            		{{form.occupation}}
+		            	</div>
+		            	<div class="form-group" id="other_occupation" style="display:none;">
+		            		{{form.other_occupation}}
+		            	</div>
+
+		            	<div class="form-group">
+		            		<label>
+		            			DECLARATION
+		            			<p style="line-height: 200%;">
+		            				I hereby declare that the details furnished above are true and correct to the best of my knowledge and belief and I undertake to inform you of any changes therein, immediately. In case any of the above information is found to be false or untrue or misleading or misrepresenting, I am aware that I may be held liable for it.
+		            			</p>
+		            		</label>
+		            	</div>
+		            	<div class="form-group">
+		            		<div class="col-md-6">
+			            		<label>* {{form.signature.label_tag}} ( {{form.signature.help_text}} )</label>
+			            		<!-- <span style="color:red;">{{form.signature.errors.as_text}}</span> -->
+			            		{{form.signature}}
+			            	</div>
+			            	<div class="col-md-6">
+			            		<label>{{form.date.label_tag}}</label>
+			            		{{form.date}}
+			            	</div>
+		            	</div>
+		            	<button class="btn btn-primary" type="submit">Submit</button>
+	            	</form>
+        </div>
+	</div>
+</div>
+
+<!-- Modal KYC Instrunction-->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">KYC Instrunction</h4>
+      </div>
+      <div class="modal-body">
+        {% autoescape off %} {{get_kyc_instruction.instruction}} {% endautoescape %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Share KYC-->
+<div class="modal fade" id="share_kyc" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Select Subscribed Service Provider</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+        	<div class="form-group">
+        		<select class="form-control" id="aa" multiple>
+        			{% for data in service_providers %}
+        				<option value="{{data.product.id}}">{{data}}</option>
+        			{% endfor %}
+        		</select>
+        		<p>Hold down the Ctrl (windows) / Command (Mac) button to select multiple options.</p>
+        	</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="post_share( {{cek_kyc.id}} );">Submit</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

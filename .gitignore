@@ -1,0 +1,22 @@
+syntax: glob
+*.*~
+*.pyc
+*.db
+*.tmp
+*.orig
+*.log
+*.log.*
+*.DS_Store
+.idea/
+*/migrations/*
+media/CACHE/*
+chillpublic/*.pyc
+chillpublic/local_settings.py
+templates/dashboard/view_ticket_backup.html
+nohup.out
+media/kyc/*
+media/file_customer/*
+media/logo/*
+media/photo/*
+*.hg
+.hgignore

@@ -1,0 +1,249 @@
+
+
+{% block css %}
+<style type="text/css">
+    .upload-drop-zone {
+        color: #ccc;
+        border-style: dashed;
+        border-color: #ccc;
+        line-height: 200px;
+        text-align: center;
+        height: 206px;
+        border-width: 2px;
+        margin-bottom: 20px;
+        width: 206px;
+    }
+
+    .droppedField {
+        padding-left:16px;
+        margin-bottom: 10px;
+        margin-left: 0px !important;
+        margin-right: 0px !important;
+    }
+
+    .upload-file-zone {
+        left: -99999px !important;
+        opacity: 0 !important;
+        position: absolute !important;
+    }
+
+    .well {
+        min-height: 20px !important;
+        padding: 19px !important;
+        margin-bottom: 20px !important;
+        background-color: #f5f5f5;
+        border: 1px solid #e3e3e3 !important;
+        -webkit-border-radius: 4px !important;
+        -moz-border-radius: 4px !important;
+        border-radius: 4px !important;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05) !important;
+        -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05) !important;
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .action-bar .droppedField {
+        float: left !important;
+    }
+</style>
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+
+        $(document).ready(function(){
+            $('#type_form').change(function(){
+                var type_form = $(this).val();
+
+                $.ajax({
+                    type: "GET",
+                    cache: false,
+                    url: "{% url 'get_form_ajax' %}?company="+{{ company.id }}+"&department="+{{ department.id }}+"&form_type="+type_form,
+                    success:function(resp){
+                        if (resp.length == "0") {
+                            var options = '<option value="">-- Select Forms Name --</option>';
+                            $('select[name=form_name]').html(options);
+                            $('select[name=form_name]').prop('disabled', false);
+                            // $('#submit_form').prop('disabled', true);
+                        } else {
+                            var options = '<option value="">-- Select Forms Name --</option>';
+                            $('select[name=form_name]').html(options+resp);
+                            $('select[name=form_name]').prop('disabled', false);
+                            // $('#submit_form').prop('disabled', false);
+                        }
+                    }
+                })
+            });
+
+            $('#form_name').change(function(){
+                var form_id = $(this).val();
+                $.ajax({
+                    type: "GET",
+                    cache: false,
+                    url: "{% url 'iframe_customer' %}?id="+form_id+"&ajax=True",
+                    success: function(resp){
+                        var text_bread = '<li><a href="/dashboard/">Dashboard</a></li><li class="active">View Forms</li>';
+                        var text_page = '<h1>DASHBOARD</h1><h2>VIEW FORMS</h2>';
+                        var image_logo;
+                        if (resp['logo'] == "") {
+                            image_logo = "<img src='http://www.placehold.it/40x40/CCC/AAAAAA&text=no+image' alt='Company Image' width='80px' height='54px;'>";
+                        } else {
+                            image_logo = "<img src='"+resp['logo']+"' alt='Company Image' width='80px' height='54px;'>";
+                        }
+                        $('#text-form').text(resp['form_name']);
+                        $('#bread').html(image_logo);
+                        $('.breadcrumb').html(text_bread);
+                        $('.page_title').html(text_page);
+                        $('#field_form').append(resp['data']);
+                        var selected_content = $('#field_form').clone();
+                        selected_content.find("div").each(function(i,o) {
+                            var obj = $(o);
+                            obj.removeClass("draggableField ui-draggable well ui-droppable ui-sortable ");
+                            obj.removeAttr('style');
+                        });
+
+                        selected_content.find("input[type=text], input[type=password], select, textarea").each(function(i,o) {
+                            var obj = $(o);
+                            var div_id = obj.closest('.droppedField')[0].id;
+
+                            obj.prop('disabled', true);
+
+                            if (obj[0].name == "") {
+                                obj[0].name = div_id;
+                            }
+                        });
+
+                        $('#target').append(selected_content.html());
+                        $('#field_form').toggle(false);
+                        $('#field_form').text('');
+                    }
+                })
+                $('#show_form').toggle(true);
+                $('#select_form').toggle(false);
+            })
+
+        });
+
+        function cancel_form() {
+            $('#type_form').prop('selectedIndex',0);
+            var options = '<option value="">-- Select Forms Name --</option>';
+            $('select[name=form_name]').html(options);
+        }
+
+        function cancel_submit_form(){
+            $('#target').text('');
+            $('#text-form').text('');
+            $('#bread').text('')
+            $('.alert.alert-success').fadeOut();
+            $('#show_form').toggle(false);
+            $('#select_form').toggle(true);
+            $('#type_form').prop('selectedIndex',0);
+            var options = '';
+            $('select[name=form_name]').html(options);
+        }
+    </script>
+{% endblock %}
+
+{% block breadcumb %}
+    <div class="pull-left breadcrumb_admin clear_both">
+        <div class="pull-left page_title theme_color">
+            <h1>dashboard</h1>
+            <h2 class="">View Forms</h2>
+        </div>
+        <div class="pull-right">
+            <ol class="breadcrumb">
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="active">View Forms</li>
+            </ol>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="block-web" id="select_form">
+            <div class="header">
+                <div class="actions"> <a class="minimize" href="#"><i class="fa fa-chevron-down"></i></a><a class="close-down" href="#"><i class="fa fa-times"></i></a> </div>
+                <h3 class="content-header"><span class="fa fa-pencil-square-o"></span> View Forms</h3>
+            </div>
+            <div class="porlets-content">
+                <div class="alert alert-danger fade in">
+                    <button aria-hidden="true" data-dismiss="alert" class="close" type="button">×</button>
+                    <p>You have not been Subscription Services / Provider</p>
+                </div>
+                <div class="alert alert-success fade in">
+                    <button aria-hidden="true" data-dismiss="alert" class="close" type="button">×</button>
+                    <p>You've Subscription Services / Provider</p>
+                </div>
+                <div id="form_field" style="display: none;"></div>
+                <form action="" class="form-horizontal row-border">
+                    <div id="second_form_customer">
+                        <div id="dialog-confirm"></div>
+                        <input type="hidden" id="value_select_form" value="">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Type Forms</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="type_form" id="type_form">
+                                    <option value="">-- Select Forms --</option>
+                                    <option value="service_request_form">Service Request Form</option>
+                                    <option value="application_form">Application Form</option>
+                                    <option value="query_form">Query Form</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Form Name</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="form_name" id="form_name">
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <!-- <button type="button" id="submit_form" class="btn btn-primary" disabled>Submit</button> -->
+                            <button type="reset" onclick="cancel_form()" id="cancel_filled_form" class="btn btn-default">Cancel</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <!--/porlets-content-->
+        </div>
+        <!--/block-web-->
+        <div class="block-web" id="show_form" style="display: none;">
+            <div class="header">
+                <div class="actions"> <a class="minimize" href="#"><i class="fa fa-chevron-down"></i></a><a class="close-down" href="#"><i class="fa fa-times"></i></a> </div>
+                <h3 class="content-header"><span class="fa fa-pencil-square-o"></span> View Forms</h3>
+            </div>
+            <div class="porlets-content">
+                <div style="margin-bottom: 15px;">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="col-md-6">
+                                <span id="bread"></span>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <span id="text-form"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-danger fade in" id="alert_error_submit">
+                    <button aria-hidden="true" class="close submit_form" type="button">×</button>
+                    <div id="message_error_submit">
+                    </div>
+                </div>
+                <div id="field_form"></div>
+                <form id="form_cust" action="#" class="form-horizontal row-border" enctype="multipart/form-data">
+                    <div class="form-group" id="target">
+
+                    </div>
+                    <div class="bottom">
+                        <!-- <button type="button" onclick="save_submit_form()" class="btn btn-primary">Submit</button> -->
+                        <button type="button" onclick="cancel_submit_form()" class="btn btn-default">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!--/col-md-6-->
+</div>
+{% endblock %}

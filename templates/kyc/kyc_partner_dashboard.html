@@ -1,0 +1,60 @@
+{% extends "dashboard/base.html" %}
+
+{% block css %}
+<style type="text/css">
+#photograph{
+	position: absolute;
+    top: 60px;
+    right: 20px;
+	width:20%;
+	float:right; 
+                    /*float:left;
+                    margin-left: 600px;
+                    top:90px;
+                    padding: 10px;*/
+}
+tr{
+	line-height: 40px;
+}
+</style>
+{% endblock %}
+
+{% block breadcumb %}
+    <div class="pull-left breadcrumb_admin clear_both">
+        <div class="pull-left page_title theme_color">
+            <h1>dashboard</h1>
+            <h2 class="">KYC Partner Dashboard</h2>
+        </div>
+        <div class="pull-right">
+            <ol class="breadcrumb">
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="active">KYC Partner Dashboard</li>
+            </ol>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="information green_info">
+            <div class="information_inner">
+                <div class="info green_symbols"><i class="fa fa-rss icon" style="margin-left:20px;"></i></div>
+                <span style="color: #2eb79d;">Summarized Information</span>
+                <h1>
+                	<span style="font-size: 12px !important;color: black;font-weight: bold;">KYC Verification - Total : </span> {{len_kyc}}
+                </h1>
+                <h1>
+                	<span style="font-size: 12px !important;color: black;font-weight: bold;">KYC Verification - Pending : </span> {{q|length}}
+                </h1>
+                <div class="infoprogress_green">
+                    <div class="greenprogress"></div>
+                </div>
+                <div class="pull-right" id="work-progress1">
+                    <canvas style="display: inline-block; width: 47px; height: 25px; vertical-align: top;" width="47" height="25"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

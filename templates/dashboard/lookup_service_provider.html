@@ -1,0 +1,151 @@
+{% extends 'dashboard/base.html' %}
+
+{% block css %}
+<link href="{{ MEDIA_URL }}dashboard/plugins/data-tables/DT_bootstrap.css" rel="stylesheet">
+<link href="{{ MEDIA_URL }}dashboard/plugins/advanced-datatable/css/demo_table.css" rel="stylesheet">
+<link href="{{ MEDIA_URL }}dashboard/plugins/advanced-datatable/css/demo_page.css" rel="stylesheet">
+{% endblock %}
+
+{% block js %}
+<script src="{{ MEDIA_URL }}dashboard/plugins/data-tables/jquery.dataTables.js"></script>
+<script src="{{ MEDIA_URL }}dashboard/plugins/data-tables/DT_bootstrap.js"></script>
+<script src="{{ MEDIA_URL }}dashboard/plugins/data-tables/dynamic_table_init.js"></script>
+<script src="{{ MEDIA_URL }}dashboard/plugins/edit-table/edit-table.js"></script>\
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+    $('.show_data').popover({ 
+        html : true,
+        trigger: 'hover',
+        template: '<div class="popover" style="width:300px;" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
+    });
+})
+
+function remove_request(obj, key) {
+    var ask = confirm('Do you really to delete this request service provider?');
+    if (ask) {
+        $.ajax({
+            type:"POST",
+            cache:false,
+            url:"{% url 'delete_service_provider' %}",
+            data:{
+                'csrfmiddlewaretoken':'{{ csrf_token }}',
+                'id':key
+            },
+            beforeSend:function(){
+                $(obj).html('Loading.. <span class="fa fa-trash-o"></span>');
+            },
+            success:function(resp){
+                if (resp['status']) {
+                    $(obj).parent().parent().fadeOut();
+                }
+
+            }
+        });
+    }
+}
+
+function add_again_request(obj, key) {
+    var ask = confirm('Do you really to add again this request service provider?');
+    if (ask) {
+        $.ajax({
+            type:"GET",
+            cache:false,
+            url:"{% url 'add_again_service_provider' %}?id="+key,
+            success:function(resp){
+                // console.log(resp)
+                $('#container_element').remove();
+                $("#breadcumb").remove();
+                $('#container').append('<div id="container_element">'+resp+'</div>');
+                window.history.pushState({}, "Title", "/dashboard/my-service-providers/add-new/");
+            }
+        });
+
+
+        // $.ajax({
+        //     type:"POST",
+        //     cache:false,
+        //     url:"{% url 'add_again_service_provider' %}",
+        //     data:{
+        //         'csrfmiddlewaretoken':'{{ csrf_token }}',
+        //         'id':key
+        //     },
+        //     success:function(resp){
+        //         // console.log(resp)
+        //         if (resp['status']) {
+        //             location.reload();
+        //         } else {
+        //             alert(resp['msg'])
+        //         }
+        //     }
+        // });
+    }
+}
+</script>
+
+{% endblock %}
+
+{% block breadcumb %}
+    <div class="pull-left breadcrumb_admin clear_both">
+        <div class="pull-left page_title theme_color">
+            <h1>dashboard</h1>
+            <h2 class="">Name of Service Provider</h2>
+        </div>
+        <div class="pull-right">
+            <ol class="breadcrumb">
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="active">Name of Service Provider</li>
+            </ol>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+
+    <div class="row">
+        <div class="col-lg-12">
+            <section class="panel default blue_title h2">
+                <div class="panel-heading">Name of Service Provider - List
+                    <!-- <span class="semi-bold">Resolved</span> -->
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table id="dynamic-table" class="table table-bordered dataTable" aria-describedby="dynamic-table_info">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name of Service Provider</th>
+                                    <th>Department</th>
+                                    <th>Status</th>
+                                    <th>Account Details</th>
+                                    <th>Reason</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in service_providers %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ i.company }}</td>
+                                        <td>{{ i.product }}</td>
+                                        <td>{% if i.status == "1" %} Approved {% elif i.status == "2" %} Rejected {% else %} Need Verification {% endif %}</td>
+                                        <td class="show_data" data-container="body" title="Account Information" data-toggle="popover" data-placement="bottom" data-content="- Account Number : {{ i.account_number }} <br> - Registered Mobile Number : {{ i.registered_mobile_number }} <br> - Date of Birth : {{ i.dob }} <br> - Mother's Maiden Name : {{ i.mothers_name }}">Display Info</td>
+                                        <td>{% if i.reason == None %} - {% elif i.reason == "" %} - {% else %} {{ i.reason }} {% endif %}</td>
+                                        <td>
+                                            {% if i.status == "2" %}
+                                                <div class="btn btn-default" onclick="add_again_request(this, '{{i.id}}');">Add Again <span class="fa fa-plus"></span></div>
+                                            {% endif %}
+                                            <div class="btn btn-danger" onclick="remove_request(this, '{{i.id}}');">Remove <span class="fa fa-trash-o"></span></div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+{% endblock %}

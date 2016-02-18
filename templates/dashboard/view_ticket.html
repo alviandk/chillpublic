@@ -1,0 +1,169 @@
+{% extends 'dashboard/base.html' %}
+{% block js %}
+
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
+
+{% load socketio_tags %}
+{% socketio %}
+
+<script type="text/javascript">
+
+    var addItem = function(selector, item) {
+        var template = $(selector).find('script[type="text/x-jquery-tmpl"]');
+        template.tmpl(item).prependTo(selector);
+        $('textarea[name=text]').val('');
+    };
+
+    var addMessage = function(data) {
+        var d = new Date();
+        var win = $(window), doc = $(window.document);
+        var bottom = win.scrollTop() + win.height() == doc.height();
+        // data.user = "{{ user }}"
+        data.time = $.map([d.getHours(), d.getMinutes(), d.getSeconds()],
+                          function(s) {
+                              s = String(s);
+                              return (s.length == 1 ? '0' : '') + s;
+                          }).join(':');
+        addItem('#comment_list', data);
+        if (bottom) {
+            window.scrollBy(0, 10000);
+        }
+    };
+
+    var socket;
+
+    var connected = function() {
+        socket.subscribe('room-' + window.room);
+        socket.send({room: window.room, action: 'start', name: name});
+    };
+
+    var messaged = function(data) {
+        addMessage(data);
+    };
+
+    var start = function() {
+        socket = new io.Socket();
+        socket.connect();
+        socket.on('connect', connected);
+        socket.on('message', messaged);
+    };
+
+    start();
+</script>
+
+<script>window.room = {{ key }};</script>
+
+<script type="text/javascript">
+    function add_comment(obj) {
+        var text = $('textarea[name=text]').val();
+        if (text) {
+            $.ajax({
+                type:"POST",
+                cache:false,
+                url:"{% url 'comment_create' %}",
+                data:{
+                    'csrfmiddlewaretoken':'{{ csrf_token }}',
+                    'id':'{{lookup.id}}',
+                    'text':text
+                },
+                success:function(resp){
+                    $('textarea[name=text]').val('');
+                    $('#comment_list').append(resp);
+                }
+            });
+        } else {
+            $('#alertModal').modal('show');
+            $('#alertModal .modal-body').text('Please fill empty column');
+        }
+    }
+</script>
+
+{% endblock %}
+{% block breadcumb %}
+<div class="pull-left breadcrumb_admin clear_both">
+    <div class="pull-left page_title theme_color">
+        <h1>dashboard</h1>
+        <h2 class="">Ticket {{lookup.id}}</h2>
+    </div>
+    <div class="pull-right">
+        <ol class="breadcrumb">
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="active">Live Tickets</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+{% block body %}
+
+<div class="row">
+    <div class="col-sm-8">
+        <div class="ticket_open">
+            <div class="ticket_open_heading">
+                <h3 class="pull-left"><span class="semi-bold">Ticket #{{lookup.id}}</span></h3>
+            </div>
+            <div class="clearfix"></div>
+            <div class="open_ticket">
+                <div class="open_ticket_rating pull-left">
+                    Current Rating on this Ticket
+                    <div class="rating">
+                        <i class="fa fa-heart"></i>
+                        <i class="fa fa-heart"></i>
+                        <i class="fa fa-heart"></i>
+                        <i class="fa fa-heart ratingcolor"></i>
+                        <i class="fa fa-heart ratingcolor"></i> <span>3(pretty good)</span>
+                    </div>
+                </div>
+                <div class="open_ticket_rating pull-right">
+                    Average Respones Speed
+                    <div class="rating">
+                        <i class="fa fa-clock-o rating_i"></i>
+                        <span>36.9 Minutes</span>
+                    </div>
+                </div>
+            </div>
+            <a href="#" class="open_ticket_comment">
+                <div class="open_ticket_thumnail">
+                    <div class="btn-group">
+                        <i class="fa fa-user"></i>
+                    </div>
+                    {{lookup.author.first_name}} {{lookup.author.last_name}}
+                </div>
+                <div class="ticket_problem">{{lookup.title}}</div>
+                <span>{{lookup.description}}</span>
+                <p>-{{lookup.timestamp}}</p>
+            </a>
+
+            <div class="input-group">
+                <textarea name="text" cols="" rows="" class="form_ticket_question2" placeholder="add comment" style="border:1px solid #c0c0c0;"></textarea>
+            </div>
+            <br/>
+            <div class="btn-group"> <a class="btn btn-sm ticket_btn" onclick="add_comment(this);">Add Comment</a> </div>
+
+
+            <div id="comment_list">
+
+            <script type="text/x-jquery-tmpl">
+                <a href="#" class="open_ticket_comment">
+                    <div class="open_ticket_thumnail">
+                        <div class="btn-group">
+                            <i class="fa fa-user"></i>
+                        </div>
+                    </div>
+                    <span>${message}</span>
+                    <p>${time}</p>
+                </a>
+            </script>
+
+            {% for i in lookup.comments.all reversed %}
+                {% include 'dashboard/ajax/comment.html' %}
+            {% endfor %}
+
+            </div>
+
+            
+        </div>
+    </div>
+    <div class="col-sm-4"></div>
+</div>
+{% endblock %}

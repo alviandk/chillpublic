@@ -1,0 +1,101 @@
+{% extends "landingpage/base.html" %}
+
+{% block js %}
+<script src="{{ MEDIA_URL }}landingpage/js/jssor.slider.mini.js"></script>
+<script src="{{ MEDIA_URL }}landingpage/js/slider_index.js"></script>
+{% endblock %}
+
+{% block body %}
+
+<div class="inner">
+    <div class="contentpanel">
+        <div class="pull-left breadcrumb_admin clear_both">
+            <div class="pull-left" style="padding-top:20px; padding-bottom:20px;">
+                <ul class="nav-inline">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Public Support</a></li>
+                    <li><a href="{% url 'pricing' %}">Plans & Pricing</a></li>
+                </ul>
+            </div>
+            <div class="container clear_both padding_fix">
+                <div id="slider1_container" style="position: relative; margin: 0 auto;
+                    top: 0px; left: 0px; width: 1300px; height: 450px; overflow: hidden;">
+                    <div u="slides" style="cursor: move; position: absolute; left: 0px; top: 0px; width: 1300px;
+                        height: 500px; overflow: hidden;">
+                        <div>
+                            <img u="image" src="{{ MEDIA_URL }}images/bg1.jpg" />
+                            <div u=caption t="T|IB" t2="R" d=-600 class="captionOrange" style="position: absolute; top: 70px; right: 75px; width: 500px; height: 400px;">
+                                <img src="{{ MEDIA_URL }}images/man-winner.png">
+                            </div>
+                            <div u=caption t="CLIP|LR" du="1500" class="captionOrange" style="position: absolute; top: 70px; left: 100px; width: 300px; height: 50px; line-height:24px;">
+                                No more Waiting. Connect Directly to support agent Chat, Discuss and Resolve issues quickly.
+                                Track Existing Issues, Keep History
+                            </div>
+                            <div u=caption t="CLIP|LR" du="1500" class="captionOrange"  style="position:absolute; left:100px; top: 140px; width:500px; height:50px; line-height:24px;"> 
+                                Praise/Shout for Resolved/Unresolved Issues<br />
+                                Not Satisfied? Get Public Support
+                            </div>
+                        </div>
+                        <div>
+                            <img u="image" src="{{ MEDIA_URL }}images/bg2.jpg" />
+                            <div u=caption t="CLIP|LR" du="1500" class="captionOrange"  style="position:absolute; left:100px; top: 140px; width:400px; height:50px; line-height:24px;"> 
+                                Genuine Feedback and direct interaction with customers<br />
+                                Increased Brand Value
+                            </div>
+                            <div u=caption t="TORTUOUS|VB" d=-750 class="captionOrange" style="position: absolute; top: 70px; right: 75px; width: 500px; height: 400px;">
+                                <img src="{{ MEDIA_URL }}images/mac.png">
+                            </div>
+                            <div u=caption t="T" d=-450 class="captionOrange" style="position: absolute; top: 220px; right: 500px; width: 180px; height: 130px;">
+                                <img src="{{ MEDIA_URL }}images/ipad.png">
+                            </div>
+                            <div u=caption t="FLTTR|R" t2="B" d=-600 class="captionOrange" style="position: absolute; top: 250px; right: 400px; width: 80px; height: 100px;">
+                                <img src="{{ MEDIA_URL }}images/iphone.png">
+                            </div>
+                            <div u=caption t="ATTACK|BR" d=-600 class="captionOrange" style="position: absolute; top: 250px; right: 100px; width: 250px; height: 200px;">
+                                <img src="{{ MEDIA_URL }}images/macbook.png">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="center">
+                <a href="{% url 'signup_customer' %}" class="btn btn-warning">Sign Up as Customer</a>
+                <a href="{% url 'pricing' %}" class="btn btn-success">Sign Up as Company</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="contentpanel">
+                    <div class="portlet-body">
+                        <div class="row margin-bottom-40" style="text-aligh:centre">
+                        {% for i in plan_list %}
+                        	<div class="col-md-{% if plan_list.count == 1 %}12{% endif %}{% if plan_list.count == 2 %}6{% endif %}{% if plan_list.count == 3 %}4{% endif %}{% if plan_list.count == 4 %}3{% endif %}{% if plan_list.count == 6 %}2{% endif %}">
+                                <div class="pricing hover-effect">
+                                    <div class="pricing-head">
+                                        <h3>{{i.name}}</h3>
+                                        <h4><i>&#8377; {{i.price}}</i><span>Per Agent</span></h4>
+                                    </div>
+                                    <ul class="pricing-content list-unstyled">
+                                    {% for x in i.features.all %}
+                                        <li><i class="fa fa-tags"></i> {{x.title}}</li>
+                                    {% endfor %}
+                                    </ul>
+                                    <div class="pricing-footer">
+                                        <a href="{% url 'signup_company' %}" class="btn green">Sign Up <i class="m-icon-swapright m-icon-white"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                            <div class="free_trail_button" style="text-align: center;">
+                            	<a href="{% url 'signup_company' %}"><div class="btn btn-large btn-primary" style="padding: 10px 60px;border-radius: 3px !important;font-size: 17px;margin-top: 33px;"><i class="glyphicon glyphicon-gift"></i> Start your free trail now</div></a>
+                            </div>
+
+                        </div>
+                    </div>
+</div>
+{% endblock %}
+
+

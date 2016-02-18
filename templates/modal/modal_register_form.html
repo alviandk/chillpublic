@@ -1,0 +1,58 @@
+<div class="modal fade" id="registerModalForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        </div>
+        <div class="registration" style="width:100%; margin-top:15px;">
+        	<div class="panel-heading border login_heading">registration now</div>
+        	<form id="form_register" role="form" class="form-horizontal"  action="." method="POST" enctype="multipart/form-data">
+
+                {% if register_form.errors %}
+                    <div id="error_id">Error</div>
+                    <div class="alert alert-danger">{{register_form.errors.as_text}}</div>
+                {% endif %}
+
+                {% csrf_token %}
+        		{% for field in register_form %}
+            		<div class="form-group">
+            			<div class="col-sm-12">{{field}}</div>
+            		</div>
+            	{% endfor %}
+            	<div class="form-group">
+			        <div class=" col-sm-12">
+			          	<button class="btn btn-default pull-right" type="submit">SUBMIT</button>
+                        <!-- <a href="javascript:void(0);" id="submit_reg" class="btn btn-default pull-right">Submit</a> -->
+			        </div>
+			    </div>
+        	</form>
+        </div>
+    </div>
+</div>
+
+{% block js %}
+<script type="text/javascript">
+    $(document).ready(function(){
+
+        var y = $('#form_register').find("#error_id");
+        var w = y.length;
+        // alert(w);
+
+
+        if(w != 0){
+            $('#registerModalForm').modal({
+              backdrop: 'static',
+            });
+        }
+
+        $('.modal').on('hidden.bs.modal', function(){
+            $( "div" ).remove( ".alert" );
+            $( "div" ).remove( "#error_id" );
+            $(this).find('form')[0].reset();
+
+        });
+
+        
+
+    });
+</script>
+{% endblock %}

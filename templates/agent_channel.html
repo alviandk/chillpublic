@@ -1,0 +1,48 @@
+    
+    <script src="https://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
+
+    {% load socketio_tags %}
+    {% socketio %}
+
+        <script type="text/javascript">
+
+            var addMessage = function(data) {
+                var user = "{{user}}".replace(/&quot;/g,"\"");
+                console.log(user);
+                console.log(data.agent);
+                
+                if(user == data.agent) {
+                    if($("#frame_" + data.id).length == 0) { //check if iframe is exist
+                        $('.test').append('<iframe src="{% url "ticket_view" %}?id='+data.id+'" style="position:relative; float:right; height:420px; width:310px; border:none;" id="frame_'+data.id+'"></iframe>');
+                        alert('new live chat request');
+                    }
+                }
+                else{
+                    console.log(data);
+                }
+            };
+
+            var socket;
+
+            var connected = function() {
+                socket.subscribe('channel-'+{{user.id}});
+
+            };
+
+            var messaged = function(data) {
+                addMessage(data);
+            };
+
+
+            function start(){
+                socket = new io.Socket();
+                socket.connect();
+                socket.on('connect', connected);
+                socket.on('message', messaged);
+
+            }
+
+            start();
+            // alert({{user.id}});
+            </script>
+        

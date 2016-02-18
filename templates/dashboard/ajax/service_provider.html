@@ -1,0 +1,76 @@
+
+
+{% block breadcumb %}
+    <div class="pull-left breadcrumb_admin clear_both">
+        <div class="pull-left page_title theme_color">
+            <h1>dashboard</h1>
+            <h2 class="">My Service Provider</h2>
+        </div>
+        <div class="pull-right">
+            <ol class="breadcrumb">
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="active">My Service Provider</li>
+            </ol>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-lg-12">
+        <section class="panel default blue_title h2">
+        </section>
+    </div>
+</div>
+<div class="row">
+	<div class="col-sm-6 col-sm-8">
+        <div class="information green_info">
+            <div class="information_inner">
+                <div class="info green_symbols"><i class="fa fa-cog icon" style="margin-left:20px;"></i></div>
+                <span class="nameSP"><a href="{% url 'lookup_service_provider' %}">Number of Service Provider</a></span>
+                <h1 class="bolded" style="margin-bottom: 2px !important;"><span style="font-size: 12px !important;color: black;font-weight: bold;">Total : </span> {{len_provider}}</h1>
+                <span style="font-size: 12px !important;color: black;font-weight: bold;">Verified - {{total_verified}} | Rejected - {{total_reject}} | Need Verification - {{total_need_verified}}</span>
+                <div class="infoprogress_green" style="margin-top: 0px !important;">
+                    <div class="greenprogress"></div>
+                </div>
+                <!-- <b class=""><small>Better than yesterday ( 7,5% )</small></b> -->
+                <div class="pull-right" id="work-progress1">
+                    <canvas style="display: inline-block; width: 47px; height: 25px; vertical-align: top;" width="47" height="25"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- <div class="col-sm-4 col-sm-8">
+        <div class="information blue_info">
+            <div class="information_inner">
+                <div class="info blue_symbols"><i class="fa fa-exclamation-triangle icon"></i></div>
+                <span>Service Not Active or Needs Verification</span>
+                <h1 class="bolded">0</h1>
+                <div class="infoprogress_blue">
+                    <div class="blueprogress"></div>
+                </div>
+                <div class="pull-right" id="work-progress2">
+                    <canvas style="display: inline-block; width: 47px; height: 25px; vertical-align: top;" width="47" height="25"></canvas>
+                </div>
+            </div>
+        </div>
+    </div> -->
+    <div class="col-sm-6 col-sm-8">
+        <div class="information red_info">
+            <div class="information_inner">
+                <div class="info red_symbols"><i class="fa fa-plus-square-o icon" style="margin-left:20px;"></i></div>
+                <span style="margin-top: 25px;"><a href="{% url 'add-new-provider' %}" style="color:#e84c3d;">Add New Service Provider</a></span>
+                <!-- <h1 class="bolded">&nbsp;</h1> -->
+                <div class="infoprogress_red" style="margin-top: 46px !important">
+                    <div class="redprogress"></div>
+                </div>
+                <!-- <b class=""><small>Better than yesterday ( 7,5% )</small></b> -->
+                <div class="pull-right" id="work-progress3">
+                    <canvas style="display: inline-block; width: 47px; height: 25px; vertical-align: top;" width="47" height="25"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

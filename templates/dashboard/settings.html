@@ -1,0 +1,40 @@
+{% extends "dashboard/base.html" %}
+
+{% block breadcumb %}
+<div class="pull-left breadcrumb_admin clear_both">
+    <div class="pull-left page_title theme_color">
+        <h1>dashboard</h1>
+        <h2 class="">Settings</h2>
+    </div>
+    <div class="pull-right">
+        <ol class="breadcrumb">
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="active">Settings</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+
+{% block body %}
+    <div class="container clear_both padding_fix">
+        <section class="panel panel-default">
+            <div class="panel-heading bg_color">Company Feature Config</div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <form action="." method="POST">{% csrf_token %}
+                            {% for field in form %}
+                                <div class="form-group">
+                                    {{ field.errors }}
+                                    <label>{{ field.label_tag }}</label>
+                                    {{ field }}
+                                </div>
+                            {% endfor %}
+                            <input type="submit" class="btn btn-primary">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>  
+    </div>
+{% endblock %}

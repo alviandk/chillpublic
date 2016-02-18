@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Form Builder</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <link href="{{ MEDIA_URL }}css/form_builder/lib/bootstrap.min.css" rel="stylesheet">
+        <link href="{{ MEDIA_URL }}css/form_builder/lib/bootstrap-responsive.min.css" rel="stylesheet">
+        <link href="{{ MEDIA_URL }}css/form_builder/custom.css" rel="stylesheet">
+        <!--[if lt IE 9]>
+        <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        <link rel="shortcut icon" href="images/favicon.ico">
+        <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+        <style>
+        .form-horizontal .control-label {width:100px;}
+        .form-horizontal .controls {margin-left:110px;}
+        </style>
+    </head>
+
+    <body>
+        <div class="container" style="margin-left:0px;">
+          <div class="span12">
+            <div class="row clearfix">
+                <!-- Building Form. -->
+                <div class="span6">
+                    <div class="clearfix">
+                        <h4>Company Logo</h4>
+                        <hr>
+                        {% if request.is_company and request.user.company.logo %}
+                        <img src="{{request.user.company.logo.url}}" style="width:80px;" />
+                        {% else %}
+                        <img src="http://www.placehold.it/80x80/CCC/AAAAAA&text=no+image" style="width:80px;" />
+                        {% endif %}
+                        <hr>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Department</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" id="department" name="department">
+                                    {% for i in department_list %}
+                                        <option value="{{i.id}}"{% if lookup.department.id == i.id %} selected{% endif %}>{{i.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div id="build">
+                            <form id="target" class="form-horizontal">
+
+                            </form>
+                        </div>
+                        {% if lookup %}
+                            <div class="btn btn-primary" onclick="update_form();">Update Form</div>
+                        {% else %}
+                            <div class="btn btn-primary" onclick="save_form();">Save Form</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="span6">
+                    <h4>Drag & Drop components</h4>
+                    <hr>
+                    <div class="tabbable">
+                        <ul class="nav nav-tabs" id="formtabs">
+                            <!-- Tab nav -->
+                        </ul>
+                        <form class="form-horizontal" id="components">
+                            <fieldset>
+                                <div class="tab-content">
+                                    <!-- Tabs of snippets go here -->
+                                </div>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+          </div>
+        </div>
+        <!-- /container -->
+
+        <script src="{{MEDIA_URL}}js/jquery-1.11.0.min.js"></script>
+        <script src="{{MEDIA_URL}}js/bootstrap.min.js"></script>
+        {% if lookup %}
+        <div id="form_content" style="display:none;">{{lookup.form_content|safe}}</div>
+        <script data-main="{{MEDIA_URL}}js/form_builder/main-built-edit.js" src="{{MEDIA_URL}}js/form_builder/lib/require.js"></script>
+        {% else %}
+        <script data-main="{{MEDIA_URL}}js/form_builder/main-built.js" src="{{MEDIA_URL}}js/form_builder/lib/require.js"></script>
+        {% endif %}
+
+        <script type="text/javascript">
+
+        var data = {};
+        data["inputs"] = {};
+        data["selects"] = {};
+        data["radios"] = {};
+        data["buttons"] = {};
+        $(document).ready(function () {
+            $.getJSON("{% url 'get_form_json' %}", function(result){
+                data["inputs"] = result["input"];
+                data["selects"] = result["select"];
+                data["radios"] = result["radio"];
+                data["buttons"] = result["button"];
+            });
+        })
+
+        function save_form(){
+            var data_save = [];
+            var form_title = $('form#target legend').text();
+            var department = $( "#department option:selected" ).val();
+            
+            var title = "";
+            var field_name = "";
+            var field_type = "";
+            var field_placeholder = "";
+            var field_class = "";
+            var FieldShellelements = $("#target .component");
+
+            for(i = 0; i < FieldShellelements.length; i++) {
+                title = $(FieldShellelements[i]).data('title');
+                
+                if (title == "Multiple Radios" || title == "Multiple Radios Inline") {
+                    var field_label = $(FieldShellelements[i]).find('label.control-label').text();
+                    var field_name = $(FieldShellelements[i]).find('label').attr('for');
+                    if (title == "Multiple Radios") {
+                        var field_radios = $(FieldShellelements[i]).find('label.radio');
+                    } else {
+                        var field_radios = $(FieldShellelements[i]).find('label.radio.inline');
+                    }
+                    var field_required = $(field_radios[0]).find('input:checked').attr('required');
+                    var data_radios = []
+                    for(ck = 0; ck < field_radios.length; ck++){
+                        data_radios.push($(field_radios[ck]).text());
+                    }
+
+                    var returnedDataRadios = $.grep(data.radios, function (element, index) {
+                        return element.title == title;
+                    });
+                    
+                    if (field_required == undefined) {
+                        returnedDataRadios[0]["fields"]["required"]["value"] = false;
+                    } else {
+                        returnedDataRadios[0]["fields"]["required"]["value"] = true;
+                    }
+                    returnedDataRadios[0]["fields"]["label"]["value"] = field_label;
+                    returnedDataRadios[0]["fields"]["name"]["value"] = field_name;
+                    returnedDataRadios[0]["fields"]["radios"]["value"] = data_radios;
+
+                    data_save.push(JSON.stringify(returnedDataRadios[0]));
+                } else if (title == "File Button") {
+                    var field_label = $(FieldShellelements[i]).find('label.control-label').text();
+                    var field_name = $(FieldShellelements[i]).find('label').attr('for');
+
+                    var returnedDataButton = $.grep(data.buttons, function (element, index) {
+                        return element.title == title;
+                    });
+
+                    returnedDataButton[0]["fields"]["label"]["value"] = field_label;
+                    returnedDataButton[0]["fields"]["id"]["value"] = field_name;
+
+                    data_save.push(JSON.stringify(returnedDataButton[0]));
+
+                } else if (title == "Multiple Checkboxes" || title == "Multiple Checkboxes Inline") {
+                    var field_label = $(FieldShellelements[i]).find('label.control-label').text();
+                    var field_name = $(FieldShellelements[i]).find('label').attr('for');
+                    if (title == "Multiple Checkboxes") {
+                        var field_checkboxes = $(FieldShellelements[i]).find('label.checkbox');
+                    } else {
+                        var field_checkboxes = $(FieldShellelements[i]).find('label.checkbox.inline');
+                    }
+                    var field_required = $(field_checkboxes[0]).find('input:checkbox').attr('required');
+                    var data_checkboxes = []
+                    for(ck = 0; ck < field_checkboxes.length; ck++){
+                        data_checkboxes.push($(field_checkboxes[ck]).text());
+                    }
+
+                    var returnedDataCheckboxes = $.grep(data.radios, function (element, index) {
+                        return element.title == title;
+                    });
+                    
+                    if (field_required == undefined) {
+                        returnedDataCheckboxes[0]["fields"]["required"]["value"] = false;
+                    } else {
+                        returnedDataCheckboxes[0]["fields"]["required"]["value"] = true;
+                    }
+                    returnedDataCheckboxes[0]["fields"]["label"]["value"] = field_label;
+                    returnedDataCheckboxes[0]["fields"]["name"]["value"] = field_name;
+                    returnedDataCheckboxes[0]["fields"]["checkboxes"]["value"] = data_checkboxes;
+
+                    data_save.push(JSON.stringify(returnedDataCheckboxes[0]));
+                } else if (title == "Select Basic" || title == "Select Multiple") {
+                    var field_label = $(FieldShellelements[i]).find('label').text();
+                    var field_select = $(FieldShellelements[i]).find('select').attr("name");
+                    var field_class = $(FieldShellelements[i]).find('select').attr("class");
+                    var field_options = $(FieldShellelements[i]).find('option');
+                    var data_options = [];
+                    for(opt = 0; opt < field_options.length; opt++) {
+                        data_options.push($(field_options[opt]).text());
+                    }
+
+                    var returnedDataSelect = $.grep(data.selects, function (element, index) {
+                        return element.title == title;
+                    });
+
+                    // loop inputsize
+                    for(z = 0; z < returnedDataSelect[0]["fields"]["inputsize"]["value"].length; z++){
+                        if (returnedDataSelect[0]["fields"]["inputsize"]["value"][z]["value"] == field_class) {
+                            returnedDataSelect[0]["fields"]["inputsize"]["value"][z]["selected"] = true
+                        } else {
+                            returnedDataSelect[0]["fields"]["inputsize"]["value"][z]["selected"] = false
+                        }
+                    }
+
+                    returnedDataSelect[0]["fields"]["id"]["value"] = field_select;
+                    returnedDataSelect[0]["fields"]["label"]["value"] = field_label;
+                    returnedDataSelect[0]["fields"]["options"]["value"] = data_options;
+                    data_save.push(JSON.stringify(returnedDataSelect[0]));
+                } else if (title == "Prepended Text" || title == "Prepended Checkbox") {
+                    var field_label = $(FieldShellelements[i]).find('label').text();
+                    var field_help = $(FieldShellelements[i]).find('.help-block').text();
+                    var field_required = $(FieldShellelements[i]).find('input[type="text"]').attr('required');
+                    if (title == "Prepended Text") {
+                        var field_name = $(FieldShellelements[i]).find('input').attr('name');
+                        var field_class = $('#'+field_name).attr('class');
+                    } else {
+                        var field_name = $(FieldShellelements[i]).find('input[type="text"]').attr('name');
+                        var field_class = $(FieldShellelements[i]).find('input[type="text"]').attr('class');
+                    }
+                    var field_placeholder = $(FieldShellelements[i]).find('input[type="text"]').attr('placeholder');
+
+                    var returnedDataPrepended = $.grep(data.inputs, function (element, index) {
+                        return element.title == title;
+                    });
+
+                    returnedDataPrepended[0]["fields"]["id"]["value"] = field_name;
+
+                    // loop inputsize
+                    for(z = 0; z < returnedDataPrepended[0]["fields"]["inputsize"]["value"].length; z++){
+                        if (returnedDataPrepended[0]["fields"]["inputsize"]["value"][z]["value"] == field_class) {
+                            returnedDataPrepended[0]["fields"]["inputsize"]["value"][z]["selected"] = true
+                        } else {
+                            returnedDataPrepended[0]["fields"]["inputsize"]["value"][z]["selected"] = false
+                        }
+                    }
+
+                    if (field_label != "") {
+                        returnedDataPrepended[0]["fields"]["label"]["value"] = field_label;
+                    }
+
+                    returnedDataPrepended[0]["fields"]["helptext"]["value"] = field_help;
+
+                    if (title == "Prepended Checkbox") {
+                        var field_checkbox = $(FieldShellelements[i]).find('input[type="checkbox"]').attr('checked');
+                        if (field_checkbox == undefined) {
+                            returnedDataPrepended[0]["fields"]["checked"]["value"] = false;
+                        } else {
+                            returnedDataPrepended[0]["fields"]["checked"]["value"] = true;
+                        }
+                    } else {
+                        var field_append = $(FieldShellelements[i]).find('.add-on').text();
+                        returnedDataPrepended[0]["fields"]["append"]["value"] = field_append;
+                    }
+
+                    if (field_required == undefined) {
+                        returnedDataPrepended[0]["fields"]["required"]["value"] = false;
+                    } else {
+                        returnedDataPrepended[0]["fields"]["required"]["value"] = true;
+                    }
+
+                    returnedDataPrepended[0]["fields"]["placeholder"]["value"] = field_placeholder;
+                    data_save.push(JSON.stringify(returnedDataPrepended[0]));
+
+                } else if (title == "Appended Text" || title == "Appended Checkbox") {
+                    var field_label = $(FieldShellelements[i]).find('label').text();
+                    var field_help = $(FieldShellelements[i]).find('.help-block').text();
+                    var field_required = $(FieldShellelements[i]).find('input').attr('required');
+                    if (title == "Appended Text") {
+                        var field_name = $(FieldShellelements[i]).find('input').attr('name');
+                        var field_class = $('#'+field_name).attr('class');
+                    } else {
+                        var field_name = $(FieldShellelements[i]).find('input[type="text"]').attr('name');
+                        var field_class = $(FieldShellelements[i]).find('input[type="text"]').attr('class');
+                    }
+                    var field_placeholder = $(FieldShellelements[i]).find('input').attr('placeholder');
+
+                    var returnedDataAppended = $.grep(data.inputs, function (element, index) {
+                        return element.title == title;
+                    });
+
+                    returnedDataAppended[0]["fields"]["id"]["value"] = field_name;
+
+                    // loop inputsize
+                    for(z = 0; z < returnedDataAppended[0]["fields"]["inputsize"]["value"].length; z++){
+                        if (returnedDataAppended[0]["fields"]["inputsize"]["value"][z]["value"] == field_class) {
+                            returnedDataAppended[0]["fields"]["inputsize"]["value"][z]["selected"] = true
+                        } else {
+                            returnedDataAppended[0]["fields"]["inputsize"]["value"][z]["selected"] = false
+                        }
+                    }
+
+                    if (field_label != "") {
+                        returnedDataAppended[0]["fields"]["label"]["value"] = field_label;
+                    }
+
+                    returnedDataAppended[0]["fields"]["helptext"]["value"] = field_help;
+
+                    if (title == "Appended Checkbox") {
+                        var field_checkbox = $(FieldShellelements[i]).find('input[type="checkbox"]').attr('checked');
+                        if (field_checkbox == undefined) {
+                            returnedDataAppended[0]["fields"]["checked"]["value"] = false;
+                        } else {
+                            returnedDataAppended[0]["fields"]["checked"]["value"] = true;
+                        }
+                    } else {
+                        var field_append = $(FieldShellelements[i]).find('.add-on').text();
+                        returnedDataAppended[0]["fields"]["append"]["value"] = field_append;
+                    }
+
+                    if (field_required == undefined) {
+                        returnedDataAppended[0]["fields"]["required"]["value"] = false;
+                    } else {
+                        returnedDataAppended[0]["fields"]["required"]["value"] = true;
+                    }
+
+                    returnedDataAppended[0]["fields"]["placeholder"]["value"] = field_placeholder;
+                    data_save.push(JSON.stringify(returnedDataAppended[0]));
+
+                } else if (title == "Button Drop Down") {
+
+                    var field_button_text = $(FieldShellelements[i]).find('button').text();
+                    var field_buttonoptions = $(FieldShellelements[i]).find('li');
+                    var value_buttonoptions = []
+                    for(li = 0; li < field_buttonoptions.length; li++) {
+                        value_buttonoptions.push($(field_buttonoptions[li]).text());
+                    }
+
+                    var field_label = $(FieldShellelements[i]).find('label').text();
+                    var field_required = $(FieldShellelements[i]).find('input').attr('required');
+                    var field_name = $(FieldShellelements[i]).find('input').attr('name');
+                    var field_class = $('#'+field_name).attr('class');
+                    var field_placeholder = $(FieldShellelements[i]).find('input').attr('placeholder');
+
+                    var returnedDataButtonDD = $.grep(data.inputs, function (element, index) {
+                        return element.title == title;
+                    });
+
+                    returnedDataButtonDD[0]["fields"]["buttonoptions"]["value"] = value_buttonoptions;
+
+                    returnedDataButtonDD[0]["fields"]["id"]["value"] = field_name;
+                    returnedDataButtonDD[0]["fields"]["buttontext"]["value"] = field_button_text;
+
+                    // loop inputsize
+                    for(z = 0; z < returnedDataButtonDD[0]["fields"]["inputsize"]["value"].length; z++){
+                        if (returnedDataButtonDD[0]["fields"]["inputsize"]["value"][z]["value"] == field_class) {
+                            returnedDataButtonDD[0]["fields"]["inputsize"]["value"][z]["selected"] = true
+                        } else {
+                            returnedDataButtonDD[0]["fields"]["inputsize"]["value"][z]["selected"] = false
+                        }
+                    }
+
+                    if (field_label != "") {
+                        returnedDataButtonDD[0]["fields"]["label"]["value"] = field_label;
+                    }
+
+                    if (field_required == undefined) {
+                        returnedDataButtonDD[0]["fields"]["required"]["value"] = false;
+                    } else {
+                        returnedDataButtonDD[0]["fields"]["required"]["value"] = true;
+                    }
+
+                    returnedDataButtonDD[0]["fields"]["placeholder"]["value"] = field_placeholder;
+                    data_save.push(JSON.stringify(returnedDataButtonDD[0]));
+                } else if (title == "Text Area") {
+                    var field_label = $(FieldShellelements[i]).find('label').text();
+                    var field_name = $(FieldShellelements[i]).find('textarea').attr('name');
+                    var field_textarea = $(FieldShellelements[i]).find('textarea').text();
+
+                    var returnedDataTextArea = $.grep(data.inputs, function (element, index) {
+                        return element.title == title;
+                    });
+
+                    returnedDataTextArea[0]["fields"]["id"]["value"] = field_name;
+                    returnedDataTextArea[0]["fields"]["label"]["value"] = field_label;
+                    returnedDataTextArea[0]["fields"]["textarea"]["value"] = field_textarea;
+                    data_save.push(JSON.stringify(returnedDataTextArea[0]));
+                } else {
+                    var field_label = $(FieldShellelements[i]).find('label').text();
+                    var field_help = $(FieldShellelements[i]).find('.help-block').text();
+                    var field_required = $(FieldShellelements[i]).children().children().children('input').attr('required');
+                    var field_name = $(FieldShellelements[i]).children().children().children('input').attr('name');
+                    var field_class = $(FieldShellelements[i]).children().children().children('input').attr('class');
+                    var field_placeholder = $(FieldShellelements[i]).children().children().children('input').attr('placeholder');
+                    var returnedDataInput = $.grep(data.inputs, function (element, index) {
+                        return element.title == title;
+                    });
+
+                    if (title == "Search Input") {
+                        field_class = field_class.split(' ')[0]
+                    }
+
+                    if (returnedDataInput[0] == null) {
+                        var form_title_head = { "title" : "Form Name"
+                                , "fields": {
+                                  "name" : {
+                                    "label"   : "Form Name"
+                                    , "type"  : "input"
+                                    , "value" : form_title
+                                  }
+                                }
+                            }
+
+                        data_save.push(JSON.stringify(form_title_head));
+                    } else {
+                        returnedDataInput[0]["fields"]["id"]["value"] = field_name;
+
+                        // loop inputsize
+                        for(z = 0; z < returnedDataInput[0]["fields"]["inputsize"]["value"].length; z++){
+                            if (returnedDataInput[0]["fields"]["inputsize"]["value"][z]["value"] == field_class) {
+                                returnedDataInput[0]["fields"]["inputsize"]["value"][z]["selected"] = true
+                            } else {
+                                returnedDataInput[0]["fields"]["inputsize"]["value"][z]["selected"] = false
+                            }
+                        }
+
+                        if (field_label != "") {
+                            returnedDataInput[0]["fields"]["label"]["value"] = field_label;
+                        }
+
+                       returnedDataInput[0]["fields"]["helptext"]["value"] = field_help;
+
+                        if (field_required == undefined) {
+                            returnedDataInput[0]["fields"]["required"]["value"] = false;
+                        } else {
+                            returnedDataInput[0]["fields"]["required"]["value"] = true;
+                        }
+
+                        returnedDataInput[0]["fields"]["placeholder"]["value"] = field_placeholder;
+                        data_save.push(JSON.stringify(returnedDataInput[0]));
+                    }
+                }                
+            }
+
+            // alert(data_save);
+
+            $.ajax({
+                type:"POST",
+                cache:false,
+                url:"{% url 'form_create' %}",
+                data:{
+                    'form_content': JSON.stringify(data_save),
+                    'form_department': department,
+                    'form_title':form_title,
+                    'csrfmiddlewaretoken':'{{ csrf_token }}'
+                },
+                beforeSend:function(){
+
+                },
+                success:function(resp){
+                    if (resp['status']) {
+                        if (window.location != window.parent.location) {
+                            window.parent.location = "{% url 'forms_company' %}";
+                        }
+                    } else {
+                        alert(JSON.stringify(resp['msg']));
+                    }
+                }
+
+            });
+        }
+
+        {% if lookup %}
+
+            function update_form(){
+                var data_save = [];
+                var form_title = $('form#target legend').text();
+                var department = $( "#department option:selected" ).val();
+                
+                var title = "";
+                var field_name = "";
+                var field_type = "";
+                var field_placeholder = "";
+                var field_class = "";
+                var FieldShellelements = $("#target .component");
+
+                for(i = 0; i < FieldShellelements.length; i++) {
+                    title = $(FieldShellelements[i]).data('title');
+                    
+                    if (title == "Multiple Radios" || title == "Multiple Radios Inline") {
+                        var field_label = $(FieldShellelements[i]).find('label.control-label').text();
+                        var field_name = $(FieldShellelements[i]).find('label').attr('for');
+                        if (title == "Multiple Radios") {
+                            var field_radios = $(FieldShellelements[i]).find('label.radio');
+                        } else {
+                            var field_radios = $(FieldShellelements[i]).find('label.radio.inline');
+                        }
+                        var field_required = $(field_radios[0]).find('input:checked').attr('required');
+                        var data_radios = []
+                        for(ck = 0; ck < field_radios.length; ck++){
+                            data_radios.push($(field_radios[ck]).text());
+                        }
+
+                        var returnedDataRadios = $.grep(data.radios, function (element, index) {
+                            return element.title == title;
+                        });
+                        
+                        if (field_required == undefined) {
+                            returnedDataRadios[0]["fields"]["required"]["value"] = false;
+                        } else {
+                            returnedDataRadios[0]["fields"]["required"]["value"] = true;
+                        }
+                        returnedDataRadios[0]["fields"]["label"]["value"] = field_label;
+                        returnedDataRadios[0]["fields"]["name"]["value"] = field_name;
+                        returnedDataRadios[0]["fields"]["radios"]["value"] = data_radios;
+
+                        data_save.push(JSON.stringify(returnedDataRadios[0]));
+                    } else if (title == "File Button") {
+                        var field_label = $(FieldShellelements[i]).find('label.control-label').text();
+                        var field_name = $(FieldShellelements[i]).find('label').attr('for');
+
+                        var returnedDataButton = $.grep(data.buttons, function (element, index) {
+                            return element.title == title;
+                        });
+
+                        returnedDataButton[0]["fields"]["label"]["value"] = field_label;
+                        returnedDataButton[0]["fields"]["id"]["value"] = field_name;
+
+                        data_save.push(JSON.stringify(returnedDataButton[0]));
+
+                    } else if (title == "Multiple Checkboxes" || title == "Multiple Checkboxes Inline") {
+                        var field_label = $(FieldShellelements[i]).find('label.control-label').text();
+                        var field_name = $(FieldShellelements[i]).find('label').attr('for');
+                        if (title == "Multiple Checkboxes") {
+                            var field_checkboxes = $(FieldShellelements[i]).find('label.checkbox');
+                        } else {
+                            var field_checkboxes = $(FieldShellelements[i]).find('label.checkbox.inline');
+                        }
+                        var field_required = $(field_checkboxes[0]).find('input:checkbox').attr('required');
+                        var data_checkboxes = []
+                        for(ck = 0; ck < field_checkboxes.length; ck++){
+                            data_checkboxes.push($(field_checkboxes[ck]).text());
+                        }
+
+                        var returnedDataCheckboxes = $.grep(data.radios, function (element, index) {
+                            return element.title == title;
+                        });
+                        
+                        if (field_required == undefined) {
+                            returnedDataCheckboxes[0]["fields"]["required"]["value"] = false;
+                        } else {
+                            returnedDataCheckboxes[0]["fields"]["required"]["value"] = true;
+                        }
+                        returnedDataCheckboxes[0]["fields"]["label"]["value"] = field_label;
+                        returnedDataCheckboxes[0]["fields"]["name"]["value"] = field_name;
+                        returnedDataCheckboxes[0]["fields"]["checkboxes"]["value"] = data_checkboxes;
+
+                        data_save.push(JSON.stringify(returnedDataCheckboxes[0]));
+                    } else if (title == "Select Basic" || title == "Select Multiple") {
+                        var field_label = $(FieldShellelements[i]).find('label').text();
+                        var field_select = $(FieldShellelements[i]).find('select').attr("name");
+                        var field_class = $(FieldShellelements[i]).find('select').attr("class");
+                        var field_options = $(FieldShellelements[i]).find('option');
+                        var data_options = [];
+                        for(opt = 0; opt < field_options.length; opt++) {
+                            data_options.push($(field_options[opt]).text());
+                        }
+
+                        var returnedDataSelect = $.grep(data.selects, function (element, index) {
+                            return element.title == title;
+                        });
+
+                        // loop inputsize
+                        for(z = 0; z < returnedDataSelect[0]["fields"]["inputsize"]["value"].length; z++){
+                            if (returnedDataSelect[0]["fields"]["inputsize"]["value"][z]["value"] == field_class) {
+                                returnedDataSelect[0]["fields"]["inputsize"]["value"][z]["selected"] = true
+                            } else {
+                                returnedDataSelect[0]["fields"]["inputsize"]["value"][z]["selected"] = false
+                            }
+                        }
+
+                        returnedDataSelect[0]["fields"]["id"]["value"] = field_select;
+                        returnedDataSelect[0]["fields"]["label"]["value"] = field_label;
+                        returnedDataSelect[0]["fields"]["options"]["value"] = data_options;
+                        data_save.push(JSON.stringify(returnedDataSelect[0]));
+                    } else if (title == "Prepended Text" || title == "Prepended Checkbox") {
+                        var field_label = $(FieldShellelements[i]).find('label').text();
+                        var field_help = $(FieldShellelements[i]).find('.help-block').text();
+                        var field_required = $(FieldShellelements[i]).find('input[type="text"]').attr('required');
+                        if (title == "Prepended Text") {
+                            var field_name = $(FieldShellelements[i]).find('input').attr('name');
+                            var field_class = $('#'+field_name).attr('class');
+                        } else {
+                            var field_name = $(FieldShellelements[i]).find('input[type="text"]').attr('name');
+                            var field_class = $(FieldShellelements[i]).find('input[type="text"]').attr('class');
+                        }
+                        var field_placeholder = $(FieldShellelements[i]).find('input[type="text"]').attr('placeholder');
+
+                        var returnedDataPrepended = $.grep(data.inputs, function (element, index) {
+                            return element.title == title;
+                        });
+
+                        returnedDataPrepended[0]["fields"]["id"]["value"] = field_name;
+
+                        // loop inputsize
+                        for(z = 0; z < returnedDataPrepended[0]["fields"]["inputsize"]["value"].length; z++){
+                            if (returnedDataPrepended[0]["fields"]["inputsize"]["value"][z]["value"] == field_class) {
+                                returnedDataPrepended[0]["fields"]["inputsize"]["value"][z]["selected"] = true
+                            } else {
+                                returnedDataPrepended[0]["fields"]["inputsize"]["value"][z]["selected"] = false
+                            }
+                        }
+
+                        if (field_label != "") {
+                            returnedDataPrepended[0]["fields"]["label"]["value"] = field_label;
+                        }
+
+                        returnedDataPrepended[0]["fields"]["helptext"]["value"] = field_help;
+
+                        if (title == "Prepended Checkbox") {
+                            var field_checkbox = $(FieldShellelements[i]).find('input[type="checkbox"]').attr('checked');
+                            if (field_checkbox == undefined) {
+                                returnedDataPrepended[0]["fields"]["checked"]["value"] = false;
+                            } else {
+                                returnedDataPrepended[0]["fields"]["checked"]["value"] = true;
+                            }
+                        } else {
+                            var field_prepend = $(FieldShellelements[i]).find('.add-on').text();
+                            returnedDataPrepended[0]["fields"]["prepend"]["value"] = field_prepend;
+                        }
+
+                        if (field_required == undefined) {
+                            returnedDataPrepended[0]["fields"]["required"]["value"] = false;
+                        } else {
+                            returnedDataPrepended[0]["fields"]["required"]["value"] = true;
+                        }
+
+                        returnedDataPrepended[0]["fields"]["placeholder"]["value"] = field_placeholder;
+                        data_save.push(JSON.stringify(returnedDataPrepended[0]));
+
+                    } else if (title == "Appended Text" || title == "Appended Checkbox") {
+                        var field_label = $(FieldShellelements[i]).find('label').text();
+                        var field_help = $(FieldShellelements[i]).find('.help-block').text();
+                        var field_required = $(FieldShellelements[i]).find('input').attr('required');
+                        if (title == "Appended Text") {
+                            var field_name = $(FieldShellelements[i]).find('input').attr('name');
+                            var field_class = $('#'+field_name).attr('class');
+                        } else {
+                            var field_name = $(FieldShellelements[i]).find('input[type="text"]').attr('name');
+                            var field_class = $(FieldShellelements[i]).find('input[type="text"]').attr('class');
+                        }
+                        var field_placeholder = $(FieldShellelements[i]).find('input').attr('placeholder');
+
+                        var returnedDataAppended = $.grep(data.inputs, function (element, index) {
+                            return element.title == title;
+                        });
+
+                        returnedDataAppended[0]["fields"]["id"]["value"] = field_name;
+
+                        // loop inputsize
+                        for(z = 0; z < returnedDataAppended[0]["fields"]["inputsize"]["value"].length; z++){
+                            if (returnedDataAppended[0]["fields"]["inputsize"]["value"][z]["value"] == field_class) {
+                                returnedDataAppended[0]["fields"]["inputsize"]["value"][z]["selected"] = true
+                            } else {
+                                returnedDataAppended[0]["fields"]["inputsize"]["value"][z]["selected"] = false
+                            }
+                        }
+
+                        if (field_label != "") {
+                            returnedDataAppended[0]["fields"]["label"]["value"] = field_label;
+                        }
+
+                        returnedDataAppended[0]["fields"]["helptext"]["value"] = field_help;
+
+                        if (title == "Appended Checkbox") {
+                            var field_checkbox = $(FieldShellelements[i]).find('input[type="checkbox"]').attr('checked');
+                            if (field_checkbox == undefined) {
+                                returnedDataAppended[0]["fields"]["checked"]["value"] = false;
+                            } else {
+                                returnedDataAppended[0]["fields"]["checked"]["value"] = true;
+                            }
+                        } else {
+                            var field_append = $(FieldShellelements[i]).find('.add-on').text();
+                            returnedDataAppended[0]["fields"]["append"]["value"] = field_append;
+                        }
+
+                        if (field_required == undefined) {
+                            returnedDataAppended[0]["fields"]["required"]["value"] = false;
+                        } else {
+                            returnedDataAppended[0]["fields"]["required"]["value"] = true;
+                        }
+
+                        returnedDataAppended[0]["fields"]["placeholder"]["value"] = field_placeholder;
+                        data_save.push(JSON.stringify(returnedDataAppended[0]));
+
+                    } else if (title == "Button Drop Down") {
+
+                        var field_button_text = $(FieldShellelements[i]).find('button').text();
+                        var field_buttonoptions = $(FieldShellelements[i]).find('li');
+                        var value_buttonoptions = []
+                        for(li = 0; li < field_buttonoptions.length; li++) {
+                            value_buttonoptions.push($(field_buttonoptions[li]).text());
+                        }
+
+                        var field_label = $(FieldShellelements[i]).find('label').text();
+                        var field_required = $(FieldShellelements[i]).find('input').attr('required');
+                        var field_name = $(FieldShellelements[i]).find('input').attr('name');
+                        var field_class = $('#'+field_name).attr('class');
+                        var field_placeholder = $(FieldShellelements[i]).find('input').attr('placeholder');
+
+                        var returnedDataButtonDD = $.grep(data.inputs, function (element, index) {
+                            return element.title == title;
+                        });
+
+                        returnedDataButtonDD[0]["fields"]["buttonoptions"]["value"] = value_buttonoptions;
+
+                        returnedDataButtonDD[0]["fields"]["id"]["value"] = field_name;
+                        returnedDataButtonDD[0]["fields"]["buttontext"]["value"] = field_button_text;
+
+                        // loop inputsize
+                        for(z = 0; z < returnedDataButtonDD[0]["fields"]["inputsize"]["value"].length; z++){
+                            if (returnedDataButtonDD[0]["fields"]["inputsize"]["value"][z]["value"] == field_class) {
+                                returnedDataButtonDD[0]["fields"]["inputsize"]["value"][z]["selected"] = true
+                            } else {
+                                returnedDataButtonDD[0]["fields"]["inputsize"]["value"][z]["selected"] = false
+                            }
+                        }
+
+                        if (field_label != "") {
+                            returnedDataButtonDD[0]["fields"]["label"]["value"] = field_label;
+                        }
+
+                        if (field_required == undefined) {
+                            returnedDataButtonDD[0]["fields"]["required"]["value"] = false;
+                        } else {
+                            returnedDataButtonDD[0]["fields"]["required"]["value"] = true;
+                        }
+
+                        returnedDataButtonDD[0]["fields"]["placeholder"]["value"] = field_placeholder;
+                        data_save.push(JSON.stringify(returnedDataButtonDD[0]));
+                    } else if (title == "Text Area") {
+                        var field_label = $(FieldShellelements[i]).find('label').text();
+                        var field_name = $(FieldShellelements[i]).find('textarea').attr('name');
+                        var field_textarea = $(FieldShellelements[i]).find('textarea').text();
+
+                        var returnedDataTextArea = $.grep(data.inputs, function (element, index) {
+                            return element.title == title;
+                        });
+
+                        returnedDataTextArea[0]["fields"]["id"]["value"] = field_name;
+                        returnedDataTextArea[0]["fields"]["label"]["value"] = field_label;
+                        returnedDataTextArea[0]["fields"]["textarea"]["value"] = field_textarea;
+                        data_save.push(JSON.stringify(returnedDataTextArea[0]));
+                    } else {
+                        var field_label = $(FieldShellelements[i]).find('label').text();
+                        var field_help = $(FieldShellelements[i]).find('.help-block').text();
+                        var field_required = $(FieldShellelements[i]).children().children().children('input').attr('required');
+                        var field_name = $(FieldShellelements[i]).children().children().children('input').attr('name');
+                        var field_class = $(FieldShellelements[i]).children().children().children('input').attr('class');
+                        var field_placeholder = $(FieldShellelements[i]).children().children().children('input').attr('placeholder');
+                        var returnedDataInput = $.grep(data.inputs, function (element, index) {
+                            return element.title == title;
+                        });
+
+                        if (title == "Search Input") {
+                            field_class = field_class.split(' ')[0]
+                        }
+
+                        if (returnedDataInput[0] == null) {
+                            var form_title_head = { "title" : "Form Name"
+                                    , "fields": {
+                                      "name" : {
+                                        "label"   : "Form Name"
+                                        , "type"  : "input"
+                                        , "value" : form_title
+                                      }
+                                    }
+                                }
+
+                            data_save.push(JSON.stringify(form_title_head));
+                        } else {
+                            returnedDataInput[0]["fields"]["id"]["value"] = field_name;
+
+                            // loop inputsize
+                            for(z = 0; z < returnedDataInput[0]["fields"]["inputsize"]["value"].length; z++){
+                                if (returnedDataInput[0]["fields"]["inputsize"]["value"][z]["value"] == field_class) {
+                                    returnedDataInput[0]["fields"]["inputsize"]["value"][z]["selected"] = true
+                                } else {
+                                    returnedDataInput[0]["fields"]["inputsize"]["value"][z]["selected"] = false
+                                }
+                            }
+
+                            if (field_label != "") {
+                                returnedDataInput[0]["fields"]["label"]["value"] = field_label;
+                            }
+
+                            returnedDataInput[0]["fields"]["helptext"]["value"] = field_help;
+
+                            if (field_required == undefined) {
+                                returnedDataInput[0]["fields"]["required"]["value"] = false;
+                            } else {
+                                returnedDataInput[0]["fields"]["required"]["value"] = true;
+                            }
+
+                            returnedDataInput[0]["fields"]["placeholder"]["value"] = field_placeholder;
+                            data_save.push(JSON.stringify(returnedDataInput[0]));
+                        }
+                    }                
+                }
+
+                // alert(data_save);
+
+                $.ajax({
+                    type:"POST",
+                    cache:false,
+                    url:"{% url 'form_edit' key=lookup.id%}",
+                    data:{
+                        'form_content': JSON.stringify(data_save),
+                        'form_department': department,
+                        'form_title':form_title,
+                        'csrfmiddlewaretoken':'{{ csrf_token }}'
+                    },
+                    beforeSend:function(){
+
+                    },
+                    success:function(resp){
+                        if (resp['status']) {
+                            if (window.location != window.parent.location) {
+                                window.parent.location = "{% url 'forms_company' %}";
+                            }
+                        } else {
+                            alert(JSON.stringify(resp['msg']));
+                        }
+                    }
+
+                });
+            }
+
+        {% endif %}
+        </script>
+    </body>
+</html>

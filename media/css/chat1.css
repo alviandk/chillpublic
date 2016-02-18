@@ -1,0 +1,100 @@
+body{
+            background-color: transparent;
+        }
+        input:focus{
+                outline:none;
+            }
+            #message_body {
+                    list-style: none;
+                    margin:5px 2px 0px 2px !important; 
+                    padding:0px 4px 0px 4px !important; 
+            }
+
+            .li_chat{
+                background-color:#F0FFFF; color:#000;
+                -webkit-box-shadow: 2px 2px 2px 2px #050505;
+                box-shadow: 2px 2px 2px 2px #050505;
+                margin-bottom:10px;
+            }
+
+            .li_chat_new{
+                width:100%; 
+                float:left; 
+                margin-bottom: 10px; 
+                margin-top:10px;
+            }
+            .span_chat_new{
+                color: #000; 
+                padding:5px; 
+                box-shadow: 2px 2px 2px 2px #050505;
+            }
+
+        .test1{
+            float:right;
+            position: fixed;
+            bottom: 10px;
+            right: 0;
+        }
+
+        .popup-box{
+            /*float:right;*/
+            /*height: 380px;*/
+            background-color: rgb(237, 239, 244);
+            width: 300px;
+            border: 1px solid rgba(29, 49, 91, .3);
+            /*position: relative;*/
+            /*position: fixed;*/
+            /*float:right;*/
+            /*top:257px;*/
+            /*right:10px;*/
+            /*bottom: 2px;*/
+        }
+        .popup-box .popup-head{
+            background-color: #6d84b4;
+            padding: 5px;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            clear: both;
+        }
+        .popup-box .popup-head .popup-head-left{
+                float: left;
+            }       
+            .popup-box .popup-head .popup-head-right{
+                float: right;
+                opacity: 0.5;
+            }
+            .popup-box .popup-head .popup-head-right a{
+                text-decoration: none;
+                color: inherit;
+            }
+        .popup-box .popup-messages{
+                height: 300px;
+                overflow-y: auto;
+                /*display: none;*/
+            }
+            .popup-box .popup-input{
+                height: 27px;
+                /*display: none;*/
+            }
+            .popup-input input{
+                width: 100%;
+            }
+            input{
+                padding:10px 0 10px 0;
+                /*line-height: 28px;*/
+            }
+            .chat-settings{
+                /*color:#fff; */
+                text-align:center; 
+                margin:0 5px 0 5px;
+                padding:5px;
+            }
+
+            a{
+                color:#c0c0c0;
+            }
+
+            a:hover{
+                color:#fff; 
+            }

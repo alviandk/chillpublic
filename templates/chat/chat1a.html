@@ -1,0 +1,198 @@
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+<style type="text/css">
+    .chat-popup
+                {
+                    display: none !important;
+                }
+            
+            
+            .popup-box
+            {
+                display: none;
+                position: fixed;
+                bottom: 0px;
+                right: 220px;
+                height: 285px;
+                background-color: rgb(237, 239, 244);
+                width: 300px;
+                border: 1px solid rgba(29, 49, 91, .3);
+            }
+            
+            .popup-box .popup-head
+            {
+                background-color: #6d84b4;
+                padding: 5px;
+                color: white;
+                font-weight: bold;
+                font-size: 14px;
+                clear: both;
+            }
+            
+            .popup-box .popup-head .popup-head-left
+            {
+                float: left;
+            }
+            
+            .popup-box .popup-head .popup-head-right
+            {
+                float: right;
+                opacity: 0.5;
+            }
+            
+            .popup-box .popup-head .popup-head-right a
+            {
+                text-decoration: none;
+                color: inherit;
+            }
+            
+            .popup-box .popup-messages
+            {
+                height: 80%;
+                overflow-y: scroll;
+            }
+
+            .popup-box .popup-input
+            {
+                height: 20%;
+            }
+            .popup-input input
+            {
+                width: 100%;
+            }
+</style>
+
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
+{% load socketio_tags %}
+{% socketio %}
+<script type="text/javascript">
+
+    var addItem = function(selector, item) {
+        var template = $(selector).find('script[type="text/x-jquery-tmpl"]');
+        template.tmpl(item).prependTo(selector);
+    };
+
+    var addMessage = function(data) {
+        var d = new Date();
+        var win = $(window), doc = $(window.document);
+        var bottom = win.scrollTop() + win.height() == doc.height();
+        // data.user = "{{ user }}"
+        data.time = $.map([d.getHours(), d.getMinutes(), d.getSeconds()],
+                          function(s) {
+                              s = String(s);
+                              return (s.length == 1 ? '0' : '') + s;
+                          }).join(':');
+        addItem('#message_body', data);
+        if (bottom) {
+            window.scrollBy(0, 10000);
+        }
+    };
+
+    var socket;
+
+    var connected = function() {
+        socket.subscribe('room-' + $("#jiah").text());
+        socket.send({room: $("#jiah").text(), action: 'start', name: name});
+    };
+
+    var messaged = function(data) {
+        addMessage(data);
+    };
+
+    var start = function() {
+        socket = new io.Socket();
+        socket.connect();
+        socket.on('connect', connected);
+        socket.on('message', messaged);
+        // socket.subscribe('room-1');
+    };
+
+    start();
+</script>
+<script>
+    // var val = '0';
+    // $(document).ready(function(){
+    // var val = $("#jiah").text();
+    //     window.room = val;
+    // });
+</script>
+<script type="text/javascript">
+    $(document).ready(function(){
+    $('.input_chat').keypress(function (e) {
+        if (e.which == 13) {
+
+            var message = $(".input_chat").val();
+            var id      = $("#jiah").text();
+            $.ajax({
+                type:"POST",
+                cache:false,
+                url:"{% url 'route' %}",
+                data:{
+                    'csrfmiddlewaretoken':'{{ csrf_token }}',
+                    'id': id,
+                    'text':message
+                },
+                success:function(resp){
+                    console.log(resp);
+                    $(".input_chat").val('');
+                    // $('#message_body').append(resp);
+                }
+            });
+
+
+            // $(".input_chat").val('');
+        }
+    });
+});
+</script>
+
+<ul id="messages">
+    <script type="text/x-jquery-tmpl">
+        <li>(${time}): ${message}</li>
+    </script>
+</ul>
+<div class="row">
+    <div class="col-sm-8">
+        <div class="ticket_open">
+
+            <div id="comment_list">
+
+                <script type="text/x-jquery-tmpl">
+                <a href="#" class="open_ticket_comment">
+                    <div class="open_ticket_thumnail">
+                        <div class="btn-group">
+                            <i class="fa fa-user"></i>
+                        </div>
+                    </div>
+                    <span>${message}</span>
+                    <p>${time}</p>
+                </script>
+
+            </div>
+
+
+            <!-- chat here -->
+            <div class="popup-box chat-popup" id="qazy" style="right: 220px; display: block;">
+                <div class="popup-head">
+                    <div id="jiah"></div>
+                    <div class="popup-head-left"></div>
+                    <div class="popup-head-right"><a href="javascript:close_popup('qazy');">✕</a></div>
+                    <div style="clear: both"></div>
+                </div>
+                <div class="popup-messages" id="message_body">
+                    <script type="text/x-jquery-tmpl">
+                        ${message}
+                    </script>
+                </div>
+                <div class="popup-input">
+                    <input type="text" class="input_chat">
+                </div>
+            </div>
+            <!-- end chat -->
+
+            
+        </div>
+    </div>
+    <div class="col-sm-4"></div>
+</div>

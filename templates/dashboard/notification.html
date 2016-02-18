@@ -1,0 +1,144 @@
+{% extends 'dashboard/base.html' %}
+{% block breadcumb %}
+<div class="pull-left breadcrumb_admin clear_both">
+    <div class="pull-left page_title theme_color">
+        <h1>dashboard</h1>
+        <h2 class="">Notification</h2>
+    </div>
+    <div class="pull-right">
+        <ol class="breadcrumb">
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="active">Notification</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+{% block body %}
+<div class="row">
+    <div class="col-lg-12">
+        <section class="panel default blue_title h2">
+            <div class="panel-heading">Notification</div>
+            <div class="panel-body">
+                <div class="todo_body">
+                    <h5 class="orange_bg"> <i class="fa fa-warning"></i>  Unread Notification (
+                        <small>{{unread_notification.count}}</small>
+                        )
+                    </h5>
+                    {% for i in unread_notification %}
+                    <ul class="group_sortable1">
+                        <li>
+                            {% if i.notif_type == 1 %}
+                                <!-- <span class=""><input name="" type="checkbox" value="" /></span> -->
+                                <p><strong>Ticket {{i.ref_id}}</strong>
+                                    - Ticket {{i.ref_id}} state change into {{i.data.get_status_display}} . 
+                                    <!-- [ <a class="font-xs" href="/dashboard/tickets/view1/?id={{i.ref_id}}">More Details</a>] -->
+                                    [<a href="#" onclick="update_notification( {{i.id}}, {{ i.notif_type }}, {{i.ref_id}} )">More Details</a>]
+                                    {% if user.agent %}
+                                        <b>{{i.data.author}} change ticket #{{i.ref_id}} state into {{i.data.get_status_display}}</b>
+                                    {% else %}
+                                        <b>{{i.data.assigned.user}} change ticket #{{i.ref_id}} state into {{i.data.get_status_display}}</b>
+                                    {% endif %}
+                                </p>
+                            {% elif i.notif_type == 3 %}
+                                <p><strong>New Request to Add Agent</strong>
+                                    - agent {{ i.data.first_name }} {{ i.data.last_name }} status {{i.data.get_status_display}} . 
+                                    <!-- [ <a class="font-xs" href="/dashboard/tickets/view1/?id={{i.ref_id}}">More Details</a>] -->
+                                    [<a href="#" onclick="update_notification( {{i.id}}, {{ i.notif_type }}, {{i.ref_id}} )">More Details</a>]
+                                    {% if user.company %}
+                                        <b>Department Head - {{ i.data.department.get_head.user.first_name }} {{ i.data.department.get_head.user.last_name }} New Request to Add Agent Name {{ i.data.first_name }} {{ i.data.last_name }}</b>
+                                    {% else %}
+                                        <b>{{i.data.assigned.user}} change ticket #{{i.ref_id}} state into {{i.data.get_status_display}}</b>
+                                    {% endif %}
+                                </p>
+                            {% else %}
+                                <!-- <span class=""><input name="" type="checkbox" value="" /></span> -->
+                                <p>
+                                    {% for a in i.data.ticket_set.all %}
+                                        {% if forloop.first %} 
+                                            <strong>Ticket {{a.id}}</strong>
+                                            - New Comment in ticket {{a.id}} .
+                                            <!-- [ <a class="font-xs" href="/dashboard/tickets/view1/?id={{a.id}}">More Details</a>] -->
+                                            [ <a href="#" onclick="update_notification({{i.id}}, {{ i.notif_type }}, {{a.id}})">More Details</a> ]
+                                            <b>{{i.data|truncatechars:'50'}}</b>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                </p>
+                            {% endif %}
+                        </li>
+                    </ul>
+                    {% endfor %}
+                    <h5 class="blue_bg"> <i class="fa fa-warning"></i> Read Notification (
+                        <small>{{read_notification.count}}</small>
+                        )
+                    </h5>
+                    {% for i in read_notification %}
+                    <ul class="group_sortable1">
+                        <li>
+                            {% if i.notif_type == 1 %}
+                                <!-- <span class=""><input name="" type="checkbox" value="" /></span> -->
+                                <p><strong>Ticket {{i.ref_id}}</strong>
+                                    - Ticket {{i.ref_id}} state change into {{i.data.get_status_display}} . 
+                                    [ <a class="font-xs" href="/dashboard/tickets/view1/?id={{i.ref_id}}">More Details</a>]
+                                    {% if user.agent %}
+                                        <b>{{i.data.author}} change ticket #{{i.ref_id}} state into {{i.data.get_status_display}}</b>
+                                    {% else %}
+                                        <b>{{i.data.assigned.user}} change ticket #{{i.ref_id}} state into {{i.data.get_status_display}}</b>
+                                    {% endif %}
+                                </p>
+                            {% elif i.notif_type == 3 %}
+                                <p><strong>New Request to Add Agent</strong>
+                                    - agent {{ i.data.first_name }} {{ i.data.last_name }} status {{i.data.get_status_display}} . 
+                                    <!-- [ <a class="font-xs" href="/dashboard/tickets/view1/?id={{i.ref_id}}">More Details</a>] -->
+                                    [<a class="font-xs" href="/dashboard/agents/?from=notification">More Details</a>]
+                                    {% if user.company %}
+                                        <b>Department Head - {{ i.data.department.get_head.user.first_name }} {{ i.data.department.get_head.user.last_name }} New Request to Add Agent Name {{ i.data.first_name }} {{ i.data.last_name }}</b>
+                                    {% else %}
+                                        <b>{{i.data.assigned.user}} change ticket #{{i.ref_id}} state into {{i.data.get_status_display}}</b>
+                                    {% endif %}
+                                </p>
+                            {% else %}
+                                <!-- <span class=""><input name="" type="checkbox" value="" /></span> -->
+                                <p>
+                                    {% for a in i.data.ticket_set.all %}
+                                        {% if forloop.first %} 
+                                            <strong>Ticket {{a.id}}</strong>
+                                            - New Comment in ticket {{a.id}} .
+                                            [ <a class="font-xs" href="/dashboard/tickets/view1/?id={{a.id}}">More Details</a>]
+                                            <b>{{i.data|truncatechars:'50'}}</b>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                </p>
+                            {% endif %}
+                        </li>
+                    </ul>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+    function update_notification(obj, notif_type, id){
+            // alert('aaa');
+            // return false;
+            $.ajax({
+                type:"GET",
+                url:"/api/update_notification/?id="+obj,
+                cache:false,
+                success:function(resp){
+                    // console.log(resp);
+                    if (notif_type == "1" | notif_type == 1) {
+                        window.location = '/dashboard/tickets/view1/?id='+id;
+                    } else {
+                        window.location = '/dashboard/agents/?from=notification';
+                    }
+                }
+            });
+        }
+</script>
+{% endblock %}

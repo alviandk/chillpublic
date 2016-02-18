@@ -1,0 +1,86 @@
+{% extends 'dashboard/base.html' %}
+
+{% block breadcumb %}
+        <div class="pull-left breadcrumb_admin clear_both">
+            <div class="pull-left page_title theme_color">
+                <h1>dashboard</h1>
+            </div>
+        </div>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-lg-12">
+        <section class="panel default blue_title h2">
+        </section>
+    </div>
+</div>
+<div class="row">
+	<div class="col-sm-3 col-sm-6">
+        <div class="information green_info">
+            <div class="information_inner">
+                <div class="info green_symbols"><i class="fa fa-users icon" style="margin-left:13px;"></i></div>
+                <span><a href="{% url 'agents' %}" style="color: #2eb79d;">My Agents</a></span>
+                <h1>{{ head_company.agents|length }}</h1>
+                <div class="infoprogress_green">
+                    <div class="greenprogress"></div>
+                </div>
+                <b class=""><a href="javascript:;"><small>Performance</small></a></b>
+                <b class=""><a href="{% url 'agent_create' %}"><small style="margin-left: 20px;">Add New</small></a></b>
+                <div class="pull-right" id="work-progress1">
+                    <canvas style="display: inline-block; width: 47px; height: 25px; vertical-align: top;" width="47" height="25"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3 col-sm-6">
+        <div class="information blue_info">
+            <div class="information_inner">
+                <div class="info blue_symbols"><i class="fa fa-building-o icon" style="margin-left: 20px;"></i></div>
+                <span style="margin-top:25px;"><a href="{% url 'departments' %}" style="color: #00a2d3;">My Departments</a></span>
+                <!-- <h1 class="bolded">0</h1>
+                <div class="infoprogress_blue">
+                    <div class="blueprogress"></div>
+                </div> -->
+                <!-- <b class=""><small>Better than yesterday ( 7,5% )</small></b> -->
+                <div class="pull-right" id="work-progress2">
+                    <canvas style="display: inline-block; width: 47px; height: 25px; vertical-align: top;" width="47" height="25"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3 col-sm-6">
+        <div class="information red_info">
+            <div class="information_inner">
+                <div class="info red_symbols"><i class="fa fa-ticket icon" style="margin-left:15px;"></i></div>
+                <span style="margin-top:25px;"><a href="{% url 'escalated_tickets' %}" style="color: #e84c3d;">Escalated Tickets</a></span>
+                <!-- <h1 class="bolded">0</h1>
+                <div class="infoprogress_red">
+                    <div class="redprogress"></div>
+                </div> -->
+                <!-- <b class=""><small>Better than yesterday ( 7,5% )</small></b> -->
+                <div class="pull-right" id="work-progress3">
+                    <canvas style="display: inline-block; width: 47px; height: 25px; vertical-align: top;" width="47" height="25"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3 col-sm-6">
+        <div class="information green_info">
+            <div class="information_inner">
+                <div class="info green_symbols"><i class="fa fa-bars icon" style="margin-left:20px;"></i></div>
+                <span style="margin-top:25px;">Brand Value</span>
+                <!-- <h1 class="bolded">0</h1>
+                <div class="infoprogress_green">
+                    <div class="greenprogress"></div>
+                </div> -->
+                <!-- <b class=""><small>Better than yesterday ( 7,5% )</small></b> -->
+                <div class="pull-right" id="work-progress3">
+                    <canvas style="display: inline-block; width: 47px; height: 25px; vertical-align: top;" width="47" height="25"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

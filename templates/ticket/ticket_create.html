@@ -1,0 +1,113 @@
+{% extends 'dashboard/base.html' %}
+
+{% block js %}
+
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+    // $(".datepicker").datepicker({dateFormat: 'yy-mm-dd',});
+    $('select[name=company]').change(function(){
+        var key = $(this).val();
+        $.ajax({
+            type:"GET",
+            cache:false,
+            url:"{% url 'get_department_ajax' %}?key="+key,
+            success:function(resp){
+                $('select[name=department]').html(resp);
+                $('select[name=department]').prop('disabled', false);
+            }
+        });
+    });
+
+    $("#ticket_form").submit(function(){
+        var url = "{% url 'ticket_create' %}";
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: $("#ticket_form").serialize(),
+            success: function(data)
+            {
+               window.location = '/dashboard/tickets';
+            }
+        });
+    return false;
+    });
+
+});
+</script>
+{% endblock %}
+
+
+{% block breadcumb %}
+                    <div class="pull-left breadcrumb_admin clear_both">
+                        <div class="pull-left page_title theme_color">
+                            <h1>dashboard</h1>
+                            <h2 class="">Offline Ticket</h2>
+                        </div>
+                        <div class="pull-right">
+                            <ol class="breadcrumb">
+                                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                                <li class="active">Offline Ticket</li>
+                            </ol>
+                        </div>
+                    </div>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="block-web">
+            <div class="header">
+                <div class="actions"> <a class="minimize" href="#"><i class="fa fa-chevron-down"></i></a><a class="close-down" href="#"><i class="fa fa-times"></i></a> </div>
+                <h3 class="content-header"><span class="fa fa-headphones"></span> Offline Ticket</h3>
+            </div>
+            <div class="porlets-content">
+                <form id="ticket_form" action="." method="POST" class="form-horizontal row-border">{% csrf_token %}
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Select Company</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="company" id="company">
+                                    <option value="">--</option>
+                                    {% for i in company_list %}
+                                        <option value="{{i.id}}"> {{i.company_name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Select Department</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="department" id="department" disabled>
+
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Title</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="title" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Description</label>
+                            <div class="col-sm-9">
+                                <textarea class="form-control" name="description"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary">Submit</button>
+                    </div>
+                    <!--/form-group-->
+                </form>
+            </div>
+            <!--/porlets-content-->
+        </div>
+        <!--/block-web-->
+    </div>
+    <!--/col-md-6-->
+</div>
+{% endblock %}

@@ -1,0 +1,342 @@
+{% extends 'dashboard/base.html' %}
+
+{% block js %}
+
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
+<script src="{{MEDIA_URL}}js/jquery-ui.js"></script>
+
+{% load socketio_tags %}
+{% socketio %}
+
+<script type="text/javascript">
+    // $(document).ready(function(){
+    //     $('.input_chat').keypress(function (e) {
+    //         if (e.which == 13) {
+
+    //             var get_id = this.id;
+    //             var id = get_id.split('_')[1];
+    //             alert(id);
+    //             var message = $(".input_chat").val();
+    //             $.ajax({
+    //                 type:"POST",
+    //                 cache:false,
+    //                 url:"{% url 'comment_create' %}",
+    //                 data:{
+    //                     'csrfmiddlewaretoken':'{{ csrf_token }}',
+    //                     'id':id,
+    //                     'text':message
+    //                 },
+    //             });
+
+    //             $(".input_chat").val('');
+    //         }
+    //     });
+    // });
+</script>
+
+<script type="text/javascript">
+function check_subscribe(obj) {
+    var company = $('select[name=company]').val();
+    var department = $('select[name=department]').val();
+    if (department) {
+        $.ajax({
+            type:"GET",
+            cache:false,
+            url:"{% url 'get-subscribe-provider' %}?company="+company+"&department="+department,
+            success:function(resp){
+                // console.log(resp)
+                if(resp == 'False'){
+                    $("#group_department_company").hide();
+                    $("#group_title_description").show();
+                    $("#next-button").hide();
+                    $("#chat-button").show();
+                }
+                else{
+                    $("#group_account_details").show();
+                    $("#add-provider").show();
+                    $("#next-button").hide();
+                }
+
+            }
+        });
+    } else {
+        $('#alertModal').modal('show');
+        $('#alertModal .modal-body').text('Please fill empty column');
+    }
+}
+
+function add_provider(obj){
+    var company             = $('select[name=company]').val();
+    var department          = $('select[name=department]').val();
+    var account_number      = $('input[name=account_number]').val();
+    var mobile_registered   = $('input[name=mobile_registered]').val();
+    var dob                 = $('input[name=dob]').val();
+    var mothers             = $('input[name=mothers]').val();
+
+    if (account_number && mobile_registered && dob && mothers) {
+        $.ajax({
+            type:"POST",
+            cache:false,
+            data:{
+                "csrfmiddlewaretoken":"{{ csrf_token }}",
+                "company":company,
+                "product":department,
+                "acount_number":account_number,
+                "registered_mobile_number":mobile_registered,
+                "dob":dob,
+                "mothers":mothers,
+            },
+            url:"{% url 'add-new-provider' %}",
+            beforeSend:function(){
+                $(obj).text('Loading...');
+            },
+            success:function(resp){
+                console.log(resp);
+                if(resp == 'True'){
+                    $("#group_account_details").hide();
+                    $("#group_department_company").hide();
+                    $("#group_title_description").show();
+                    $(obj).text('Start Chat');
+                    $("#add-provider").hide();
+                    $("#chat-button").show();
+                }
+
+                $(obj).text('Start Chat');
+                $(".popup-box").removeClass( "chat-popup" );
+                $(".popup-head-left").text(title);
+            }
+        });
+    }
+    else{
+        $('#alertModal').modal('show');
+        $('#alertModal .modal-body').text('Please fill empty column');
+    }
+}
+
+// function addItem(selector, item){
+//     var template = $(selector).find('script[type="text/x-jquery-tmpl"]');
+//     template.tmpl(item).prependTo(selector);
+// }
+
+// function addMessage(data){
+//     var d = new Date();
+//     var win = $(window), doc = $(window.document);
+//     var bottom = win.scrollTop() + win.height() == doc.height();
+//     data.time = $.map([d.getHours(), d.getMinutes(), d.getSeconds()],
+//                       function(s) {
+//                           s = String(s);
+//                           return (s.length == 1 ? '0' : '') + s;
+//                       }).join(':');
+//     addItem('#message_body', data);
+//     if (bottom) {
+//         window.scrollBy(0, 10000);
+//     }
+// }
+
+// var socket = new io.Socket();
+
+// function connected(id){
+//     socket.subscribe('room-' + id);
+//     socket.send({room: id, action: 'start'});
+// }
+
+// function messaged(data){
+//     addMessage(data);
+// }
+
+// function start(key){
+//     socket.connect();
+//     socket.on('connect', connected(key));
+//     socket.on('message', messaged());
+// }
+
+function offline_ticket(obj) {
+
+    var department = $('select[name=department]').val();
+    var title = $('input[name=title]').val();
+    var description = $('textarea[name=description]').val();
+    if (title && description) {
+        $.ajax({
+            type:"POST",
+            cache:false,
+            data:{
+                "csrfmiddlewaretoken":"{{ csrf_token }}",
+                "department":department,
+                "title":title,
+                "description":description
+            },
+            url:"{% url 'ticket_create' %}",
+            beforeSend:function(){
+                $(obj).text('Loading...');
+            },
+            success:function(resp){
+                $(obj).text('Start Chat');
+                $(".popup-box").removeClass( "chat-popup" );
+                var id= resp.key;
+                $(id).appendTo("#jiah");
+                // $(".popup-head-left").text('Connecting to Agent.....');
+
+                // var chat_id = 'client_'+resp.key;
+                // $(".input_chat").attr('id', chat_id);
+
+                // window.room = resp.key;
+
+                // start(resp.key);
+                
+            }
+        });
+    } else {
+        alert('Please fill empty column');
+        return false;
+    }
+}
+
+$(document).ready(function(){
+    $(".datepicker").datepicker({dateFormat: 'yy-mm-dd',});
+    $('select[name=company]').change(function(){
+        var key = $(this).val();
+        $.ajax({
+            type:"GET",
+            cache:false,
+            url:"{% url 'get_department_ajax' %}?key="+key,
+            success:function(resp){
+                $('select[name=department]').html(resp);
+                $('select[name=department]').prop('disabled', false);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+
+{% block breadcumb %}
+                    <div class="pull-left breadcrumb_admin clear_both">
+                        <div class="pull-left page_title theme_color">
+                            <h1>dashboard</h1>
+                            <h2 class="">Live Support</h2>
+                        </div>
+                        <div class="pull-right">
+                            <ol class="breadcrumb">
+                                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                                <li class="active">Live Support</li>
+                            </ol>
+                        </div>
+                    </div>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="block-web">
+            <div class="header">
+                <div class="actions"> <a class="minimize" href="#"><i class="fa fa-chevron-down"></i></a><a class="close-down" href="#"><i class="fa fa-times"></i></a> </div>
+                <h3 class="content-header"><span class="fa fa-headphones"></span> Connect to an agent for support</h3>
+            </div>
+            <div class="porlets-content">
+                <form id="ticket_form" action="" method="POST" class="form-horizontal row-border">{% csrf_token %}
+                    <div id="group_department_company">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Select Company</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="company" id="company">
+                                    <option value="">--</option>
+                                    {% for i in company_list %}
+                                        <option value="{{i.id}}"> {{i.company_name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <!--/col-sm-9-->
+                        </div>
+                        <!--/form-group-->
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Select Department</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="department" id="department" disabled>
+
+                                </select>
+                            </div>
+                            <!--/col-sm-9-->
+                        </div>
+                    </div>
+                    <!--/form-group-->
+                    <div id="group_account_details" style="display:none;">
+                        <h3 style="text-align:center;">Account Details</h3>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Account Number</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="account_number" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Registered Mobile Number</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="mobile_registered" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Date of Birth</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="dob" class="form-control datepicker">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Mother's Maiden Name</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="mothers" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="group_title_description" style="display:none;">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Title</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="title" class="form-control">
+                            </div>
+                        </div>
+                        <!--/form-group-->
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Description</label>
+                            <div class="col-sm-9">
+                                <textarea class="form-control" name="description"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bottom" id="next-button">
+                        <div class="btn btn-primary" onclick="check_subscribe(this);">Next</div>
+                    </div>
+                    <div class="bottom" id="add-provider" style="display:none;">
+                        <div class="btn btn-primary" onclick="add_provider(this);">Add Provider</div>
+                    </div>
+                    <div class="bottom" id="chat-button" style="display:none;">
+                        <div class="btn btn-primary" onclick="offline_ticket(this);">Start Chat</div>
+                    </div>
+                    <!--/form-group-->
+                </form>
+                <!-- chat here -->
+            <!-- <div class="chat-popup popup-box" id="qazy" style="right: 220px; display: block;">
+                <div class="popup-head">
+                    <div class="popup-head-left"></div>
+                    <div class="popup-head-right"><a href="javascript:close_popup('qazy');">✕</a></div>
+                    <div style="clear: both"></div>
+                </div>
+                <div class="popup-messages" id="message_body">
+                    <script type="text/x-jquery-tmpl">
+                        ${message}
+                    </script>
+                </div>
+                <div class="popup-input">
+                    <input type="text" class="input_chat" id="client_{{i.id}}">
+                </div>
+            </div> -->
+                {% include 'chat/chat1a.html' %}
+            <!-- end chat -->
+            </div>
+            <!--/porlets-content-->
+        </div>
+        <!--/block-web-->
+    </div>
+    <!--/col-md-6-->
+</div>
+{% endblock %}

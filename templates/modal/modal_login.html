@@ -1,0 +1,110 @@
+{% block css %}
+    <style>
+    
+
+    .nav-inlines li{
+        display:inline;
+    }
+    .nav-inlines li a{
+        padding: 5px 20px;
+        line-height: 60px;
+        font-size: 15px;
+    }
+
+    .nav-inline li a:hover{
+        color: #c0c0c0;
+    }
+</style>
+{% endblock %}
+
+<div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="myModalLabel">Login to your account</h4>
+            </div>
+            <div class="modal-body">
+                <form role="form" action="{% url 'login' %}" method="POST" id="login_form">{% csrf_token %}
+
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">
+                                <i class="glyphicon glyphicon-envelope"></i>
+                            </div>
+                            <input class="form-control" name="email" type="email" placeholder="E-mail">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">
+                                <i class="glyphicon glyphicon-lock"></i>
+                            </div>
+                            <input class="form-control" name="password" type="password" placeholder="Password">
+                        </div>
+                    </div>
+
+                    <div class="center-block" style="text-align:center;">
+                        <button type="submit" class="btn btn-primary">Login</button><br />
+                        <a href="#">Forgot Password</a>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="center-block" style="text-align:center;">
+                    <span> or Login Using </span><br />
+                    <ul class="nav-inlines">
+                            <li> 
+                                <a href="javascript:void(0);" data-toggle="dropdown" style="background: url({{STATIC_URL}}icon/facebook-logo.png) no-repeat;"></a>
+                            </li>
+                            <li>
+                                <a href="javascript:void(0);" data-toggle="dropdown" style="background: url({{STATIC_URL}}icon/gplus-logo.png) no-repeat;"></a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="javascript:void(0);" data-toggle="dropdown" style="background: url({{STATIC_URL}}icon/twitter-logo.png) no-repeat;"></a>
+                            </li>
+                        </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block js %}
+
+
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('#login_form').submit(function(){
+            var thisForm = $(this);
+            $.ajax({
+                type: thisForm.attr('method'),
+                url: thisForm.attr('action'),
+                data: thisForm.serialize(),
+                success: function (data) {
+                    console.log(data);
+                    if(data.code == '2' || data.code == '3'){
+                        $( "div" ).remove( ".alert" );
+                        var message_response = '<div class="alert alert-danger">'+data.message+'</div>';
+                        $(message_response).insertBefore( "form" );
+                    }
+                    else{
+                        window.location = "/";
+                    }
+                },
+            });
+            return false;
+        });
+
+        $('.modal').on('hidden.bs.modal', function(){
+            $( "div" ).remove( ".alert" );
+            $(this).find('form')[0].reset();
+
+        });
+
+    });
+</script>
+
+
+{% endblock %}
+

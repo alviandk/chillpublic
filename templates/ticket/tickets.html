@@ -1,0 +1,174 @@
+{% extends 'dashboard/base.html' %}
+
+{% block css %}
+<style>
+    .tab-content {border-left:1px solid #DDD;border-right:1px solid #DDD;border-bottom:1px solid #DDD;}
+    .panel {border:1px solid #DDD;}
+</style>
+<link rel="stylesheet" href="http://cdn.datatables.net/1.10.3/css/jquery.dataTables.css">
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+function ajax_load(obj){
+    $.ajax({
+        type:"GET",
+        url:"/dashboard/"+obj+"ajax=True",
+        cache:false,
+        beforeSend:function(){
+            $('#loading_ajax').show();
+        },
+        success:function(resp){
+            console.log(resp)
+            if(resp.status == true){
+                $('#container_element').remove();
+                $("#breadcumb").remove();
+                $('#container').append('<div id="container_element">'+resp.msg+'</div>');
+                window.history.pushState({}, "Title", "/dashboard/"+obj);
+                $('#loading_ajax').hide();
+                $('ul li.left_nav_active').removeClass('left_nav_active');
+                $(this).addClass('left_nav_active');
+            }
+            // else{
+            //     window.location.href = "/";
+            // }
+        }
+    });
+}
+</script>
+{% if user.agent %}
+    <script type="text/javascript">
+        function popup_chat(obj){
+            $('.test').append('<iframe src="{% url "ticket_view" %}?id='+obj+'" style="position:relative; float:right; height:420px; width:310px; border:none;"></iframe>');
+        }
+
+        function pull_ticket(obj){
+            $.ajax({
+                url: "{% url 'pull-ticket' %}?id="+obj,
+                success: function (data) { 
+                    // $('.test').append('<p style="position:relative; float:left;">'+data+'</p>'); 
+                    window.location = '/dashboard/tickets/';
+                },
+            });
+        }
+    </script>
+{% else %}
+    <script type="text/javascript">
+        function popup_chat(obj){
+        $( "#test" ).load( "{% url 'ticket_view' %}?id="+obj );
+        }
+
+        function load_chat(obj){
+        $( ".test" ).load( "{% url 'load_chat' %}?id="+obj );
+        window.top.location.reload();
+        }
+    </script>
+{% endif %}
+    <script type="text/javascript" src="http://cdn.datatables.net/1.10.3/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('#tbl_assigne_ticket').dataTable( {
+                "order": [[ 0, "desc" ]]
+            });
+            {% for i in ticket_type %}
+                $('#tbl_{{i.1}}').dataTable( {
+                    "order": [[ 0, "desc" ]]
+                });
+            {% endfor %}
+        });
+    </script>
+{% endblock %}
+{% block breadcumb %}
+<div class="pull-left breadcrumb_admin clear_both">
+    <div class="pull-left page_title theme_color">
+        <h1>dashboard</h1>
+        <h2 class="">Tickets</h2>
+    </div>
+    <div class="pull-right">
+        <ol class="breadcrumb">
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="active">Tickets</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+{% block body %}
+<div class="row">
+    <div class="col-lg-12">
+        <section class="panel default red_border horizontal_border_1 h2">
+            <div class="panel-heading">Tickets </div>
+            <div class="panel-body">
+                <ul class="nav nav-tabs" id="myTab">
+                {% for i in ticket_type %}
+                    {% if i.0 != '1' %}
+                        <li{% if forloop.first %} class="active"{% endif %}><a data-toggle="tab" href="#Tab{{i.0}}">{{i.1}}</a></li>
+                    {% endif %}
+                {% endfor %}
+                </ul>
+                <div class="tab-content" id="myTabContent">
+                {% for i in ticket_type %}
+                    {% if i.0 != '1' %}
+                        <div id="Tab{{i.0}}" class="tab-pane fade{% if forloop.first %} in active{% endif %}">
+
+                            
+                                <table class="display table table-bordered table-striped dataTable" id="tbl_{{i.1}}">
+                                    <thead>
+                                        <th>Creation Date</th>
+                                        <th>Ticket Summary</th>
+                                        <th>Service Provider</th>
+                                        <th>Department</th>
+                                        <th>Time to Resolve</th>
+                                        <th>Time Taken to Resolve</th>
+                                    </thead><!--  -->
+                                    <tbody role="alert" aria-live="polite" aria-relevant="all">
+                                        {% for data in ticket_list %}
+                                            {% if data.status == i.0 %}
+                                                <tr class="gradeX odd">
+                                                    <td class=" ">{{ data.timestamp_mod|date:'d M Y' }}</td>
+                                                    {% if request.is_customer %}
+                                                        <td class=" ">
+                                                            <a href="javascript:void(0);" onclick="ajax_load('tickets/view1/?id=1157&');">{{data.title}}</a>
+                                                        </td>
+                                                    {% else %}
+                                                        <td class=" ">
+                                                            <a href="{% url 'ticket_view1' %}?id={{data.id}}">{{data.title}}</a>
+                                                        </td>
+                                                    {% endif %}
+                                                    <td class=" ">
+                                                        {% for get_data in data.department.serviceprovider_set.all %}
+                                                            {% if forloop.first %}
+                                                                {{get_data.company}}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </td>
+                                                    <td class=" ">{{data.department}}</td>
+                                                    <td class=" "><!-- display how to long resolve ticket -->
+                                                        {% if data.timetoresolve_set.all|length > 0 %}
+                                                            {% for get_data in data.timetoresolve_set.all %}
+                                                                {% if forloop.last %}
+                                                                    {{get_data.time}}
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        {% else %}
+                                                            {% if i.0 == '5' %}
+                                                                72
+                                                            {% else %}
+                                                                0
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class=" "></td>
+                                                </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

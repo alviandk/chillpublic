@@ -1,0 +1,198 @@
+{% extends 'dashboard/base.html' %}
+
+{% block js %}
+<script type="text/javascript">
+    function save_agent(obj) {
+        var email = $('input[name=email]').val();
+        var mobile = $('input[name=mobile]').val();
+        var first_name = $('input[name=first_name]').val();
+        var last_name = $('input[name=last_name]').val();
+        var password = $('input[name=password]').val();
+        var repassword = $('input[name=repassword]').val();
+        var department = $('select[name=department]').val();
+
+        if (first_name && last_name) {
+            $.ajax({
+                type:"POST",
+                cache:false,
+                data:{
+                    'csrfmiddlewaretoken':'{{ csrf_token }}',
+                    'email':email,
+                    'first_name':first_name,
+                    'last_name':last_name,
+                    'password':password,
+                    'repassword':repassword,
+                    'department':department,
+                    'mobile':mobile
+                },
+                url:"{% url 'agent_create' %}",
+                beforeSend:function(){
+                    $(obj).text('Loading..');
+                },
+                success:function(resp) {
+                    console.log(resp)
+                {% if lookup %}
+                    $(obj).html('<span class="fa fa-plus"></span> Request Update Agent');
+                {% else %}
+                    $(obj).html('<span class="fa fa-plus"></span> Request Add Agent');
+                {% endif %}
+                    if (resp['status']) {
+                        window.location = '{% url 'agents' %}';
+                    } else {
+                        $('.alert.alert-danger').fadeIn();
+                        $('.alert.alert-danger').text(resp['msg']);
+                    }
+                }
+            });
+        } else {
+            $('.alert.alert-danger').fadeIn();
+            $('.alert.alert-danger').text('Please fill first name and last name with password');
+        }
+
+    }
+    {% if lookup %}
+    function edit_agent(obj) {
+        $('.alert').hide();
+        var email = $('input[name=email]').val();
+        var mobile = $('input[name=mobile]').val();
+        var first_name = $('input[name=first_name]').val();
+        var last_name = $('input[name=last_name]').val();
+        var password = $('input[name=password]').val();
+        var repassword = $('input[name=repassword]').val();
+        var department = $('select[name=department]').val();
+
+        if (first_name && last_name) {
+            $.ajax({
+                type:"POST",
+                cache:false,
+                data:{
+                    'csrfmiddlewaretoken':'{{ csrf_token }}',
+                    'email':email,
+                    'first_name':first_name,
+                    'last_name':last_name,
+                    'password':password,
+                    'repassword':repassword,
+                    'department':department,
+                    'mobile':mobile
+                },
+                url:"{% url 'agent_edit' key=lookup.id %}",
+                beforeSend:function(){
+                    $(obj).text('Loading..');
+                },
+                success:function(resp) {
+                    if (resp['status']) {
+                        window.location = '{% url 'agents' %}';
+                    } else {
+                        $('.alert.alert-danger').fadeIn();
+                        $('.alert.alert-danger').text(resp['msg']);
+
+                    }
+                }
+            });
+        } else {
+            $('.alert.alert-danger').fadeIn();
+            $('.alert.alert-danger').text('Please fill first name and last name');
+
+        }
+
+    }
+    {% endif %}
+</script>
+{% endblock %}
+
+{% block breadcumb %}
+<div class="pull-left breadcrumb_admin clear_both">
+    <div class="pull-left page_title theme_color">
+        <h1>Departments</h1>
+        <h2 class="">New Agent</h2>
+    </div>
+    <div class="pull-right">
+        <ol class="breadcrumb">
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'agents' %}">Agents</a></li>
+            <li class="active">New Agent</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+{% block body %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="block-web">
+            {% if not request.user.company.departments.all %}
+                <div class="alert alert-danger fade in">
+                  <button aria-hidden="true" data-dismiss="alert" class="close" type="button">×</button>
+                  <h4>You don't have departments!</h4>
+                  <p>Please create department first before create agents.</p>
+                  <p>
+                    <a href="{% url 'department_create' %}" class="btn btn-danger" type="button">Create Department</a>
+                  </p>
+                </div>
+            {% endif %}
+            <div class="porlets-content">
+                <form method="POST" action="{% url 'agent_create' %}" class="form-horizontal row-border">{% csrf_token %}
+
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Email</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" name="email" value="{% if lookup.user.username %}{{ lookup.user.username }}{% endif %}" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Mobile Number</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" name="mobile"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">First Name</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" name="first_name" value="{% if lookup.user.first_name %}{{ lookup.user.first_name }}{% endif %}" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Last Name</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" name="last_name" value="{% if lookup.user.last_name %}{{ lookup.user.last_name }}{% endif %}" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Password</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="password" name="password" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Re-Enter Password</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="password" name="repassword" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Department</label>
+                        <div class="col-sm-9">
+                            <select class="form-control" name="department">
+                                {% for i in department_list %}
+                                    <option value="{{i.id}}"{% if lookup.department.id == i.id %} selected{% endif %}>{{i.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="text-align:right;">
+                        {% if lookup %}
+                            <div onclick="edit_agent(this);" class="btn btn-warning"><span class="fa fa-plus"></span> Request Update Agent</div>
+                        {% else %}
+                            <div onclick="save_agent(this);" class="btn btn-primary"><span class="fa fa-plus"></span> Request Add Agent</div>
+                        {% endif %}
+                        <div class="alert alert-danger" style="margin-top:20px;"></div>
+                        <div class="alert alert-success" style="margin-top:20px;"></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'dashboard/base.html' %}
+{% block breadcumb %}
+<div class="pull-left breadcrumb_admin clear_both">
+    <div class="pull-left page_title theme_color">
+        <h1>dashboard</h1>
+    </div>
+    <div class="pull-right">
+        <ol class="breadcrumb">
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+{% block body %}
+<div class="row">
+    <div class="col-lg-12">
+        <section class="panel default blue_title h2">
+        </section>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-3 col-sm-6">
+        <div class="information blue_info">
+            <div class="information_inner">
+                <div class="info blue_symbols"><i class="fa fa-users icon"></i></div>
+                <span><a href="{% url 'agents' %}">AGENTS</a></span>
+                <h1 class="bolded">{{agent_list|length}}</h1>
+                <div class="infoprogress_blue">
+                    <div class="blueprogress"></div>
+                </div>
+                <b class=""><a href="{% url 'agent_create' %}"><small>Add New</small></a></b>
+                <div class="pull-right" id="work-progress2">
+                    <canvas style="display: inline-block; width: 47px; height: 25px; vertical-align: top;" width="47" height="25"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3 col-sm-6">
+        <div class="information green_info">
+            <div class="information_inner">
+                <div class="info green_symbols"><i class="fa fa-building-o icon" style="margin-left:20px;"></i></div>
+                <span><a href="{% url 'departments' %}" style="color: #2eb79d;">DEPARTMENTS</a></span>
+                <h1 class="bolded">{{department_list.count}}</h1>
+                <div class="infoprogress_green">
+                    <div class="greenprogress"></div>
+                </div>
+                <b class=""><a href="{% url 'department_create' %}"><small>Add New</small></a></b>
+                <div class="pull-right" id="work-progress1">
+                    <canvas style="display: inline-block; width: 47px; height: 25px; vertical-align: top;" width="47" height="25"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3 col-sm-6">
+        <div class="information red_info">
+            <div class="information_inner">
+                <div class="info red_symbols"><i class="fa fa-home icon" style="margin-left:20px;"></i></div>
+                <span><a href="{% url 'company_heads' %}" style="color: #e84c3d;">Department Heads</a></span>
+                <h1 class="bolded">{{ departement_head_list.count }}</h1>
+                <div class="infoprogress_red">
+                    <div class="redprogress"></div>
+                </div>
+                <b class=""><a href="{% url 'company_heads_create' %}"><small>Add New</small></a></b>
+                <div class="pull-right" id="work-progress1">
+                    <canvas style="display: inline-block; width: 47px; height: 25px; vertical-align: top;" width="47" height="25"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3 col-sm-6">
+        <div class="information green_info">
+            <div class="information_inner">
+                <div class="info green_symbols"><i class="fa fa-pencil-square-o icon" style="margin-left:20px;"></i></div>
+                <span><a href="{% url 'forms_company' %}" style="color: #2eb79d;">Form</a></span>
+                <h1 class="bolded">{{ form_list.count }}</h1>
+                <div class="infoprogress_green">
+                    <div class="greenprogress"></div>
+                </div>
+                <b class=""><a href="{% url 'form_create' %}"><small>Create New</small></a></b>
+                <div class="pull-right" id="work-progress1">
+                    <canvas style="display: inline-block; width: 47px; height: 25px; vertical-align: top;" width="47" height="25"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3 col-sm-6">
+        <div class="information red_info">
+            <div class="information_inner">
+                <div class="info red_symbols"><i class="fa fa-bars icon"></i></div>
+                <span><a href="{% url 'packages' %}" style="color: #e84c3d;">Package Subscription</a></span>
+                <h1 class="bolded">{% if request.user.company.is_trial %} Trial {% else %} {{ package_list.plan.name }} {% endif %} </h1>
+                <div class="infoprogress_red">
+                    <div class="redprogress"></div>
+                </div>
+                <b class=""><a href="{% url 'packages' %}"><small>Subscribed Package Upgrade/Downgrade Payments</small></a></b>
+                <div class="pull-right" id="work-progress3">
+                    <canvas style="display: inline-block; width: 47px; height: 25px; vertical-align: top;" width="47" height="25"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3 col-sm-6">
+
+    </div>
+</div>
+{% endblock %}

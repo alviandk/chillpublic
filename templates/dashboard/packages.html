@@ -1,0 +1,163 @@
+{% extends 'dashboard/base.html' %}
+
+{% block js %}
+<script type="text/javascript">
+    function apply_package(plan) {
+        if(window.confirm("Are you sure upgrade/downgrade packages ?")) {
+            $('#message_error_submit').text('');
+            var company = '{{ request.user.company.id }}';
+            var plan_id = plan;
+            var plan_month = $('#plan_month_'+plan_id).val();
+
+            if (plan_month == "") {
+                $('#alert_error_submit').toggle(true);
+                var text_error = "";
+                text_error += "<p> Please select subscription </p>"
+                $('#message_error_submit').append(text_error);
+            } else {
+                $.ajax({
+                    type:"POST",
+                    cache:false,
+                    url:"{% url 'change_packages' %}",
+                    data:{
+                        'csrfmiddlewaretoken':'{{ csrf_token }}',
+                        'company':company,
+                        'plan_id':plan_id,
+                        'plan_month': plan_month
+                    },
+                    success:function(resp){
+                        console.log(resp)
+                        location.reload();
+                    }
+                })
+            }
+        }
+    }
+
+    $(document).ready(function(){
+        $('.submit_form').click(function(){
+            $('#alert_error_submit').toggle(false);
+            $('#message_error_submit').text('');
+        })
+    })
+</script>
+{% endblock %}
+
+{% block breadcumb %}
+<div class="pull-left breadcrumb_admin clear_both">
+    <div class="pull-left page_title theme_color">
+        <h1>dashboard</h1>
+        <h2 class="">Departments</h2>
+    </div>
+    <div class="pull-right">
+        <ol class="breadcrumb">
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="active">Packages</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+{% block body %}
+<div class="row">
+    <div class="col-md-12 col-sm-6">
+        <div class="alert alert-danger fade in" id="alert_error_submit">
+            <button aria-hidden="true" class="close submit_form" type="button">×</button>
+            <div id="message_error_submit"></div>
+        </div>
+    </div>
+{% for i in package_list %}
+    <div class="col-md-4 col-sm-6">
+        <div class="block-web">
+            <span class="pull-right" style="margin-left:10px;"><i class="fa fa-check note_fa"></i></span>
+            <a href="#">
+                <h5 class="content-header">{{i.name}}
+                <span class="pull-right">&#8377; {{i.price}}</span>
+                </h5>
+            </a>
+            <div class="block widget-notes">
+
+                <div class="paper">
+                {% for x in i.features.all %}
+                    {{x.title}}<br>
+                {% endfor %}
+                </div>
+            </div>
+            <!--/widget-notes-->
+
+            {% if company_plan.request_plan|safe == "" %}
+                {% if company_plan.plan|safe == i.name %}
+                    <div style="text-align: center;">
+                        <select disabled>
+                            <option value="">-- Select Subscription -- </option>
+                            <option value="1 Month" {% if "1 Month" == company_plan.subscription %} selected{% endif %} >Monthly</option>
+                            <option value="3 Months" {% if "3 Months" == company_plan.subscription %} selected{% endif %} >Quarterly</option>
+                            <option value="6 Months" {% if "6 Months" == company_plan.subscription %} selected{% endif %} >half-year</option>
+                            <option value="12 Months" {% if "12 Months" == company_plan.subscription %} selected{% endif %} >Yearly</option>
+                        </select>
+                    </div><br>
+                    <div style="text-align: center;">
+                        <button class="btn btn-success" disabled>Current Packages</button>
+                    </div>
+                {% else %}
+                    <div style="text-align: center;">
+                        <select id="plan_month_{{ i.id }}" name="plan_month_{{ i.id }}">
+                            <option value="">-- Select Subscription -- </option>
+                            <option value="1 Month">Monthly</option>
+                            <option value="3 Months">Quarterly</option>
+                            <option value="6 Months">half-year</option>
+                            <option value="12 Months">Yearly</option>
+                        </select>
+                    </div><br>
+                    <div style="text-align: center;">
+                        <button class="btn btn-primary" onclick="apply_package('{{ i.id }}')">Apply Packages</button>
+                    </div>
+                {% endif %}
+            {% else %}
+                {% if company_plan.plan|safe == i.name %}
+                    <div style="text-align: center;">
+                        <select disabled>
+                            <option value="">-- Select Subscription -- </option>
+                            <option value="1 Month" {% if "1 Month" == company_plan.subscription %} selected{% endif %} >Monthly</option>
+                            <option value="3 Months" {% if "3 Months" == company_plan.subscription %} selected{% endif %} >Quarterly</option>
+                            <option value="6 Months" {% if "6 Months" == company_plan.subscription %} selected{% endif %} >half-year</option>
+                            <option value="12 Months" {% if "12 Months" == company_plan.subscription %} selected{% endif %} >Yearly</option>
+                        </select>
+                    </div><br>
+                    <div style="text-align: center;">
+                        <button class="btn btn-success" disabled>Current Packages</button>
+                    </div>
+                {% elif company_plan.status == "Change" and company_plan.request_plan|safe == i.name %}
+                    <div style="text-align: center;">
+                        <select disabled>
+                            <option value="">-- Select Subscription -- </option>
+                            <option value="1 Month" {% if "1 Month" == company_plan.subscribe_plan %} selected{% endif %} >Monthly</option>
+                            <option value="3 Months" {% if "3 Months" == company_plan.subscribe_plan %} selected{% endif %} >Quarterly</option>
+                            <option value="6 Months" {% if "6 Months" == company_plan.subscribe_plan %} selected{% endif %} >half-year</option>
+                            <option value="12 Months" {% if "12 Months" == company_plan.subscribe_plan %} selected{% endif %} >Yearly</option>
+                        </select>
+                    </div><br>
+                    <div style="text-align: center;">
+                        <button class="btn btn-info" disabled>On Process Change Packages</button>
+                    </div>
+                {% else %}
+                    <div style="text-align: center;">
+                        <select disabled>
+                            <option value="">-- Select Subscription -- </option>
+                            <option value="1 Month">Monthly</option>
+                            <option value="3 Months">Quarterly</option>
+                            <option value="6 Months">half-year</option>
+                            <option value="12 Months">Yearly</option>
+                        </select>
+                    </div><br>
+                    <div style="text-align: center;">
+                        <button class="btn btn-primary" disabled>Apply Packages</button>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+        <!--/block-web-->
+    </div>
+{% endfor %}
+</div>
+{% endblock %}
+

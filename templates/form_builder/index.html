@@ -1,0 +1,1227 @@
+{% extends "dashboard/base.html" %}
+
+{% block css %}
+    <style type="text/css">
+        .activeDroppable {
+          background-color: #eeffee;
+        }
+        .hoverDroppable {
+          background-color: lightgreen !important;
+        }
+        .draggableField {
+          /* float: left; */
+          
+        }
+        .draggableField > input,select, button, .checkboxgroup, .selectmultiple, .radiogroup {
+          margin-top: 10px;
+          margin-right: 10px;
+          margin-bottom: 10px;
+        }
+
+        button.btn_add_row {
+            margin-top: 0px !important;
+            margin-right: 0px !important;
+        }
+
+        .draggableField:hover{
+          background-color: #ccffcc;
+          border-radius: 4px !important;
+        }
+        /*.control-label {
+          width: 100px;
+        }*/
+        .selectorField .textbox b, .selectorField .password b, .selectorField .combobox b, .selectorField .radiogroup b, .selectorField .checkboxgroup b, .selectorField .selectmultiple b,
+        .selectorField .displaydate b, .selectorField .displaytext b {
+          position:relative; top:3px; left: 0px; width: 18px; height: 16px; display: inline-block; background-image: url("/media/dashboard/images/sprite.png"); background-repeat: no-repeat; 
+        }
+        .selectorField .textbox b, .selectorField .password b, .selectorField .displaytext b {
+          background-position: -10px -549px;
+        }
+        .selectorField .combobox b {
+          background-position: -10px -722px;
+        }
+        .selectorField .radiogroup b {
+          background-position: -10px -619px;
+        }
+        .selectorField .checkboxgroup b {
+          background-position: -10px -688px;
+        }
+        .selectorField .selectmultiple b {
+          background-position: -10px -1082px;
+        }
+        .selectorField .displaydate b {
+          background-position: -10px -975px;
+        }
+
+        .well {
+            min-height: 20px !important;
+            padding: 19px !important;
+            margin-bottom: 20px !important;
+            background-color: #f5f5f5;
+            border: 1px solid #e3e3e3 !important;
+            -webkit-border-radius: 4px !important;
+            -moz-border-radius: 4px !important;
+            border-radius: 4px !important;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05) !important;
+            -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05) !important;
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05) !important;
+        }
+        
+        .well-mini {
+          margin-top: 4px !important;
+          padding: 2px !important;
+          border-radius: 6px !important;
+          /*width: 160px !important;*/
+          cursor: pointer !important;
+          margin-bottom: 0px !important;
+        }
+        .draggableField:hover .well-mini {
+          background-color: #ccffcc;
+        }
+
+        .modele {
+          display:none;
+        }
+
+        .navigate {
+
+        }
+
+        /* Styles that are also copied for Preview */
+        .control-label {
+          display: inline-block !important;
+          padding-top: 5px;
+          text-align: right;
+          vertical-align: baseline;
+          padding-right: 10px;
+        }
+        .droppedField {
+          padding-left:5px;
+        }
+        .droppedField > input,select, button, .checkboxgroup, .selectmultiple, .radiogroup {
+          margin-top: 10px;
+          margin-right: 10px;
+          margin-bottom: 10px;
+        }
+        .action-bar .droppedField {
+          float: left !important;
+          padding-left:5px;
+        }
+
+        select[multiple], select[size] {
+          height: auto !important;
+        }
+
+        .upload-drop-zone {
+          color: #ccc;
+          border-style: dashed;
+          border-color: #ccc;
+          line-height: 200px;
+          text-align: center;
+          height: 200px;
+          border-width: 2px;
+          margin-bottom: 20px;
+          width: 200px;
+        }
+
+        .upload-file-zone {
+          left: -99999px !important;
+          opacity: 0 !important;
+          position: absolute !important;
+        }
+    </style>
+{% endblock %}
+
+{% block breadcumb %}
+    <div class="pull-left breadcrumb_admin clear_both">
+        <div class="pull-left page_title theme_color">
+            <h1>dashboard</h1>
+            <h2 class="">Forms</h2>
+        </div>
+        <div class="pull-right">
+            <ol class="breadcrumb">
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li><a href="{% url 'forms_company' %}">Forms</a></li>
+                <li class="active">Form Builder</li>
+            </ol>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-lg-12">
+            <section class="panel default blue_title h2">
+                <div class="panel-heading">New Form
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-lg-12">
+                          <div class="alert alert-danger fade in" id="alert_error_submit">
+                            <button aria-hidden="true" class="close submit_form" type="button">×</button>
+                            <div id="message_error_submit">
+                            </div>
+                          </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        {% if request.is_company and request.user.company.logo %}
+                                        <img src="{{request.user.company.logo.url}}" style="width:80px;" />
+                                        {% else %}
+                                        <img src="http://www.placehold.it/80x80/CCC/AAAAAA&text=no+image" style="width:80px;" />
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-9">
+                                        <div class="form-group">
+                                            <label class="col-md-4 control-label">Form Name</label>
+                                            <div class="col-md-8">
+                                                <input id="form_name" name="form_name" class="form-control" placeholder="Form Name" value="{% if lookup %}{{ lookup.name }}{% endif %}" >
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <!-- <div id="button_row" style="display: block;">
+                                        <div class="col-md-3">
+                                            <button type="button" id="add_row" class="btn btn_add_row btn-primary" style="margin-bottom: 10px;">Add Row</button>
+                                        </div>
+                                    </div> -->
+                                    <div id="row_input" style="display: block;">
+                                        <form class="form-inline">
+                                            <div class="form-group">
+                                                <label for="total_column">Column</label>
+                                                <input type="text" class="form-control" id="total_column" placeholder="Column">
+                                            </div>
+                                            <button type="button" id="submit_column" class="btn btn_add_row btn-primary">Submit</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <!-- <div id="button_row" style="display: block;">
+                                        <div class="col-md-3">
+                                            <button type="button" id="add_head_title" class="btn btn_add_row btn-primary">Add Tab</button>
+                                        </div>
+                                    </div> -->
+                                    <div id="head_title_input" style="display: block;">
+                                        <form class="form-inline">
+                                            <div class="form-group">
+                                                <label for="text_tab">Text tab</label>
+                                                <input type="text" class="form-control" id="text_tab" placeholder="Text tab">
+                                            </div>
+                                            <button type="button" id="submit_txt_tab" class="btn btn_add_row btn-primary">Submit</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label" style="margin-top: 10px;">Department</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" id="department" name="department">
+                                    <option value>-- Select Department -- </option>
+                                    {% for i in department_list %}
+                                        <option value="{{i.id}}" {% if lookup.department.id == i.id %} selected {% endif %} >{{i.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="col-sm-3 control-label" style="margin-top: 10px;">Form Type</label>
+                          <div class="col-sm-9">
+                            <select class="form-control" id="type_form" name="type_form">
+                              <option value>-- Select Form Type -- </option>
+                              {% for n, type in type_form_choices %}
+                                <option value="{{ n }}" {% if lookup %}{% if n == lookup.type_form %}selected{% endif %}{% endif %} >{{ type }}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-12">
+                        <div class="col-lg-2 navigate">
+                            <div id="select_list" style="display: none;">
+                                <div class='selectorField draggableField'>
+                                    <div class="textbox well well-mini"><b></b> Text Note</div>
+                                    <div class='modele'>
+                                        <label class="control-label ctrl-textnote">Text</label>
+                                    </div>
+                                </div>
+
+                                <div class='selectorField draggableField'>
+                                    <div class="textbox well well-mini"><b></b> Text Simple</div>
+                                    <div class='modele'>
+                                        <label class="control-label">Text</label>
+                                        <input type="text" placeholder="Votre texte ici..." class="ctrl-textbox"/>
+                                        <input type="hidden" class="hiddenObligatoire"/>
+                                    </div>
+                                </div>
+
+                                <div class='selectorField draggableField'>
+                                  <div class="password well well-mini"><b></b> Password</div>
+                                  <div class='modele'>
+                                    <label class="control-label">Password</label>
+                                    <input type="password" placeholder="Mot de passe ..." class="ctrl-passwordbox"/>
+                                    <input type="hidden" class="hiddenObligatoire"/>
+                                  </div>
+                                </div>
+
+                                <div class='selectorField draggableField'>
+                                  <div class="combobox well well-mini"><b></b> Dropdown</div>
+                                  <div class='modele'>
+                                    <label class="control-label">Dropdown</label>
+                                    <select class="ctrl-combobox">
+                                      <option value="option1">Option 1</option>
+                                      <option value="option2">Option 2</option>
+                                      <option value="option3">Option 3</option>
+                                    </select>
+                                    <input type="hidden" class="hiddenObligatoire"/>
+                                  </div>
+                                </div>
+
+                                <div class='selectorField draggableField'>
+                                  <div class="radiogroup well well-mini"><b></b> Radiobutton</div>
+                                  <div class='modele'>
+                                    <label class="control-label" style="vertical-align:top">Radiobutton</label>
+                                    <div style="display:inline-block;" class="ctrl-radiogroup">
+                                      <span style="display:block;"><input type="radio" name="radioField" value="option1"/>Option 1</span>
+                                      <span style="display:block;"><input type="radio" name="radioField" value="option2"/>Option 2</span>
+                                      <span style="display:block;"><input type="radio" name="radioField" value="option3"/>Option 3</span>
+                                    </div>
+                                    <input type="hidden" class="hiddenObligatoire"/>
+                                  </div>
+                                </div>
+
+                                <div class='selectorField draggableField'>
+                                  <div class="checkboxgroup well well-mini"><b></b> Checkbox</div>
+                                  <div class='modele'>
+                                    <label class="control-label" style="vertical-align:top">Checkbox</label>
+                                    <div style="display:inline-block;" class="ctrl-checkboxgroup">
+                                      <span style="display:block;"><input type="checkbox" name="checkboxField" value="option1"/>Option 1</span>
+                                      <span style="display:block;"><input type="checkbox" name="checkboxField" value="option2"/>Option 2</span>
+                                      <span style="display:block;"><input type="checkbox" name="checkboxField" value="option3"/>Option 3</span>
+                                    </div>
+                                    <input type="hidden" class="hiddenObligatoire"/>
+                                  </div>
+                                </div>
+
+                                <div class='selectorField draggableField'>
+                                  <div class="selectmultiple well well-mini"><b></b> Select multiple</div>
+                                  <div class='modele'>
+                                    <label class="control-label" style="vertical-align:top">Select multiple</label>
+                                    <div style="display:inline-block;">
+                                      <select multiple="multiple" style="width:150px" class="ctrl-selectmultiplelist">
+                                        <option value="option1">Option 1</option>
+                                        <option value="option2">Option 2</option>
+                                        <option value="option3">Option 3</option>
+                                      </select>
+                                    </div>
+                                    <input type="hidden" class="hiddenObligatoire"/>
+                                  </div>
+                                </div>
+                                <div class='selectorField draggableField'>
+                                  <div class="displaytext well well-mini"><b></b> Text Area</div>
+                                  <div class='modele'>
+                                    <label class="control-label">Texte</label>
+                                    <textarea class="ctrl-text">Texte</textarea>
+                                  </div>
+                                </div>
+                                <div class='selectorField draggableField'></label>
+                                  <div class="displaytext well well-mini"><b></b> File Button</div>
+                                  <div class='modele'>
+                                    <label class="control-label">File</label>
+                                    <div class="controls">
+                                      <input class="ctrl-btn" type="file">
+                                      <input type="hidden" class="hiddenObligatoire"/>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class='selectorField draggableField'></label>
+                                  <div class="displaytext well well-mini"><b></b> Image</div>
+                                  <div class='modele'>
+                                    <label class="control-label">Image</label>
+                                    <div class="controls">
+                                      <div class="upload-drop-zone">
+                                        Image Here
+                                      </div>
+                                      <input class="ctrl-btnimage upload-file-zone" type="file">
+                                      <input type="hidden" class="hiddenObligatoire"/>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class='selectorField draggableField'></label>
+                                  <div class="displaytext well well-mini"><b></b> Signature</div>
+                                  <div class='modele'>
+                                    <label class="control-label">Signature</label>
+                                    <div class="controls">
+                                      <div class="upload-drop-zone">
+                                        Signature Here
+                                      </div>
+                                      <input class="ctrl-btnsignature upload-file-zone" type="file">
+                                      <input type="hidden" class="hiddenObligatoire"/>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if lookup %}
+                            <div class="col-lg-10" id="selected-content">
+                                {{ lookup.form_content|safe }}
+                            </div>
+                        {% else %}
+                            <div class="col-lg-10" id="selected-content">
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% if lookup %}
+                        <div class="col-md-12" style="margin-top: 10px;margin-left: 16px;">
+                            <div class="btn btn-primary" id="update_form_btn" onclick="update_form();">Update Form</div>
+                        </div>
+                    {% else %}
+                        <div class="col-md-12" style="margin-top: 10px;margin-left: 16px;">
+                            <div class="btn btn-primary" id="save_form_btn" onclick="save_form();">Save Form</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+    </div>
+
+<span style="position:absolute; padding-right:6px; height:10px;z-index: 2000;" id="divDeleteTableau">
+  <a href="javascript:void(0)" onclick="deleteRow()"><img src="{{ MEDIA_URL }}dashboard/images/delete.png"  alt="" /></a>
+</span>
+
+<span style="position:absolute; padding-right:6px; height:10px;z-index: 2000;" id="divDeleteTab">
+  <a href="javascript:void(0)" onclick="deleteTab()"><img src="{{ MEDIA_URL }}dashboard/images/delete.png"  alt="" /></a>
+</span>
+
+    <!-- 
+      Starting templates declaration
+      DEV-NOTE: Keeping the templates and code simple here for demo  -- use some better template inheritance for multiple controls 
+    ---> 
+
+    <script id="control-customize-template" type="text/x-handlebars-template">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>{{header}}</h3>
+          </div>
+          <div class="modal-body">
+            <form id="theForm" class="form-horizontal">
+              <input type="hidden" value="{{type}}" name="type"/>
+              <input type="hidden" value="{{forCtrl}}" name="forCtrl"/>
+              <p id="pLibelle"><label class="control-label" for="handlebars-textbox-label">Label</label> <input type="text" name="label" value="" id="handlebars-textbox-label"/></p>
+              <p id="pName" style="display:block;"><label class="control-label" for="handlebars-textbox-name">Name</label> <input type="text" value="" name="name" id="handlebars-textbox-name"/></p>
+              <p id="pObligatoire"><label class="control-label" for="checkbox-obligatoire-textbox">Required</label> <input type="checkbox" name="obligatoire" value="" id="checkbox-obligatoire-textbox"/></p>
+              <p id="template"></p>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary" data-dismiss="modal" onclick='save_customize_changes()'>Save</button>
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+            <button class="btn btn-danger" data-dismiss="modal" onclick='delete_ctrl()'>Delete</button>
+          </div>
+        </div>
+      </div>
+    </script>
+
+    <script id="textbox-template" type="text/x-handlebars-template">
+      <p><label class="control-label">Placeholder</label> <input type="text" name="placeholder" value=""/></p>  
+    </script>
+
+    <script id="combobox-template" type="text/x-handlebars-template">
+      <p><label class="control-label">Options</label> <textarea name="options" rows="5"></textarea></p>
+    </script>
+
+    <script id="text-template" type="text/x-handlebars-template">
+      <p><label class="control-label" for="handlebars-textbox-text">Texte</label> <textarea name="texte" rows="10" id="handlebars-textbox-text"></textarea></p>  
+    </script>
+
+    <script id="date-template" type="text/x-handlebars-template">
+      <p>
+        <label class="control-label" for="handlebars-textbox-formatdate" style="padding-top:16px;">Format</label>
+        <select name="dateformat" id="handlebars-textbox-formatdate">
+          <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+          <option value="DD/MM/YYYY hh:mm:ss">DD/MM/YYYY hh:mm:ss</option>
+        </select>    
+      </p>
+    </script>
+
+    <!-- End of templates -->
+    <!-- <div class="embed-responsive embed-responsive-16by9"> -->
+        <!-- <iframe id="formdata" class="col-md-12" src="{% url 'iframe' %}{% if lookup %}?id={{lookup.id}}{% endif %}" height="1000" frameborder="0"></iframe> -->
+    <!-- </div> -->
+
+{% endblock %}
+
+{% block js %}
+
+    <script type="text/javascript">
+
+        function makeDraggable() {
+            $(".selectorField").draggable({ helper: "clone",stack: "div",cursor: "move", cancel: null  });
+          }
+
+        var tableauToDelete = null;
+        function deleteRow() {
+            if (tableauToDelete) {      
+              if (window.confirm("Are you sure ?")) {
+                $("body").append($("#divDeleteTableau")); // Sinon il r�apparait ...
+                $(tableauToDelete).parent().remove();
+                tableauToDelete = null;
+                $("#divDeleteTableau").hide();
+              }
+            }
+        }
+
+        var tabToDelete = null;
+        function deleteTab(){
+          if (tabToDelete) {
+            if (window.confirm("Are you sure ?")) {
+              $("body").append($('#divDeleteTab'));
+              $(tabToDelete).remove();
+              tabToDelete = null;
+              $('#divDeleteTab').hide();
+            }
+          }
+        }
+
+        var _ctrl_index = 1001;
+
+        {% if lookup %}
+
+            var index_last_ids = [];
+            var _ctrl_index_last = $('[id^=CTRL-DIV-]');
+            for (var i = 0; i < _ctrl_index_last.length; i++) {
+              index_last_ids.push(_ctrl_index_last[i].id)
+            };
+            var sort_values = index_last_ids.sort();
+            var lastEl = sort_values[sort_values.length-1];
+            if (lastEl != undefined) {
+              var split_lastEl = lastEl.split('-');
+              _ctrl_index = parseInt(split_lastEl[2])+1;
+            }
+
+        {% endif %}
+
+        /* Delete the control from the form */
+
+        function delete_ctrl() {
+          if(window.confirm("Are you sure ?")) {
+            var ctrl_id = $("#theForm").find("[name=forCtrl]").val();
+            $("#"+ctrl_id).remove();
+            _ctrl_index = parseInt(_ctrl_index) - 1;
+          }
+        }
+
+        function docReady() {
+            compileTemplates();
+            
+            makeDraggable();
+
+            $('.droppedField').click(function (){
+                var me = $(this)
+                var ctrl = me.find("[class*=ctrl]")[0];
+                var ctrl_type = $.trim(ctrl.className.match("ctrl-.*")[0].split(" ")[0].split("-")[1]);
+                customize_ctrl(ctrl_type, this.id);
+
+                // makeDraggable();
+            })
+            
+            $( ".droppedFields" ).droppable({
+                activeClass: "activeDroppable",
+                hoverClass: "hoverDroppable",
+                accept: ":not(.ui-sortable-helper)",
+                drop: function( event, ui ) {
+                    //console.log(event, ui);
+                    var draggable = ui.draggable;
+                    var index = _ctrl_index++;
+                    draggable = $(ui.draggable).find(".modele").clone();
+                      // draggable = draggable.clone();
+                    draggable.removeClass("modele");
+                    draggable.removeClass("selectorField");
+                    draggable.addClass("droppedField form-group");
+                    var upload_drop = draggable.find('.upload-drop-zone')[0];
+
+                    if (upload_drop != undefined) {
+                      upload_drop.id = index;
+                    }
+
+                    draggable[0].id = "CTRL-DIV-"+(index); // Attach an ID to the rendered control
+                    draggable.appendTo(this);
+
+                    a = draggable.find("input[type=text], input[type=password], select, textarea")[0];
+                    if (a != undefined) {
+                      a.name = "CTRL-DIV-"+(index);
+                    }
+                    
+                    /* Once dropped, attach the customization handler to the control */
+                    draggable.click(function () {          
+                                // The following assumes that dropped fields will have a ctrl-defined. 
+                                //   If not required, code needs to handle exceptions here. 
+                                var me = $(this)
+                                var ctrl = me.find("[class*=ctrl]")[0];
+                                var ctrl_type = $.trim(ctrl.className.match("ctrl-.*")[0].split(" ")[0].split("-")[1]);
+                                customize_ctrl(ctrl_type, this.id);
+                                //window["customize_"+ctrl_type](this.id);
+                            });
+
+                    makeDraggable();
+
+                    $('#save_form_btn').attr('disabled', false);
+                }
+            });     
+
+            /* Make the droppedFields sortable and connected with other droppedFields containers*/
+            $( ".droppedFields" ).sortable({
+                            cancel: null, // Cancel the default events on the controls
+                            connectWith: ".droppedFields"
+            }).disableSelection();
+
+
+            // Affichage du div pour la suppression d'un tableau
+            $("#divDeleteTableau").hide();
+            $('.droppedFields').mouseenter(function () {
+              tableauToDelete = this;
+              $("#divDeleteTableau").show();
+              $("#divDeleteTableau").position({
+                my: "right top",
+                at: "right top",
+                of: $(this).parent().children().last()
+              });
+            });
+
+            $('.droppedFields').mouseleave(function () {
+              $("#divDeleteTableau").hide();
+            });
+
+            $('#divDeleteTableau').mouseenter(function () {
+              $("#divDeleteTableau").show();
+            });
+
+            $("#divDeleteTab").hide();
+            $('h4').mouseenter(function () {
+              tabToDelete = this;
+              $("#divDeleteTab").show();
+              $("#divDeleteTab").position({
+                my: "right top",
+                at: "right top",
+                of: $(this).last()
+              });
+            });
+
+            $('h4').mouseleave(function () {
+              $("#divDeleteTab").hide();
+            });
+
+            $('#divDeleteTab').mouseenter(function () {
+              $("#divDeleteTab").show();
+            });
+
+            // Permet le trie des "tableaux"
+            $("#selected-content").sortable({
+              cancel: null,      
+              start: function (event, ui) {
+                $("#divDeleteTableau").hide();
+              }
+            }).disableSelection();
+        }
+
+        // if(typeof(console)=='undefined' || console==null) { console={}; console.log=function(){}}
+
+        function compileTemplates() {
+            window.templates = {};
+            // var source = "<ul><li>{{header}}</li></ul>";
+            window.templates.common = Handlebars.compile($("#control-customize-template").html());
+            // window.templates.common = Handlebars.compile(source);
+            
+            /* HTML Templates required for specific implementations mentioned below */
+            
+            // Mostly we donot need so many templates
+            window.templates.textbox = Handlebars.compile($("#textbox-template").html());
+            window.templates.passwordbox = Handlebars.compile($("#textbox-template").html());
+            window.templates.combobox = Handlebars.compile($("#combobox-template").html());
+            window.templates.selectmultiplelist = Handlebars.compile($("#combobox-template").html());
+            window.templates.radiogroup = Handlebars.compile($("#combobox-template").html());
+            window.templates.checkboxgroup = Handlebars.compile($("#combobox-template").html());
+            window.templates.text = Handlebars.compile($("#text-template").html());
+            window.templates.date = Handlebars.compile($("#date-template").html());    
+        }
+
+        // Object containing specific "Save Changes" method
+        save_changes = {};
+
+        // Object comaining specific "Load Values" method. 
+        load_values = {};
+          
+          /* Common method for all controls with Label and Name */
+          load_values.common = function(ctrl_type, ctrl_id) {
+            var form = $("#theForm");
+            var div_ctrl = $("#"+ctrl_id);    
+
+            // Gestion du champs obligatoire
+            var listeHiddenObligatoire = div_ctrl.find(".hiddenObligatoire");
+            if (listeHiddenObligatoire != null && listeHiddenObligatoire.length > 0) {
+              var ctrlObligatoire = listeHiddenObligatoire[0];
+              form.find("[name=obligatoire]").attr('checked', ctrlObligatoire.value == "true");
+              form.find("#pObligatoire").show();
+            }
+            else {
+              form.find("#pObligatoire").hide();
+            }
+            // Gestion du chargement champs sp�cifiques
+            form.find("[name=label]").val(div_ctrl.find('.control-label').text())
+            var specific_load_method = load_values[ctrl_type];
+            if(typeof(specific_load_method)!='undefined') {
+              specific_load_method(ctrl_type, ctrl_id);     
+            }
+          }
+          
+          /* Specific method to load values from a textbox control to the customization dialog */
+
+          load_values.textnote = function(ctrl_type, ctrl_id) {
+            var form = $("#theForm");
+            var div_ctrl = $("#" + ctrl_id);    
+            var ctrlText = div_ctrl.find("input[type=text]")[0];
+            $('.modal-header h3').text($("#"+ctrl_id).find('.control-label').text());
+            form.find("[id=template]").append('<label class="control-label">Placeholder</label> <input type="text" name="placeholder" value=""/>')
+            form.find("[name=type]").val(ctrl_type);
+            form.find("[name=forCtrl]").val(ctrl_id);
+            form.find('#pName').hide();
+            form.find('#template').hide();
+            // form.find("[name=placeholder]").val(ctrlText.placeholder);
+          }
+
+          load_values.textbox = function(ctrl_type, ctrl_id) {
+            var form = $("#theForm");
+            var div_ctrl = $("#" + ctrl_id);    
+            var ctrlText = div_ctrl.find("input[type=text]")[0];
+            $('.modal-header h3').text($("#"+ctrl_id).find('.control-label').text());
+            form.find("[id=template]").append('<label class="control-label">Placeholder</label> <input type="text" name="placeholder" value=""/>')
+            form.find("[name=type]").val(ctrl_type);
+            form.find("[name=forCtrl]").val(ctrl_id);
+            form.find("[name=name]").val(ctrlText.name);
+            form.find("[name=placeholder]").val(ctrlText.placeholder);
+          }
+          
+          // Passwordbox uses the same functionality as textbox - so just point to that
+          load_values.passwordbox = load_values.textbox;
+          
+          /* Specific method to load values from a combobox control to the customization dialog  */
+          load_values.combobox = function(ctrl_type, ctrl_id) {
+            var form = $("#theForm");
+            var div_ctrl = $("#"+ctrl_id);
+            $('.modal-header h3').text($("#"+ctrl_id).find('.control-label').text());
+            form.find("[id=template]").append('<label class="control-label">Options</label> <textarea name="options" rows="5"></textarea>')
+            var ctrl = div_ctrl.find("select")[0];
+            form.find("[name=name]").val(ctrl.name);
+            form.find("[name=type]").val(ctrl_type);
+            form.find("[name=forCtrl]").val(ctrl_id);
+            var options= '';
+            $(ctrl).find('option').each(function(i,o) { options+=o.text+'\n'; });
+            form.find("[name=options]").val($.trim(options));
+          }
+          // Multi-select combobox has same customization features
+          load_values.selectmultiplelist = load_values.combobox;
+          
+          /* Specific method to load values from a radio group */
+          load_values.radiogroup = function(ctrl_type, ctrl_id) {
+            var form = $("#theForm");
+            var div_ctrl = $("#"+ctrl_id);
+            var options= '';
+            var ctrls = div_ctrl.find("div").find("span");
+            var radios = div_ctrl.find("div").find("input");
+            
+            ctrls.each(function(i,o) { options+=$(o).text()+'\n'; });
+            $('.modal-header h3').text($("#"+ctrl_id).find('.control-label').text());
+            form.find("[id=template]").append('<label class="control-label">Options</label> <textarea name="options" rows="5"></textarea>')
+            form.find("[name=type]").val(ctrl_type);
+            form.find("[name=forCtrl]").val(ctrl_id);
+            form.find("[name=name]").val(radios[0].name)
+            form.find("[name=options]").val($.trim(options));
+          }
+          
+          // Checkbox group  customization behaves same as radio group
+          load_values.checkboxgroup = load_values.radiogroup;
+          
+          /* Specific method to load values from a button */
+          load_values.btn = function(ctrl_type, ctrl_id) {
+            var form = $("#theForm");
+            var div_ctrl = $("#"+ctrl_id);
+            // var ctrl = div_ctrl.find("button")[0];
+            var ctrl = div_ctrl.find("input[type=file]")[0];
+            $('.modal-header h3').text($("#"+ctrl_id).find('.control-label').text());
+            form.find("#pObligatoire").show();
+            form.find("[name=name]").val(ctrl.name);
+            form.find("[name=type]").val(ctrl_type);
+            form.find("[name=forCtrl]").val(ctrl_id);
+            // form.find("[name=label]").val($(ctrl).text().trim());
+            form.find("[name=label]").val($("#"+ctrl_id).find('.control-label').text());
+          }
+
+          load_values.btnimage = function(ctrl_type, ctrl_id) {
+            var form = $("#theForm");
+            var div_ctrl = $("#"+ctrl_id);
+            // var ctrl = div_ctrl.find("button")[0];
+            var ctrl = div_ctrl.find("input[type=file]")[0];
+            $('.modal-header h3').text($("#"+ctrl_id).find('.control-label').text());
+            form.find("#pObligatoire").show();
+            form.find("[name=name]").val(ctrl.name);
+            form.find("[name=type]").val(ctrl_type);
+            form.find("[name=forCtrl]").val(ctrl_id);
+            // form.find("[name=label]").val($(ctrl).text().trim());
+            form.find("[name=label]").val($("#"+ctrl_id).find('.control-label').text());
+          }
+
+          load_values.btnsignature = function(ctrl_type, ctrl_id) {
+            var form = $("#theForm");
+            var div_ctrl = $("#"+ctrl_id);
+            // var ctrl = div_ctrl.find("button")[0];
+            var ctrl = div_ctrl.find("input[type=file]")[0];
+            $('.modal-header h3').text($("#"+ctrl_id).find('.control-label').text());
+            form.find("#pObligatoire").show();
+            form.find("[name=name]").val(ctrl.name);
+            form.find("[name=type]").val(ctrl_type);
+            form.find("[name=forCtrl]").val(ctrl_id);
+            // form.find("[name=label]").val($(ctrl).text().trim());
+            form.find("[name=label]").val($("#"+ctrl_id).find('.control-label').text());
+          }
+
+          /* Specific method to load values from a text to the customization dialog */
+        load_values.text = function (ctrl_type, ctrl_id) {    
+            var form = $("#theForm");
+            var div_ctrl = $("#" + ctrl_id);
+            var ctrlText = div_ctrl.find(".ctrl-text");
+            $('.modal-header h3').text($("#"+ctrl_id).find('.control-label').text());
+            form.find("[id=template]").append('<label class="control-label" for="handlebars-textbox-text">Texte</label> <textarea name="texte" rows="10" id="handlebars-textbox-text"></textarea>')
+            form.find('[id=pName]').toggle(true);
+            form.find("[name=name]").val(ctrlText[0].name);
+            form.find("[name=type]").val(ctrl_type);
+            form.find("[name=forCtrl]").val(ctrl_id);
+            form.find("[name=texte]").val(ctrlText.text());
+        }
+
+          /* Specific method to load values from a date to the customization dialog */
+        load_values.date = function (ctrl_type, ctrl_id) {
+            var form = $("#theForm");
+            var div_ctrl = $("#" + ctrl_id);    
+            var ctrlText = div_ctrl.find(".ctrl-date");
+            form.find("[name=dateformat]").val(ctrlText.text());
+        }
+
+        /* Common method to save changes to a control  - This also calls the specific methods */
+          save_changes.common = function(values) {
+            var div_ctrl = $("#"+values.forCtrl);
+            div_ctrl.find('.control-label').text(values.label);
+
+            // Gestion du champs obligatoire
+            var listeHiddenObligatoire = div_ctrl.find(".hiddenObligatoire");
+            if (listeHiddenObligatoire != null && listeHiddenObligatoire.length > 0) {
+              var ctrlObligatoire = listeHiddenObligatoire[0];
+              ctrlObligatoire.value = values.obligatoire;
+            }
+
+            var specific_save_method = save_changes[values.type];
+            if(typeof(specific_save_method)!='undefined') {
+              specific_save_method(values);     
+            }
+          }
+          
+          /* Specific method to save changes to a text box */
+
+          save_changes.textnote = function(values) {
+            var div_ctrl = $("#"+values.forCtrl);
+            var ctrlText = div_ctrl.find("input[type=text]")[0];
+            // var ctrl = div_ctrl.find("input")[0];
+            // ctrlText.placeholder = values.placeholder;
+            // ctrlText.name = values.name;
+            // console.log(values.obligatoire);
+          }
+
+          save_changes.textbox = function(values) {
+            var div_ctrl = $("#"+values.forCtrl);
+            var ctrlText = div_ctrl.find("input[type=text]")[0];
+            // var ctrl = div_ctrl.find("input")[0];
+            ctrlText.placeholder = values.placeholder;
+            if (values.name == "") {
+              ctrlText.name = values.forCtrl;
+            } else {
+              ctrlText.name = values.name;
+            }
+            // console.log(values.obligatoire);
+          }
+
+          // Password box customization behaves same as textbox
+          save_changes.passwordbox= save_changes.textbox;
+
+          /* Specific method to save changes to a combobox */
+          save_changes.combobox = function(values) {
+            var div_ctrl = $("#"+values.forCtrl);
+            var ctrl = div_ctrl.find("select")[0];
+
+            if (values.name == "") {
+              ctrl.name = values.forCtrl;
+            } else {
+              ctrl.name = values.name;
+            }
+
+            $(ctrl).empty();
+            $(values.options.split('\n')).each(function(i,o) {
+              $(ctrl).append("<option>"+$.trim(o)+"</option>");
+            });
+          }
+          
+          /* Specific method to save a radiogroup */
+          save_changes.radiogroup = function(values) {
+            var div_ctrl = $("#"+values.forCtrl);
+            
+            var label_template = $(".selectorField .ctrl-radiogroup span")[0];
+            var radio_template = $(".selectorField .ctrl-radiogroup input")[0];    
+            var ctrl = div_ctrl.find(".ctrl-radiogroup");
+            ctrl.empty();
+            $(values.options.split('\n')).each(function(i,o) {
+              var label = $(label_template).clone().text($.trim(o))
+              var radio = $(radio_template).clone();
+              // radio[0].name = values.name;
+
+              if (values.name == "") {
+                radio[0].name = values.forCtrl;
+              } else {
+                radio[0].name = values.name;
+              }
+
+              label.prepend(radio);
+              $(ctrl).append(label);
+            });
+          }
+          
+          /* Same as radio group, but separated for simplicity */
+          save_changes.checkboxgroup = function(values) {
+            var div_ctrl = $("#"+values.forCtrl);
+            
+            var label_template = $(".selectorField .ctrl-checkboxgroup span")[0];
+            var checkbox_template = $(".selectorField .ctrl-checkboxgroup input")[0];
+            
+            var ctrl = div_ctrl.find(".ctrl-checkboxgroup");
+            ctrl.empty();
+            $(values.options.split('\n')).each(function(i,o) {
+              var label = $(label_template).clone().text($.trim(o))
+              var checkbox = $(checkbox_template).clone();
+              // checkbox[0].name = values.name;
+              if (values.name == "") {
+                checkbox[0].name = values.forCtrl;
+              } else {
+                checkbox[0].name = values.name;
+              }
+              label.prepend(checkbox);
+              $(ctrl).append(label);
+            });
+          }
+          
+          // Multi-select customization behaves same as combobox
+          save_changes.selectmultiplelist = save_changes.combobox;
+          
+          /* Specific method for Button */
+          save_changes.btn = function(values) {
+            var div_ctrl = $("#"+values.forCtrl);
+            // var ctrl = div_ctrl.find("button")[0];
+            var ctrl = div_ctrl.find("input[type=file]")[0];
+            // $(ctrl).html($(ctrl).html().replace($(ctrl).text()," "+$.trim(values.label)));
+            // ctrl.name = values.name;
+            if (values.name == "") {
+              ctrl.name = values.forCtrl;
+            } else {
+              ctrl.name = values.name;
+            }
+            //console.log(values);
+          }
+
+          save_changes.btnimage = function(values) {
+            var div_ctrl = $("#"+values.forCtrl);
+            // var ctrl = div_ctrl.find("button")[0];
+            var ctrl = div_ctrl.find("input[type=file]")[0];
+            // $(ctrl).html($(ctrl).html().replace($(ctrl).text()," "+$.trim(values.label)));
+            // ctrl.name = values.name;
+
+            if (values.name == "") {
+              ctrl.name = values.forCtrl;
+            } else {
+              ctrl.name = values.name;
+            }
+
+            //console.log(values);
+          }
+
+          save_changes.btnsignature = function(values) {
+            var div_ctrl = $("#"+values.forCtrl);
+            // var ctrl = div_ctrl.find("button")[0];
+            var ctrl = div_ctrl.find("input[type=file]")[0];
+            // $(ctrl).html($(ctrl).html().replace($(ctrl).text()," "+$.trim(values.label)));
+            // ctrl.name = values.name;
+            if (values.name == "") {
+              ctrl.name = values.forCtrl;
+            } else {
+              ctrl.name = values.name;
+            }
+            //console.log(values);
+          }
+          
+          /* Specific method to save changes to a text box */
+          save_changes.text = function (values) {
+            save_changes_simple_text(values, ".ctrl-text", values.texte)
+          }
+
+          /* Specific method to save changes to a text box */
+          save_changes.date = function (values) {
+            save_changes_simple_text(values, ".ctrl-date", values.dateformat)
+          }
+
+          function save_changes_simple_text(values, ctrl, value) {
+            var div_ctrl = $("#" + values.forCtrl);
+            var ctrlText = div_ctrl.find(ctrl);
+            ctrlText[0].name = values.name;
+            ctrlText.text(value);
+          }
+
+          /* Save the changes due to customization 
+            - This method collects the values and passes it to the save_changes.methods
+          */
+          function save_customize_changes(e, obj) {
+            //console.log('save clicked', arguments);
+            var formValues = {};
+            var val=null;
+            $("#theForm").find("input, textarea, select").each(function(i,o) {
+              if(o.type=="checkbox"){
+                val = o.checked;
+              }
+              else {
+                val = o.value;
+              }
+              formValues[o.name] = val;
+            });
+            save_changes.common(formValues);
+          }
+
+        /*
+            Opens the customization window for this
+          */
+        function customize_ctrl(ctrl_type, ctrl_id) {
+            var ctrl_params = {};
+
+            /* Load the specific templates */
+            var specific_template = templates[ctrl_type];
+            if(typeof(specific_template)=='undefined') {
+              specific_template = function(){return ''; };
+            }
+
+            var modal_header = $("#"+ctrl_id).find('.control-label').text();
+            
+            var template_params = {
+              header: modal_header,
+              content_template: specific_template(ctrl_params),
+              type: ctrl_type,
+              forCtrl: ctrl_id,
+              displayNom: ctrl_type == 'text' || ctrl_type == 'date' ? 'none' : 'block'
+            }
+            
+            // Pass the parameters - along with the specific template content to the Base template
+            var s = templates.common(template_params) + "";
+
+            $("[name=customization_modal]").remove(); // Making sure that we just have one instance of the modal opened and not leaking
+            // $('<div id="customization_modal" name="customization_modal" class="modal hide fade" />').append(s).modal('show');
+            $('<div class="modal fade" id="customization_modal"  name="customization_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">').append(s).modal('show');
+
+            // console.log(s);
+
+            setTimeout(function() {
+              // For some error in the code  modal show event is not firing - applying a manual delay before load
+              load_values.common(ctrl_type, ctrl_id);
+            },300);
+          }
+
+        $(document).ready(function (){
+            docReady();
+
+            $('.submit_form').click(function(){
+              $('#alert_error_submit').fadeOut();
+              $('#message_error_submit').text('');
+            })
+
+            {% if lookup %}
+                $('#select_list').toggle(true);
+                $('.ctrl-selectmultiplelist').parent().css('display', 'inline-block');
+                $('.ctrl-radiogroup').css('display', 'inline-block');
+                $('.ctrl-checkboxgroup').css('display', 'inline-block');
+            {% endif %}
+
+            $('#save_form_btn').attr('disabled', true);
+            var total_column = 1;
+            var max_column = 12;
+            $('#add_row').click(function (){
+                $('#row_input').toggle(true);
+                $(this).toggle(false);
+            })
+
+            $('#add_head_title').click(function (){
+              $('#head_title_input').toggle(true);
+              $(this).toggle(false);
+            })
+
+            $('#submit_txt_tab').click(function (){
+              var text_tab = $('#text_tab').val();
+              var content_tag = '<h4 style="background-color:#c0c0c0; padding:10px;">'+text_tab+'</h4>'
+              $("#selected-content").append(content_tag);
+              docReady();
+            })
+
+            $('#submit_column').click(function (){
+                var nbColonne = $('#total_column').val();
+
+                var bValid = true;          
+                if (bValid) {
+                    var contentToAdd = "<div class=\"row\">";
+
+                    if (nbColonne > 12) {
+                        alert('Maximal column 12');
+                    } else if (nbColonne > 6) {
+                        var largeurSpan = 1;
+                    } else if (nbColonne == 5) {
+                        var largeurSpan = 2;
+                    } else {
+                        var largeurSpan = 12 / nbColonne;
+                    }
+
+                    var action_bar = '';
+
+                    if (nbColonne == 1) {
+                        action_bar = 'action-bar'
+                    }
+
+                    // var largeurSpan = 12 / nbColonne;
+                    for (var i = 0; i < nbColonne; i++) {
+                        contentToAdd += "<div class=\"col-md-" + largeurSpan + " well action-bar droppedFields\"></div>";
+                    }
+                    contentToAdd += "</div>";
+                    $("#selected-content").append(contentToAdd);
+                    docReady();
+                }
+                $('#select_list').toggle(true);
+            })
+        })
+
+        function save_form() {
+            var form_title = $('#form_name').val();
+            var department = $( "#department option:selected" ).val();
+            var type_form = $('#type_form option:selected').val();
+
+            var selected_content = $("#selected-content").clone();
+            selected_content.find("div").each(function(i,o) {
+              var obj = $(o)
+              obj.removeClass("ui-draggable ui-droppable ui-sortable");
+              obj.removeAttr('style');
+            });
+            var form_content = selected_content.html();
+
+            var text_error = [];
+
+            if (form_title == "") {
+              $("#form_name").closest('.form-group').addClass('has-error')
+              text_error.push("<p>Form name can't be blank</p>");
+            };
+
+            if (department == "") {
+              $("#department").closest('.form-group').addClass('has-error')
+              text_error.push("<p>Department can't be blank</p>");
+            };
+
+            if (type_form == "") {
+              $("#type_form").closest('.form-group').addClass('has-error')
+              text_error.push("<p>Form type can't be blank</p>");
+            };
+
+            if (text_error.length == 0) {
+              $.ajax({
+                type:"POST",
+                cache:false,
+                url:"{% url 'form_create' %}",
+                data:{
+                    'form_content': form_content,
+                    'form_department': department,
+                    'form_title':form_title,
+                    'type_form': type_form,
+                    'csrfmiddlewaretoken':'{{ csrf_token }}'
+                },
+                beforeSend:function(){
+
+                },
+                success:function(resp){
+                    if (resp['status']) {
+                        window.location = "{% url 'forms_company' %}";
+                        // if (window.location != window.parent.location) {
+                        //     window.parent.location = "{% url 'forms_company' %}";
+                        // }
+                    } else {
+                        alert(JSON.stringify(resp['msg']));
+                    }
+                }
+              });
+            } else {
+              // alert(text_error)
+              $('#alert_error_submit').fadeIn();
+              $('#message_error_submit').append(text_error);
+            }
+
+            // alert(form_content);
+            
+        }
+
+        {% if lookup %}
+            function update_form() {
+                var form_title = $('#form_name').val();
+                var department = $( "#department option:selected" ).val();
+                var type_form = $('#type_form option:selected').val();
+
+                var selected_content = $("#selected-content").clone();
+                selected_content.find("div").each(function(i,o) {
+                  var obj = $(o)
+                  obj.removeClass("ui-draggable ui-droppable ui-sortable");
+                  obj.removeAttr('style');
+                });
+                var form_content = selected_content.html();
+
+                // alert(form_content);
+
+                $.ajax({
+                    type:"POST",
+                    cache:false,
+                    url:"{% url 'form_edit' key=lookup.id%}",
+                    data:{
+                        'form_content': form_content,
+                        'form_department': department,
+                        'form_title':form_title,
+                        'type_form': type_form,
+                        'csrfmiddlewaretoken':'{{ csrf_token }}'
+                    },
+                    beforeSend:function(){
+
+                    },
+                    success:function(resp){
+                        if (resp['status']) {
+                            window.location = "{% url 'forms_company' %}";
+                            // if (window.location != window.parent.location) {
+                            //     window.parent.location = "{% url 'forms_company' %}";
+                            // }
+                        } else {
+                            alert(JSON.stringify(resp['msg']));
+                        }
+                    }
+
+                });
+            }
+        {% endif %}
+    </script>
+{% endblock %}

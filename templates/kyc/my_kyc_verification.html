@@ -1,0 +1,282 @@
+{% extends "dashboard/base.html" %}
+
+{% block css %}
+<style type="text/css">
+#photograph{
+	position: absolute;
+    top: 60px;
+    right: 20px;
+	width:20%;
+	float:right; 
+                    /*float:left;
+                    margin-left: 600px;
+                    top:90px;
+                    padding: 10px;*/
+}
+tr{
+	line-height: 40px;
+}
+</style>
+{% endblock %}
+
+{% block breadcumb %}
+    <div class="pull-left breadcrumb_admin clear_both">
+        <div class="pull-left page_title theme_color">
+            <h1>dashboard</h1>
+            <h2 class="">My KYC Verification</h2>
+        </div>
+        <div class="pull-right">
+            <ol class="breadcrumb">
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="active">My KYC Verification</li>
+            </ol>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-12">
+        <section class="panel default blue-title h2">
+        	<div class="panel-heading">KYC<span class="semi-bold"> Data</span> </div>
+        	<div class="panel-body">
+             
+                <table class="table table-bordered">
+        			<thead>
+          				<tr>
+				            <th>Customer Full Name</th>
+				            <th>Gender</th>
+				            <th>Nationality</th>
+				            <th>DOB</th>
+				            <th>Residence Status</th>
+				            <td colspan="2"></td>
+          				</tr>
+        			</thead>
+        			<tbody>
+        				{% for data in q %}
+        					<tr>
+        						<td><a href="#">{{data.first_name}} {{data.last_name}}</a></td>
+        						<td>{{data.get_gender_display}}</td>
+        						<td>{{data.get_nationality_display}}</td>
+        						<td>{{data.dob}}</td>
+        						<td>{{data.get_residence_status_display}}</td>
+        						<td>
+									<button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#mod_{{ data.id }}">Show Detail</button>
+									<div class="modal fade" id="mod_{{ data.id }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+										<div class="modal-dialog" style="width:800px;">
+											<div class="modal-content">
+												<div class="modal-header">
+													<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+		        									<h4 class="modal-title" id="myModalLabel">KNOW YOUR CUSTOMER (KYC) FORM</h4>
+												</div>
+												<div class="modal-body">
+													<h4 id="identity_details_label" style="background-color:#c0c0c0; padding:2px;">A. Identity Details</span></h4>
+													<table>
+            											<tr>
+											                <td>
+											                	<b>1. Name of the Applicant</b>
+											                </td>
+											                <td>{{data.first_name}} {{data.middle_name}} {{data.last_name}}</td>
+            											</tr>
+            											<tr>
+                											<td>
+                    											<b>2. Fathers / Spouse Name</b>
+                											</td>
+                											<td>{{data.father_name}}</td>
+            											</tr>
+											            <tr>
+											                <td><b>3. Gender</b></td>
+											                <td>{{data.get_gender_display}}</td>
+											            </tr>
+											            <tr>
+											                <td><b>4. Marital Status</b></td>
+											                <td>{{data.get_marital_status_display}}</td>
+											            </tr>
+											            <tr>
+											                <td><b>5. DOB</b>
+											                </td><td>{{data.dob}}</td>
+											            </tr>
+											            <tr>
+											                <td><b>6. Nationality</b></td>
+											                <td>{{data.get_nationality_display}}</td>
+											            </tr>
+											            <tr>
+											                <td><b>7. Resident Status</b></td>
+											                <td>{{data.get_residence_status_display}}</td>
+											            </tr>
+											            <tr>
+											                <td><b>8. PAN Card Number</b></td>
+											                <td>{{data.pan_card}}</td>
+											            </tr>
+											            <tr>
+                											<td><b>9. Proof of Identity submitted for PAN exempt cases</b></td>
+											                <td>
+											                    {% if data.proff_identity %}
+											                        {{obj.get_proff_identity_display}}
+											                    {% else %}
+											                        -
+											                    {% endif %}
+											                </td>
+											            </tr>
+											            <tr>
+											                <td><b>10. Selected Proof Number</b></td>
+											                <td>
+											                    {% if not data.addhar_number and not data.passport and not data.voter_id and not data.driving_license and not data.others %}
+											                        -
+											                    {% else %}
+											                        {% if data.addhar_number %}
+											                            {{ data.addhar_number }}
+											                        {% endif %}
+											                        {% if data.passport %}
+											                            {{ data.passport }}
+											                        {% endif %}
+											                        {% if data.voter_id %}
+											                            {{ data.voter_id }}
+											                        {% endif %}
+											                        {% if data.driving_license %}
+											                            {{ data.driving_license }}
+											                        {% endif %}
+											                        {% if data.others %}
+											                            {{ data.others }}
+											                        {% endif %}
+											                    {% endif %}
+											                </td>
+											            </tr>
+        											</table>
+        											<div id="photograph">
+											            <img src="/media/{{data.photograph}}" style="width:100%;">
+											        </div>
+        											<h4 id="address_details_label" style="background-color:#c0c0c0; padding:2px;">B. Address Details</span></h4>
+        											<table>
+											            <tr>
+											                <td><b>1. Current Residence Address</b></td>
+											                <td>
+											                    <ul>
+											                        <li>Address : {{data.residence_address}}</li>
+											                        <li>City : {{data.residence_address_city}}</li>
+											                        <li>Pin Code : {{data.residence_address_pin_code}}</li>
+											                        <li>State : {{data.residence_address_state}}</li>
+											                        <li>Country : {{data.get_residence_address_country_display}}</li>
+											                    </ul>
+											                </td>
+											            </tr>
+											            <tr>
+											                <td><b>2. Contact Details</b></td>
+											                <td>
+											                    {{data.contact_details}}
+											                </td>
+											            </tr>
+											            <tr>
+											                <td>
+											                	<b>3. Specify the proof of address submitted for residence address</b>
+											                </td>
+											                <td>{{data.get_address_submitted_for_residence_display}}</td>
+											            </tr>
+											            <tr>
+											                <td><b>4. Permanent Address</b></td>
+											                {% if data.is_permanent_address == '1' %}
+											                    <td>{{data.get_is_permanent_address_display}}</td>
+											                {% else %}
+											                    <td>
+											                        {{data.permanent_address}}
+											                    </td>
+											                {% endif %}
+											            </tr>
+											            <tr>
+											                <td><b>5. Proof of Permanent address to be provided by applicant</b></td>
+											                <td>
+											                    {% if data.proof_of_address_non_residence %} 
+											                        {{data.get_proof_of_address_non_residence_display}}
+											                    {% else %}
+											                        -
+											                    {% endif %}
+											                </td>
+											            </tr>
+										           </table>
+										           <h4 id="others_details_label" style="background-color:#c0c0c0; padding:2px;">C. Others Details</span></h4>
+										           <table  class="table table-bordered">
+											            <tr>
+											                <td><b>1. Gross annual income detail</b></td>
+											                <td>
+												                {% if data.gross_annual_income_detail %}
+												                    {{data.get_gross_annual_income_detail_display}}
+												                {% else %}
+												                    -
+												                {% endif %}
+											                </td>
+											            </tr>
+											            <tr>
+											                <td><b>2. Occupation</b></td>
+											                <td>
+											                    {% if data.occupation %}
+											                        {{data.get_occupation_display}}
+											                    {% else %}
+											                        -
+											                    {% endif %}
+											                </td>
+											            </tr>
+											            <tr>
+												            {% if data.other_occupation %}
+												                <td><b>Others Occupation</b></td>
+												                <td>{{data.other_occupation}}</td>
+												            {% endif %}
+											        	</tr>
+											        </table>
+											        <div class="col-md-12">
+											        	<form action="." method="POST" enctype="multipart/form-data">{% csrf_token %}
+												        <div class="col-md-6">
+												        	<b style="display:block; padding:5px;">Original verified with Customers as per Upload Documents</b>
+												        	<table>
+													        	<tr>
+													        		<td>
+													        			<input type="text" name="name" class="form-control" placeholder="Name">
+													        		</td>
+													        		<td><input type="file" name="signature" class="form-control"></td> 
+													        	</tr>
+													        </table>
+												        	<b style="display:block; padding:5px;">Name & Signature of the Authorized Signatory</b>
+												        	<!-- <b style="display:block; padding:5px;">Date : {{today}}</b> -->
+												        	<b style="display:block; padding:5px;">Date : 
+												        		<input type="text" name="date" value="{{today}}" style="border:none;">
+												        	</b>
+													    </div>
+													    <div class="col-md-6">
+												        	<span style="display:block; padding-top:40px;">
+												        		<input type="text" name="employee_number" class="form-control">
+												        	</span>
+												        	<b style="display:block; padding:5px;">Employee Number</b>
+												        	<b style="display:block; padding:5px;">Authorized Seal:</b>
+												        	<span style="display:block;">
+												        		<input type="file" name="authorized_seal" class="form-control">
+												        	</span>
+													    </div>
+													</div>
+											        <div class="row">
+											        	<div class="col-sm-12">
+											        		<div class="pull-right">
+											        			
+											        				<input type="hidden" name="id" value="{{data.id}}">
+														            <input type="hidden" name="status" value="1">
+														        	<div class="form-group">
+														        		<button class="btn btn-primary" type="submit">Verify</button>
+														        	</div>
+														        
+														    </div>
+													      </div>
+													      </form>
+													    </div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</td>
+        					</tr>
+        				{% endfor %}
+        			</tbody>
+      			</table>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

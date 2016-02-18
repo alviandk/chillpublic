@@ -1,0 +1,370 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>My Title</title>
+        <style type="text/css">
+            img { zoom: 11%; }
+            @page {
+                size: a4 portrait;
+                @frame {
+                    -pdf-frame-content: "top-header";
+                    top:25px;
+                }
+                @frame {
+                    -pdf-frame-content: "identity_details_label";
+                    top:60px;
+                    margin-left: 40px;
+                    margin-right: 40px;
+                }
+                @frame {
+                    -pdf-frame-content: "identity_details";
+                    width:80%; 
+                    float:left;
+                    top:100px;
+                    padding:10px;
+                    margin-left: 50px;
+                }
+                @frame {
+                    -pdf-frame-content: "company_logo";
+                    width:10%;
+                }
+                @frame {
+                    -pdf-frame-content: "photograph";
+                    width:40%; 
+                    float:left;
+                    margin-left: 600px;
+                    top:90px;
+                    padding: 10px;
+                }
+                @frame {
+                    -pdf-frame-content: "address_details_label";
+                    float:left;
+                    top:420px;
+                    margin-left: 40px;
+                    margin-right: 40px;
+                }
+                @frame {
+                    -pdf-frame-content: "address_details";
+                    width:80%; 
+                    float:left;
+                    top:450px;
+                    padding:10px;
+                    margin-left: 50px;
+                }
+                @frame {
+                    -pdf-frame-content: "others_details_label";
+                    /*width:80%; */
+                    float:left;
+                    top:710px;
+                    margin-left: 40px;
+                    margin-right: 40px;
+                }
+                @frame {
+                    -pdf-frame-content: "others_details";
+                    width:80%; 
+                    float:left;
+                    top:750px;
+                    padding:10px;
+                    margin-left: 50px;
+                }
+                @frame {
+                    -pdf-frame-content: "declaration";
+                    /*width:80%; */
+                    float:left;
+                    top:820px;
+                    padding:10px;
+                    margin-left: 40px;
+                    margin-right: 40px;
+                }
+                @frame {
+                    -pdf-frame-content: "declaration_notif";
+                    width:80%; 
+                    float:left;
+                    top:850px;
+                    padding:10px;
+                    margin-left: 50px;
+                }
+                @frame {
+                    -pdf-frame-content: "signatures";
+                    top:80%;
+                    left: 1cm;
+                    margin-left: 20px;
+                }
+                @frame {
+                    -pdf-frame-content: "signatures_border";
+                    top:960px;
+                    left: 1cm;
+                    margin-left: 20px;
+                }
+                @frame {
+                    -pdf-frame-content: "signatures_date";
+                    top:960px;
+                    left: 1cm;
+                    margin-left: 500px;
+                }
+                @frame {
+                    -pdf-frame-content: "tamp";
+                    top:920px;
+                    left: 1cm;
+                    margin-left: 500px;
+                }
+                @frame {
+                    -pdf-frame-content: "extra_field";
+                    top:1000px;
+                    left: 1cm;
+                }
+                @frame {
+                    -pdf-frame-content: "extra_field1";
+                    top:1060px;
+                    left: 1cm;
+                }
+                @frame {
+                    -pdf-frame-content: "extra_field1a";
+                    top:1020px;
+                    left: 1cm;
+                    margin-left: 150px;
+                }
+                @frame {
+                    -pdf-frame-content: "extra_field4";
+                    top:1070px;
+                    left: 1cm;
+                }
+                @frame {
+                    -pdf-frame-content: "extra_field3";
+                    top:1080px;
+                    left: 1cm;
+                }
+                @frame {
+                    -pdf-frame-content: "extra_field2";
+                    top:1100px;
+                    left: 1cm;
+                }
+                @frame {
+                    -pdf-frame-content: "employe_number";
+                    top:1080px;
+                    left: 1cm;
+                    margin-left: 500px;
+                }
+                @frame {
+                    -pdf-frame-content: "employe_number1";
+                    top:1060px;
+                    left: 1cm;
+                    margin-left: 500px;
+                }
+                @frame {
+                    -pdf-frame-content: "employe_number2";
+                    top:1070px;
+                    left: 1cm;
+                    margin-left: 500px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        {% if user.agent %}
+            {% if user.agent.department in obj.share_to.all %}
+                <div id="company_logo">
+                    <img src="/media/{{company.logo}}">
+                </div>
+            {% endif %}
+        {% endif %}
+
+        <h1 id="top-header" style="text-align:center;">KNOW YOUR CUSTOMER (KYC) FORM {{user.agent.department}}</h1>
+        <h4 id="identity_details_label" style="background-color:#c0c0c0; padding:2px;">A. Identity Details</span></h4>
+        <table id="identity_details">
+            <tr>
+                <td><b>1. Name of the Applicant</b></td>
+                <td>{{obj.first_name}} {{obj.middle_name}} {{obj.last_name}}</td>
+            </tr>
+            <tr style="border-top:1px solid #c0c0c0;"></tr>
+            <tr>
+                <td>
+                    <b>2. Fathers / Spouse Name</b>
+                </td>
+                <td>{{obj.father_name}}</td>
+            </tr>
+            <tr style="border-top:1px solid #c0c0c0;"></tr>
+            <tr>
+                <td><b>3. Gender</b></td>
+                <td>{{obj.get_gender_display}}</td>
+            </tr>
+            <tr style="border-top:1px solid #c0c0c0;"></tr>
+            <tr>
+                <td><b>4. Marital Status</b></td><td>{{obj.get_marital_status_display}}</td>
+            </tr>
+            <tr style="border-top:1px solid #c0c0c0;"></tr>
+            <tr>
+                <td><b>5. DOB</b></td><td>{{obj.dob}}</td>
+            </tr>
+            <tr style="border-top:1px solid #c0c0c0;"></tr>
+            <tr>
+                <td><b>6. Nationality</b></td><td>{{obj.get_nationality_display}}</td>
+            </tr>
+            <tr style="border-top:1px solid #c0c0c0;"></tr>
+            <tr>
+                <td><b>7. Resident Status</b></td><td>{{obj.get_residence_status_display}}</td>
+            </tr>
+            <tr style="border-top:1px solid #c0c0c0;"></tr>
+            <tr>
+                <td><b>8. PAN Card Number</b></td><td>{{obj.pan_card}}</td>
+            </tr>
+            <tr style="border-top:1px solid #c0c0c0;"></tr>
+            <tr>
+                <td><b>9. Proof of Identity submitted for PAN exempt cases</b></td>
+                <td>
+                    {% if obj.proff_identity %}
+                        {{obj.get_proff_identity_display}}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            <tr style="border-top:1px solid #c0c0c0;"></tr>
+            <tr>
+                <td><b>10. Selected Proof Number</b></td>
+                <td>
+                    {% if not obj.addhar_number and not obj.passport and not obj.voter_id and not obj.driving_license and not obj.others%}
+                        -
+                    {% else %}
+                        {% if obj.addhar_number %}
+                            {{ obj.addhar_number }}
+                        {% endif %}
+                        {% if obj.passport %}
+                            {{ obj.passport }}
+                        {% endif %}
+                        {% if obj.voter_id %}
+                            {{ obj.voter_id }}
+                        {% endif %}
+                        {% if obj.driving_license %}
+                            {{ obj.driving_license }}
+                        {% endif %}
+                        {% if obj.others %}
+                            {{ obj.others }}
+                        {% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+        <div id="photograph">
+            <img src="/media/{{obj.photograph}}">
+        </div>
+        <h4 id="address_details_label" style="background-color:#c0c0c0; padding:2px;">B. Address Details</span></h4>
+        <table id="address_details">
+            <tr>
+                <td><b>1. Current Residence Address</b></td>
+                <td>
+                    <ul>
+                        <li>Address : {{obj.residence_address}}</li>
+                        <li>City : {{obj.residence_address_city}}, Pin Code : {{obj.residence_address_pin_code}}</li>
+                        <!-- <li>Pin Code : {{obj.residence_address_pin_code}}</li> -->
+                        <li>State : {{obj.residence_address_state}}, Country : {{obj.get_residence_address_country_display}}</li>
+                        <!-- <li>Country : {{obj.get_residence_address_country_display}}</li> -->
+                    </ul>
+                </td>
+                <!-- <td>{{obj.residence_address}}</td> -->
+            </tr>
+            <tr style="border-top:1px solid #c0c0c0;"></tr>
+            <tr>
+                <td><b>2. Contact Details</b></td>
+                <td>
+                    <ul>
+                        <li>Telp : {{telp}}</li>
+                        <li>Mobile : {{mobile}}</li>
+                        <li>Email : {{email}}</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr style="border-top:1px solid #c0c0c0;"></tr>
+            <tr>
+                <td><b>3. Specify the proof of address submitted for residence address</b></td>
+                <td>{{obj.get_address_submitted_for_residence_display}}</td>
+            </tr>
+            <tr style="border-top:1px solid #c0c0c0;"></tr>
+            <tr>
+                <td><b>4. Permanent Address</b></td>
+                {% if obj.is_permanent_address == '1' %}
+                    <td>{{obj.get_is_permanent_address_display}}</td>
+                {% else %}
+                    <td>
+                        <ul>
+                            <li>Address : {{address}}</li>
+                            <li>City : {{city}}, Pin Code : {{pin_code}}</li>
+                            <li>State : {{state}}, Country : {{country}}</li>
+                        </ul>
+                    </td>
+                {% endif %}
+            </tr>
+            <tr style="border-top:1px solid #c0c0c0;"></tr>
+            <tr>
+                <td><b>5. Proof of Permanent address to be provided by applicant</b></td>
+                <td>
+                    {% if obj.proof_of_address_non_residence %} 
+                        {{obj.get_proof_of_address_non_residence_display}}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+        <h4 id="others_details_label" style="background-color:#c0c0c0; padding:2px;">C. Others Details</span></h4>
+        <table id="others_details">
+            <tr>
+                <td><b>1. Gross annual income detail</b></td>
+                <td>
+                {% if obj.gross_annual_income_detail %}
+                    {{obj.get_gross_annual_income_detail_display}}
+                {% else %}
+                    -
+                {% endif %}
+                </td>
+            </tr>
+            <!-- <tr style="border-top:1px solid #c0c0c0;"></tr>
+            <tr>
+                <td><b>2. Net Worth in</b></td>
+                <td>{{obj.net_worth_in}}</td>
+            </tr> -->
+            <tr style="border-top:1px solid #c0c0c0;"></tr>
+            <tr>
+                <td><b>2. Occupation</b></td>
+                <td>
+                    {% if obj.occupation %}
+                        {{obj.get_occupation_display}}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% if obj.other_occupation %}
+                <td><b>Others Occupation</b></td><td>{{obj.other_occupation}}</td>
+            {% endif %}
+        </table>
+        <h4 id="declaration" style="background-color:#c0c0c0; padding:2px;">Declaration</span></h4>
+        <p id="declaration_notif">I hereby declare that the details furnished above are true and correct to the best of my knowledge and belief and I undertake to inform you of any changes therein, immediately. In case any of the above information is found to be false or untrue or misleading or misrepresenting, I am aware that I may be held liable for it.</p>
+        <!-- <div id="signatures"> -->
+            <!-- <img src="/media/{{obj.signature}}"> -->
+            <img id="signatures" src="/media/{{obj.signature}}" alt="" height="500"/>
+            <div id="signatures_border">--------------------------------</div>
+            <div id="signatures_date"><b>Date</b> {{obj.date|date:"d M, Y"}}</div>
+            <!-- Original verified with Customers as per Upload Documents -->
+
+            <div id="extra_field">
+                <b>Original verified with Customers as per Upload Documents</b>
+            </div>
+            <div id="extra_field1">
+                {{obj.authorized_name}}
+            </div>
+            <img id="extra_field1a" src="/media/{{obj.authorized_signature}}" alt="" height="400"/>
+            <div id="extra_field4">---------------------------------------&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-----------------------</div>
+            <div id="extra_field3">
+                <b>Name & Signature of the Authorized Signatory</b>
+            </div>
+            <div id="extra_field2">
+                <b>Date : {{obj.date_authorized}}</b>
+            </div>
+            <div id="employe_number1">{{obj.employee_number}}</div>
+            <div id="employe_number2">-------------------------------------</div>
+            <div id="employe_number">
+                <b>Employee Number</b>
+            </div>
+    </body>
+</html>

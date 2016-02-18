@@ -1,0 +1,464 @@
+
+
+{% block css %}
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+{% endblock %}
+
+{% block js %}
+
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script src="{{MEDIA_URL}}js/jquery-1.10.2.js"></script>
+<script src="{{MEDIA_URL}}js/jquery-ui.js"></script>
+
+
+<script type="text/javascript">
+
+function previous(){
+    $("#group_department_company").show();
+    $("#ticket_type").hide();
+    $("#next-button2").hide();
+    $("#next-button").show();
+}
+
+function check_provider(company, department){
+    $.ajax({
+        type:"GET",
+        cache:false,
+        url:"{% url 'get-subscribe-provider' %}?company="+company+"&department="+department,
+        success:function(resp){
+            // console.log(department);
+            var check = $.isNumeric( department );
+            if(resp == 'False'){
+                var message = $("#department option:selected").text();
+                if (check == true){
+                    $("#lbl_existing").append(message);
+                    $("#check_existing_customer").show();
+                }
+                $("#existing2").prop("checked", true);
+            }
+            else{
+                $("#existing1").prop("checked", true);
+            }
+        }
+    });
+}
+
+function check_company_settings(val){
+    $.ajax({
+        type:"GET",
+        cache:false,
+        url:"{% url 'check_company_setting' %}?company="+val+"&user={{user}}",
+        success:function(resp){
+            // console.log(resp['kyc_user_validate']);
+            if(resp['kyc_user_validate'] == 'True'){
+                $("#chat-button").show();
+                $("#group_title_description").show();
+                $("#ticket_type").hide();
+                $("#next-button2").hide();
+            }
+            else{
+                var company     = $('select[name=company]').text();
+                var str_message = 'KYC is Mandate for '+company+' to Available Services';
+                alert(str_message);
+                window.location = '/dashboard/kyc'; //redirect into kyc if customer doesn't have kyc
+            }
+        }
+    });
+}
+
+function check_subscribe(obj) {
+
+    company = $('select[name=company]').val();
+    department = $('select[name=department]').val();
+    var check = $.isNumeric( department );
+    if (check == false){
+        alert('Please Select Department');
+        return false;
+    }
+
+    $.ajax({
+        type:"GET",
+        cache:false,
+        url:"{% url 'check_company_setting' %}?company="+company+"&user={{user}}&department="+department,
+        success:function(resp){
+            console.log(resp);
+            if(resp['kyc_user_validate'] == true){
+                if(resp['allow_chat'] == false){
+                    alert('Chat Allowed for Existing Customers; Please send us a Query');
+                    $("#group_account_details").show();
+                    $("#add-provider").show();
+                    $("#next-button").hide();
+                }
+                else{
+                    $("#group_department_company").hide();
+                    // $("#ticket_type").show();
+                    $("#next-button").hide();
+                    // $("#next-button2").show();
+                    $("#group_title_description").show();
+                    $("#chat-button").show();
+                }
+
+            }
+            else{
+                var company     = $('select[name=company]').text();
+                var str_message = 'KYC is Mandate for '+company+' to Available Services';
+                alert(str_message);
+                window.location = '/dashboard/kyc'; //redirect into kyc if customer doesn't have kyc
+            }
+
+
+            
+        }
+    });
+    $("#check_existing_customer").hide();
+}
+
+function add_provider(obj){
+    var company             = $('select[name=company]').val();
+    var department          = $('select[name=department]').val();
+    var account_number      = $('input[name=account_number]').val();
+    var mobile_registered   = $('input[name=mobile_registered]').val();
+    var dob                 = $('input[name=dob]').val();
+    var mothers             = $('input[name=mothers]').val();
+
+    if (account_number && mobile_registered && dob && mothers) {
+        $.ajax({
+            type:"POST",
+            cache:false,
+            data:{
+                "csrfmiddlewaretoken":"{{ csrf_token }}",
+                "company":company,
+                "product":department,
+                "acount_number":account_number,
+                "registered_mobile_number":mobile_registered,
+                "dob":dob,
+                "mothers":mothers,
+            },
+            url:"{% url 'add-new-provider' %}",
+            beforeSend:function(){
+                $(obj).text('Loading...');
+            },
+            success:function(resp){
+                console.log(resp);
+                if(resp.status == 'True'){
+                    $("#group_account_details").hide();
+                    $("#group_department_company").hide();
+                    // $("#group_title_description").show();
+                    $("#ticket_type").show();
+                    $(obj).text('Start Chat');
+                    $("#add-provider").hide();
+                    $("#group_title_description").show();
+                    $("#chat-button").show();
+                    // $("#next-button2").show();
+                }
+                else{
+                    $("#account_error").show();
+                    $(".error_message").text(resp.msg);
+                    $(obj).text('Add Provider');
+                }
+
+                // $(obj).text('Start Chat');
+                $(".popup-box").removeClass( "chat-popup" );
+                $(".popup-head-left").text(title);
+            }
+        });
+    }
+    else{
+        $('#alertModal').modal('show');
+        $('#alertModal .modal-body').text('Please fill empty column');
+    }
+}
+
+function ticket_type(obj){
+    // var company = $('select[name=company]').val();
+    // check_company_settings(company);
+    $("#chat-button").show();
+    $("#group_title_description").show();
+    $("#ticket_type").hide();
+    $("#next-button2").hide();
+}
+
+function offline_ticket(obj) {
+    var company = $('select[name=company]').val();
+    {% if ttype != '' %}
+        {% if ttype == 'live' %}
+            var ticket_type = '1';
+        {% else %}
+            var ticket_type = '2';
+        {% endif %}
+    {% else %}
+        var ticket_type = $("#ticket_type_form").val();
+    {% endif %}
+
+    var department = $('select[name=department]').val();
+    var title = $('input[name=title]').val();
+    var description = $('textarea[name=description]').val();
+    if (title && description) {
+        $.ajax({
+            type:"POST",
+            cache:false,
+            data:{
+                "csrfmiddlewaretoken":"{{ csrf_token }}",
+                "company": company, 
+                "department":department,
+                "title":title,
+                "description":description,
+                "status":"1",
+                "live": ticket_type,
+            },
+            url:"{% url 'ticket_create' %}",
+            beforeSend:function(){
+                $(obj).text('Loading...');
+            },
+            success:function(resp){
+                console.log(resp);
+                $("#ticket-info").fadeIn();
+                if(resp.code == '403'){
+                    $("#ticket-info").append("<span style='color:red;'><i class='fa fa-times'></i>Multiple Live Chat Request to Same <br>Company Same Department shouldn't be allowed</span>");
+                }
+                else{
+                    
+                    if(resp.is_online){
+                        $(obj).text('Start Chat');
+                        $('.test').append('<iframe src="{% url "ticket_view" %}?id='+resp.key+'" style="position:relative; float:right; height:420px; width:310px; border:none;" id="frame_'+resp.key+'"></iframe>');
+                    }
+                    else{
+                        if(resp.code == 'busy'){
+                            $('.test').append('<iframe src="{% url "ticket_view" %}?id='+resp.key+'" style="position:relative; float:right; height:420px; width:310px; border:none;" id="frame_'+resp.key+'"></iframe>');
+                        }
+                        else{
+                            $("#ticket-info").append('<span style="color:green;"><i class="fa fa-check"></i>Ticket have been created!<br />'+resp.message_info+'</span>');
+                        }
+                        $(obj).text('Submit');
+                    }
+                }
+
+                $("#chat-button").hide();
+                $("#group_title_description").hide();
+                
+                window.setTimeout(function(){
+                    $.ajax({
+                        type:"GET",
+                        url:"/dashboard/?ajax=True",
+                        cache:false,
+                        beforeSend:function(){
+                            $('#loading_ajax').show();
+                        },
+                        success:function(resp){
+                            // console.log(resp);
+                            $('#container_element').remove();
+                            $("#breadcumb").remove();
+                            $('#container').append('<div id="container_element">'+resp.msg+'</div>');
+                            window.history.pushState({}, "Title", "/dashboard/");
+                            $('#loading_ajax').hide();
+                            $('ul li.left_nav_active').removeClass('left_nav_active');
+                            $(this).addClass('left_nav_active');
+                        }
+                    });
+                }, 5000);
+                
+            }
+        });
+    } else {
+        alert('Please fill empty column');
+        return false;
+    }
+}
+
+
+$(document).ready(function(){
+    $(".datepicker").datepicker({
+            changeMonth: true,
+            changeYear: true,
+            dateFormat: 'yy-mm-dd',
+            yearRange: '1950:' + + new Date().getFullYear()
+        });
+    $('select[name=company]').change(function(){
+        var key = $(this).val();
+        $.ajax({
+            type:"GET",
+            cache:false,
+            url:"{% url 'get_department_ajax' %}?key="+key,
+            success:function(resp){
+                $('select[name=department]').html(resp);
+                $('select[name=department]').prop('disabled', false);
+                var get_department = $("#department").val();
+                check_provider(key, get_department);
+            }
+        });
+    });
+    $('#department').change(function(){
+        var company = $("#company").val(); 
+        var department = $(this).val();
+        check_provider(company, department);
+    });
+});
+</script>
+{% endblock %}
+
+
+{% block breadcumb %}
+                    <div class="pull-left breadcrumb_admin clear_both">
+                        <div class="pull-left page_title theme_color">
+                            <h1>dashboard</h1>
+                            {% if ttype %}
+                                <h2 class="">{{ttype}} Support</h2>
+                            {% else %}
+                                <h2 class="">Support</h2>
+                            {% endif %}
+                        </div>
+                        <div class="pull-right">
+                            <ol class="breadcrumb">
+                                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                                {% if ttype %}
+                                    <li class="active">{{ttype}} Support</li>
+                                {% else %}
+                                   <li class="active">Support</li>
+                                {% endif %}
+                            </ol>
+                        </div>
+                    </div>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="block-web">
+            <div class="header">
+                <div class="actions"> <a class="minimize" href="#"><i class="fa fa-chevron-down"></i></a><a class="close-down" href="#"><i class="fa fa-times"></i></a> </div>
+                <h3 class="content-header">
+                    <span class="fa fa-headphones"></span>
+                    {% if ttype == 'offline' %}
+                        Generate Offline Ticket
+                    {% else %}
+                        Connect to an agent for support
+                    {% endif %}
+                </h3>
+            </div>
+            <div class="porlets-content">
+                <form id="ticket_form" action="" method="POST" class="form-horizontal row-border">{% csrf_token %}
+                    <div id="group_department_company">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Select Company</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="company" id="company">
+                                    <option value="">--</option>
+                                    {% for i in company_list %}
+                                        <option value="{{i.id}}"> {{i.company_name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <!--/col-sm-9-->
+                        </div>
+                        <!--/form-group-->
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Select Department</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="department" id="department" disabled>
+
+                                </select>
+                            </div>
+                            <!--/col-sm-9-->
+                        </div>
+
+                        <div class="form-group" style="display:none;" id="check_existing_customer">
+                            <label class="col-sm-3 control-label" id="lbl_existing">Existing Customer to </label>
+                            <input type="radio" name="check_existing_customer" id="existing1" value="1">Yes
+                            <input type="radio" name="check_existing_customer" id="existing2" value="0">No
+                        </div>
+                        
+                    </div>
+                    <!--/form-group-->
+                    <div id="group_account_details" style="display:none;">
+                        <h3 style="text-align:center;">Account Details</h3>
+                        <div class="form-group" id="account_error">
+                            <label class="col-sm-6 error_message control-label" style="color:red"></label>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Account Number</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="account_number" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Registered Mobile Number</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="mobile_registered" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Date of Birth</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="dob" class="form-control datepicker">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Mother's Maiden Name</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="mothers" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if ttype == '' %}
+                    <!-- select ticket type -->
+                    <div id="ticket_type" style="display:none">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Ticket Type</label>
+                            <div class="col-sm-9">
+                                <span class="btn btn-success">
+                                    <input type="radio" name="ticket_type" id="ticket_type_form" value="1" checked>Live Support</span>
+                                <span class="btn btn-danger">
+                                    <input type="radio" name="ticket_type" id="ticket_type_form" value="2">Offline Ticket</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div id="group_title_description" style="display:none;">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Ticket Summary</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="title" class="form-control">
+                            </div>
+                        </div>
+                        <!--/form-group-->
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Ticket Description</label>
+                            <div class="col-sm-9">
+                                <textarea class="form-control" name="description"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bottom" id="next-button">
+                        <div class="btn btn-primary" onclick="check_subscribe(this);">Next</div>
+                    </div>
+                    <div class="bottom" id="add-provider" style="display:none;">
+                        <div class="btn btn-primary" onclick="add_provider(this);">Add Provider</div>
+                    </div>
+                    {% if ttype = '' %}
+                    <div class="bottom" id="next-button2" style="display:none;">
+                        <div class="btn btn-primary" onclick="previous();">Previous</div>
+                        <div class="btn btn-primary" onclick="ticket_type(this);">Next</div>
+                    </div>
+                    {% endif %}
+                    <div class="bottom" id="chat-button" style="display:none;">
+                        <div class="btn btn-primary" onclick="offline_ticket(this);">Submit</div>
+                    </div>
+                    <!--/form-group-->
+                </form>
+                <div id="ticket-info" style="display:none; margin-left:400px;">
+                    <!-- <i class="fa fa-check"></i>Ticket have been created! -->
+                </div>
+                <!-- chat here -->
+                <div id="test"></div>
+                <!-- end chat -->
+            </div>
+            <!--/porlets-content-->
+        </div>
+        <!--/block-web-->
+    </div>
+    <!--/col-md-6-->
+</div>
+{% endblock %}

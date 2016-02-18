@@ -1,0 +1,193 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Chillpublic | Relax, Stop Running</title>
+<META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+
+<link href="{{ MEDIA_URL }}dashboard/css/font-awesome.css" rel="stylesheet" type="text/css" />
+<link href="{{ MEDIA_URL }}dashboard/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+<link href="{{ MEDIA_URL }}dashboard/css/animate.css" rel="stylesheet" type="text/css" />
+<link href="{{ MEDIA_URL }}dashboard/css/admin.css" rel="stylesheet" type="text/css" />
+<link href="{{ MEDIA_URL }}landingpage/css/style.css" rel="stylesheet" type="text/css" />
+<link href="{{ MEDIA_URL }}dashboard/css/jquerysctipttop.css" rel="stylesheet" type="text/css">
+<link href="{{ MEDIA_URL }}dashboard/plugins/kalendar/kalendar.css" rel="stylesheet">
+<link rel="stylesheet" href="{{ MEDIA_URL }}dashboard/plugins/scroll/nanoscroller.css">
+<link href="{{ MEDIA_URL }}dashboard/plugins/morris/morris.css" rel="stylesheet" />
+<script src="{{ MEDIA_URL }}dashboard/js/jquery.min.js" type="text/javascript"></script>
+<script src="{{ MEDIA_URL }}dashboard/js/jquery-2.1.0.js"></script>
+<script src="{{ MEDIA_URL }}dashboard/js/bootstrap.min.js"></script>
+<style>
+label[for=id_captcha_1] {display:none;}
+</style>
+{% block css %}{% endblock %}
+
+</head>
+<body class="light_theme fixed_header left_nav_fixed">
+
+<div class="wrapper main-container">
+    <div class="header_bar">
+        <div class="brand">
+           <a href="{% url 'index' %}">
+            <div class="logo">Chillpublic</div>
+            <div class="small_logo" style="display:none">
+                <img src="{{ MEDIA_URL }}dashboard/images/s-logo.png" width="50" height="47" alt="s-logo" />
+                <img src="{{ MEDIA_URL }}dashboard/images/r-logo.png" width="122" height="20" alt="r-logo" />
+            </div>
+            </a>
+        </div>
+            <div class="pull-right" style="padding-top:20px; padding-bottom:20px;margin-right:20px;">
+                <input type="email" name="email" placeholder="Email" />
+                <input type="password" name="password" placeholder="Password" />
+                <div class="btn btn-sm btn-info btn_login" onclick="login(this);" style="margin-top:-2px;">Login</div>
+            </div>
+        <div class="header_top_bar">
+            <div class="top_right_bar">
+                <div class="top_right">
+                    <div class="top_right_menu">
+                        <ul>
+                            <li>
+                                <a title="Login with facebook" data-placement="bottom" rel="tooltip" href="{% url 'socialauth_begin' 'facebook' %}" data-toggle="dropdown" style="background: url({{ MEDIA_URL }}dashboard/icon/facebook-logo.png) no-repeat; width:30px; height:30px;"></a>
+                            </li>
+                            <li>
+                                <a title="Login with google" data-placement="bottom" rel="tooltip" href="javascript:void(0);" data-toggle="dropdown" style="background: url({{ MEDIA_URL }}dashboard/icon/gplus-logo.png) no-repeat; width:30px; height:30px;"></a>
+                            </li>
+                            <li class="dropdown">
+                                <a title="Login with twitter" data-placement="bottom" rel="tooltip" href="{% url 'socialauth_begin' 'twitter' %}" data-toggle="dropdown" style="background: url({{ MEDIA_URL }}dashboard/icon/twitter-logo.png) no-repeat; width:30px; height:30px;"></a>
+                            </li>
+                            <li class="dropdown">
+                                <a title="Login with linkedin" data-placement="bottom" rel="tooltip" href="javascript:void(0);" data-toggle="dropdown" style="background: url({{ MEDIA_URL }}dashboard/icon/linkedin-logo.png) no-repeat; width:30px; height:30px;"></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% block body %}{% endblock %}
+</div>
+
+<!-- BEGIN FOOTER -->
+<div class="footer">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4 col-sm-4 space-mobile" id="about">
+        <!-- BEGIN ABOUT -->
+        <h2>About</h2>
+        <p class="margin-bottom-30">ChillPublic is Single Platform Solution for Customer Company Agent Communication.</p>
+        <!-- END ABOUT -->
+      </div>
+
+      <div class="col-md-4 col-sm-4 space-mobile">
+        <!-- BEGIN CONTACTS -->
+        <h2>Contact Us</h2>
+        <address class="margin-bottom-40">
+	  91-96117-22665 <br>
+          #98, Himagiri Complex, Banneghatta Road <br>
+          Bangalore, India. 560083
+        </address>
+        <!-- END CONTACTS -->
+      </div>
+
+      <div class="col-md-4 col-sm-4 space-mobile">
+        <!-- BEGIN CONTACTS -->
+        <h2>Information and PR</h2>
+        <address class="margin-bottom-40">
+		<a href="mailto:akanksha@chillpublic.com">info@chillpublic.com</a> <br>
+		<a href="mailto:akanksha@chillpublic.com">akanksha@chillpublic.com</a>
+        </address>
+        <!-- END CONTACTS -->
+      </div>
+
+
+    </div>
+  </div>
+</div>
+<!-- END FOOTER -->
+
+<!-- BEGIN COPYRIGHT -->
+<div class="copyright">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 col-sm-8">
+        <p>
+        <span class="margin-right-10">2013 © Chillpublic. ALL Rights Reserved.</span>
+        <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a>
+        </p>
+      </div>
+      <div class="col-md-4 col-sm-4">
+        <ul class="social-footer">
+          <li><a href="#"><i class="fa fa-facebook"></i></a></li>
+          <li><a href="#"><i class="fa fa-google-plus"></i></a></li>
+          <li><a href="#"><i class="fa fa-dribbble"></i></a></li>
+          <li><a href="#"><i class="fa fa-linkedin"></i></a></li>
+          <li><a href="#"><i class="fa fa-twitter"></i></a></li>
+          <li><a href="#"><i class="fa fa-skype"></i></a></li>
+          <li><a href="#"><i class="fa fa-github"></i></a></li>
+          <li><a href="#"><i class="fa fa-youtube"></i></a></li>
+          <li><a href="#"><i class="fa fa-dropbox"></i></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include "modal/error.html" %}
+
+{% block js %}{% endblock %}
+<script type="text/javascript">
+        function call_captcha() {
+            $.ajax({
+                type:"GET",
+                url:"{% url 'get_captcha' %}",
+                cache:false,
+                beforeSend:function(){
+                    $('#captcha').html('Loading Captcha..');
+                },
+                success:function(resp){
+                    $('#captcha').html(resp);
+                    $('input[name=captcha_1]').attr('placeholder', 'Insert Captcha');
+                }
+            });
+        }
+function login(obj) {
+    var email = $('input[name=email]').val();
+    var password = $('input[name=password]').val();
+    $.ajax({
+        type:"POST",
+        cache:false,
+        url:"{% url 'login' %}",
+        data:{'email':email, 'password':password, 'csrfmiddlewaretoken':'{{ csrf_token }}'},
+        beforeSend: function(){
+            $(obj).text('...');
+        },
+        success: function(resp){
+            $(obj).text('Login');
+            if (resp['status']) {
+                if (resp['next']) {
+                    window.location = resp['next'];
+                } else {
+                    window.location = "{% url 'dashboard' %}";
+                }
+
+            } else {
+                $('#errorModal').modal('show');
+                $('#errorModal .modal-body p').html(resp['msg']);
+            }
+        }
+    });
+
+}
+$(document).ready(function(){
+    $('[rel=tooltip]').tooltip();
+    $('input[name=email], input[name=password]').bind('keypress', function(e){
+        if (e.keyCode == 13 && $('input[name=email]').val() && $('input[name=password]').val()) {
+            login('.btn_login');
+        }
+    });
+});
+</script>
+
+</body>
+</html>

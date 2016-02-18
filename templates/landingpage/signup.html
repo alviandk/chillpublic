@@ -1,0 +1,194 @@
+{% extends "landingpage/base.html" %}
+{% block js %}
+<script type="text/javascript">
+function signup(obj) {
+    JSON_data = $('#signupform').serializeArray();
+    data = {};
+    for (i=0;i<JSON_data.length;i++) {
+        data[JSON_data[i]['name']] = JSON_data[i]['value'];
+    }
+    $('#signupform input').each(function(){
+        $(this).parent().removeClass('has-error');
+    });
+    $('input[name=captcha_1]').css('border', '');
+    $.ajax({
+        type:"POST",
+        cache:false,
+        url:"{% url 'signup_customer' %}",
+        data:data,
+        beforeSend:function(){
+            $(obj).text('Loading...');
+        },
+        success:function(resp){
+            $('#error_message').text('');
+            // console.log(resp);
+            $(obj).text('SignUp');
+            if (resp['status']) {
+                window.location = "{% url 'registration_success' %}";
+            } else {
+                var message_error = [];
+                for (i=0;i<resp['msg'].length;i++) {
+                    if (resp['msg'][i] == 'name') {
+                        $('input[name=first_name], input[name=last_name]').parent().addClass('has-error');
+                        $('#error_other').show();
+                    }
+                    if (resp['msg'][i] == 'email') {
+                        $('input[name=email1], input[name=email2]').parent().addClass('has-error');
+                        $('#error_other').show();
+                    }
+                    if (resp['msg'][i] == 'password') {
+                        $('input[name=password1], input[name=password2]').parent().addClass('has-error');
+                        $('#error_other').show();
+                    }
+                    if (resp['msg'][i] == 'mobile') {
+                        $('input[name=mobile]').parent().addClass('has-error');
+                        $('#error_other').show();
+                    }
+                    if (resp['msg'][i] == 'exist email') {
+                        $('input[name=email1]').parent().addClass('has-error');
+                        message_error.push("Email is already registered");
+                    }
+                    if (resp['msg'][i] == 'exist mobile') {
+                        $('input[name=mobile]').parent().addClass('has-error');
+                        message_error.push("Mobile number is already registered");
+                    }
+                    if (resp['msg'][i] == 'captcha') {
+                        alert('Invalid Captcha');
+                    }
+
+                }
+
+                if (message_error.length > 0) {
+                    $('#error_exists').show();
+                    var error_text = "";
+                    for (var i = 0; i < message_error.length; i++) {
+                        error_text += "<p>"+message_error[i]+"</p>";
+                    };
+
+                    $('#error_message').append(error_text);
+                }
+                
+                call_captcha();
+            }
+        }
+    });
+}
+$(document).ready(function(){
+    $('#error_message').text('');
+    call_captcha();
+    $('#signupform input').keyup(function(){
+        $(this).parent().removeClass('has-error');
+    });
+
+    $('.close_error_other').click(function(){
+        $('#error_other').toggle(false);
+        $('#error_message').text('');
+    })
+
+    $('.close_error_exists').click(function(){
+        $('#error_exists').toggle(false);
+        $('#error_message').text('');
+    })
+});
+</script>
+{% endblock %}
+
+
+{% block body %}
+<div class="contentpanel">
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-6">
+        <h1>SignUp Customer</h1>
+        <div class="alert alert-danger fade in" style="display: none;" id="error_other">
+            <button aria-hidden="true" class="close close_error_other" type="button">×</button>
+            You have some form errors. Please check below.
+        </div>
+        <div class="alert alert-danger fade in" style="display: none;" id="error_exists">
+            <button aria-hidden="true" class="close close_error_exists" type="button">×</button>
+            <div id="error_message"></div>
+        </div>
+        <form id="signupform" role="form" method="POST">{% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="first_name">First name</label>
+                        <input type="first_name" class="form-control" name="first_name" id="first_name" placeholder="Your First Name">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="last_name">Last name</label>
+                        <input type="last_name" class="form-control" name="last_name" id="last_name" placeholder="Last Name">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="input-group">
+                          <label class="sr-only" for="email1">Email address</label>
+                          <div class="input-group-addon">@</div>
+                          <input type="email" class="form-control" name="email1" id="email1" placeholder="Enter email">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="input-group">
+                          <label class="sr-only" for="email1">Email address</label>
+                          <div class="input-group-addon">@</div>
+                          <input type="email" class="form-control" name="email2" id="email1" placeholder="Re-Enter email">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="password1">Password</label>
+                        <input type="password" class="form-control" name="password1" id="password1" placeholder="Password">
+                        <span class="help-block">
+                            - Length of the password string should be between 8 and 32 characters <br>
+                            - At least 1 Upper Case letter <br>
+                            - At least 1 Number <br>
+                            - At least 1 Special Character
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="password2">Re-Enter Password</label>
+                        <input type="password" class="form-control" name="password2" id="password2" placeholder="Re-Enter Password">
+                    </div>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="mobile">Mobile Number</label>
+                        <input type="text" class="form-control" name="mobile" id="mobile" placeholder="Mobile Number">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group" style="padding-top:20px;text-align:right;">
+                        <div id="captcha" style="width:200px;margin-left:auto;margin-right:0px;margin-top:10px;height:100px;">
+                        </div>
+                        <i class="icon icon-refresh" style="cursor:pointer;float:right;margin-top:-40px;text-decoration:underline;" onclick="call_captcha();" title="Refresh captcha">refresh</i>
+
+                        <div class="btn btn-sm btn-success" onclick="signup(this);">SignUp</div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="form-group">
+                <span style="font-size:12px;">Creating an account means you’re okay with ChillPublic <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</span>
+            </div>
+
+        </form>
+    </div>
+    <div class="col-md-3"></div>
+</div>
+<div style="height:100px;"></div>
+{% endblock %}

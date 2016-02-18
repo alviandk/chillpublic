@@ -1,0 +1,174 @@
+{% extends 'dashboard/base.html' %}
+
+{% block css %}
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+
+{% endblock %}
+
+{% block js %}
+
+<script type="text/javascript">
+function remove_agent(obj, key) {
+    var ask = confirm('Do you really to delete this agent?');
+    if (ask) {
+        $.ajax({
+            type:"POST",
+            cache:false,
+            url:"{% url 'agent_delete' %}",
+            data:{
+                'csrfmiddlewaretoken':'{{ csrf_token }}',
+                'key':key
+            },
+            beforeSend:function(){
+                $(obj).html('Loading.. <span class="fa fa-trash-o"></span>');
+            },
+            success:function(resp){
+                if (resp['status']) {
+                    $(obj).parent().parent().fadeOut();
+                }
+
+            }
+        });
+    }
+}
+
+function accept_status(id, val){
+    var get_id = id;
+    var status = val;
+    $.ajax({
+        type:"POST",
+        cache:false,
+        url:"{% url 'verified-subscribe-provider' %}",
+        data:{
+            'csrfmiddlewaretoken':'{{ csrf_token }}',
+            'key':get_id,
+            'val': status,
+        },
+        success:function(resp){
+            console.log(resp['status']);
+            if (resp['status']) {
+                $("#row_"+get_id).remove();
+            }
+
+        }
+    });
+}
+
+function popup_chat(obj){
+    // $( "#test" ).load( "{% url 'ticket_view' %}?id="+obj );
+    $.ajax({
+        url: "{% url 'ticket_view' %}?id="+obj,
+        success: function (data) { 
+            console.log(data);
+            $('.test').append('<p style="position:relative; float:left;">'+data+'</p>'); 
+        },
+        // dataType: 'html'
+    });
+}
+
+</script>
+{% endblock %}
+
+{% block breadcumb %}
+                    <div class="pull-left breadcrumb_admin clear_both">
+                        <div class="pull-left page_title theme_color">
+                            <h1>dashboard</h1>
+                            <!-- <h2 class="">Live Tickets</h2> -->
+                        </div>
+                        <div class="pull-right">
+                            <ol class="breadcrumb">
+                                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                                <li class="active">Live Tickets</li>
+                            </ol>
+                        </div>
+                    </div>
+{% endblock %}
+
+{% block body %}
+
+                        <!-- <div class="row">
+                            <div class="col-lg-12">
+                                <section class="panel default blue_title h2">
+                                    <div class="panel-heading">Live Tickets
+                                    </div>
+                                    <div class="panel-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Title</th>
+                                                        <th>Time Opened</th>
+                                                        <th>Status</th>
+                                                        <th>is Online</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                {% for i in ticket_list %}
+                                                        <tr>
+                                                            <td>{{i.id}}</td>
+                                                            <td>
+                                                                {% if i.is_online %}
+                                                                    <a href="#" onclick="popup_chat( {{i.id}} )" class="ticket_title" id="{{i.id}}">{{i.title}}</a>
+                                                                {% else %}
+                                                                    <a href="{% url 'ticket_view1' %}?id={{i.id}}" class="ticket_title" id="{{i.id}}">{{i.title}}</a>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>{{i.timestamp}}</td>
+                                                            <td>
+                                                                Live
+                                                            </td>
+                                                            <td>
+                                                                {{i.online}}
+                                                            </td>
+                                                        </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                        </div> -->
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <section class="panel default blue_title h2">
+                                    <div class="panel-heading">Request Service Provider
+                                    </div>
+                                    <div class="panel-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>User</th>
+                                                        <th>Status</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                {% for i in subscribe_provider %}
+                                                    <tr id="row_{{i.id}}">
+                                                        <td>{{i.user}}</td>
+                                                        <td>
+                                                            {{i.get_status_display}}
+                                                        </td>
+                                                        <td>
+                                                            <a class="btn btn-primary btn-sm" href="javascript:void(0);" style="color:#fff;" onclick="accept_status({{i.id}}, 1);">Company Verified</a>
+                                                            <a class="btn btn-danger btn-sm" href="javascript:void(0);" style="color:#fff;" onclick="accept_status({{i.id}}, 2)">Rejected  </a>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+
+
+                    
+                            
+
+{% endblock %}

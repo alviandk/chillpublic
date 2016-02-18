@@ -1,0 +1,330 @@
+    <link href="{{ MEDIA_URL }}dashboard/css/font-awesome.css" rel="stylesheet" type="text/css" />
+    <link href="{{ MEDIA_URL }}dashboard/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="{{ MEDIA_URL }}dashboard/css/animate.css" rel="stylesheet" type="text/css" />
+    <link href="{{ MEDIA_URL }}dashboard/css/admin.css" rel="stylesheet" type="text/css" />
+    <link href="{{ MEDIA_URL }}css/chat1.css" rel="stylesheet" type="text/css" />
+
+    <script src="{{ MEDIA_URL }}dashboard/js/jquery-2.1.0.js"></script>
+    
+    <script src="{{ MEDIA_URL }}js/jquery.tmpl.min.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function(){
+            // var z = $('ul#message_body li').length
+            // if(z > 0){
+            //     $("#countdown").remove();
+            // }
+        // alert(z);
+        });
+    </script>
+
+    {% load socketio_tags %}
+    {% socketio %}
+        <script type="text/javascript">
+        var user = "{{ user.get_full_name|default:user.username }}".replace(/&quot;/g,"\"");
+        var id = "{{lookup.id}}".replace(/&quot;/g,"\"");
+        var agent = "{{lookup.assigned.user}}".replace(/&quot;/g,"\"");
+        var agent_full_name = "{{lookup.assigned.user.get_full_name}}".replace(/&quot;/g,"\"");
+        var second = 120;
+        var timeOutFunction;
+        var addItem = function(selector, item) {
+
+            if(item.change_status){
+                if(user != item.user){
+                    $("<li class='li_chat_new'><b>"+item.message+"</b></li>").appendTo(selector);
+                }
+            }
+            else{
+                if(user != item.user){
+                    $("<li class='li_chat_new'><span class='span_chat_new' style='float:right; background-color: #f6f7f8;'>"+item.user+ " >> " +item.message+"</span></li>").appendTo(selector);
+                }
+            }
+            $('.popup-messages').animate({scrollTop: $('.popup-messages').prop("scrollHeight")}, 500);
+        };
+
+        var addMessage = function(data) {
+            var d = new Date();
+            var win = $(window), doc = $(window.document);
+            var bottom = win.scrollTop() + win.height() == doc.height();
+            addItem('.message_body_'+data.id, data);
+            
+            if(data.user == agent || data.user == agent_full_name){
+                $("#countdown").remove();
+                $("#info-message").remove();
+                {% if user.customer %}
+                    $("#agent_name").show();
+                {% endif %}
+                clearInterval(timeOutFunction);
+            }
+        };
+
+        var socket;
+
+        var connected = function() {
+            socket.subscribe('room-' + window.room);
+            socket.send({room: window.room, action: 'join', name: name});
+
+            var z = $('ul#menu li').length;
+            // alert(z);
+
+            {% if user.customer %}
+            if(z <= 0){
+            //countdown time if no agent online or no response
+                second--;
+                {% if lookup.status == '1' %}
+                    // var link = $('<a href="#">Offline Ticket</a>';
+                    $("#countdown").html('All Agents are Busy, Waiting for '+second+' Seconds....Or <a href="#" onclick="offline_ticket({{lookup.id}})">Creating Offline Ticket</a>');
+                {% else %}
+                    $("#countdown").text('connecting in ' + second);
+                {% endif %}
+                if(second == 0){
+                    $("#countdown").hide();
+                    $("#info-message").show();
+                    clearInterval(timeOutFunction);
+                }
+            }
+            {% endif %}
+
+        };
+
+        var messaged = function(data) {
+            addMessage(data);
+        };
+
+
+        function start(){
+            socket = new io.Socket();
+            socket.connect();
+            socket.on('connect', connected);
+            socket.on('message', messaged);
+
+            //countdown time if no agent online or no response
+            timeOutFunction = setInterval(connected, 1000);
+        }
+
+        start();
+
+        function reconect(){
+
+            $("#countdown").show();
+            $("#info-message").hide();
+            second = 120;
+            start();
+        }
+        </script>
+
+    <script>window.room = {{ key }};</script>
+
+    <script type="text/javascript">
+        $(document).ready(function(){
+
+            // check session status
+            {% if request.session.chat_id %}
+                {% for data in request.session.chat_id %}
+                    $("#countdown").remove();
+                    $("#info-message").remove();
+                    {% if user.customer %}
+                        $("#agent_name").show();
+                    {% endif %}
+                    clearInterval(timeOutFunction);
+                {% endfor %}
+            {% endif %}
+
+            $('.input_chat').keypress(function (e) {
+                if (e.which == 13) {
+                    var v = $(this).attr("id");
+                    var message = $(this).val();
+                    if( {{key}} == v ){
+                        $.ajax({
+                            type:"POST",
+                            cache:false,
+                            url:"{% url 'comment_create' %}",
+                            data:{
+                                'csrfmiddlewaretoken':'{{ csrf_token }}',
+                                'id':v,
+                                'text':message
+                            },
+                            success:function(resp){
+                                // console.log(resp);
+                                // $("<li style='float:left; background-color:#f6f7f8;'>{{user}} >> " +message+"</li>").appendTo('#message_body');
+                                $(".input_chat").val('');
+                            }
+                        });
+                        $("<li class='li_chat_new'><span class='span_chat_new' style='float:left; background-color: #F0FFFF;'>{{ user.get_full_name|default:user.username }} >> " +message+"</span></li>").appendTo('.message_body_{{lookup.id}}');
+                        $(".input_chat").val('');
+                        $('.popup-messages').animate({scrollTop: $('.popup-messages').prop("scrollHeight")}, 500);
+                    }
+                    else{
+                        console.log('pass');
+                    }
+                }
+            });
+
+            $(".minimize").click(function(){
+                var get_id = $(this).attr('id').split('_');
+                // alert(get_id[1]);
+                $("#popup_messages_"+get_id[1]).hide();
+                $("#popup-input-"+get_id[1]).hide();
+                $("#maximize_"+get_id[1]).show();
+                $("#minimize_"+get_id[1]).hide();
+            });
+
+            $(".maximize").click(function(){
+                var get_id = $(this).attr('id').split('_');
+                // alert(get_id[1]);
+                $("#popup_messages_"+get_id[1]).show();
+                $("#popup-input-"+get_id[1]).show();
+                $("#maximize_"+get_id[1]).hide();
+                $("#minimize_"+get_id[1]).show();
+            });
+
+            $("#close").click(function(){
+                $.ajax({
+                    type:"GET",
+                    cache:false,
+                    url:"{% url 'remove_session' %}?id={{lookup.id}}",
+                    success:function(resp){
+                        // $(".popup-box").remove();
+                        setTimeout(function(){
+                          // $('.popup-box').remove();
+                          $('#frame_'+{{lookup.id}}, window.parent.document).remove();
+                        }, 2000);
+                    }
+                });
+            });
+        });
+    </script>
+
+    <script type="text/javascript">
+        function change_status(obj){
+            $.ajax({
+                type:"POST",
+                cache:false,
+                url:"{% url 'change-status' %}",
+                data:{
+                    'csrfmiddlewaretoken':'{{ csrf_token }}',
+                    'id': '{{lookup.id}}',
+                    'status': obj,
+                },
+                success:function(resp){
+                    console.log(resp);
+                    $.ajax({
+                        type:"GET",
+                        cache:false,
+                        url:"{% url 'remove_session' %}?id={{lookup.id}}",
+                        success:function(resp){
+                            $(".popup-box").remove();
+                            var delay = 2000;
+                            setTimeout(function(){ window.top.location = "/dashboard/tickets/view1/?id={{lookup.id}}"; }, delay);
+                        }
+                    });
+
+                }
+            });
+        }
+
+        function offline_ticket(obj){
+            $.ajax({
+                type:"GET",
+                cache:false,
+                url:"{% url 'remove_session' %}?id={{lookup.id}}",
+                success:function(resp){
+                    setTimeout(function(){
+                      window.top.location.href = "{% url 'ticket_view1' %}?id={{lookup.id}}";
+                    }, 2000);
+                }
+            });
+            
+        }
+
+    </script>
+    
+
+    <div class="test1">
+        <div class="popup-box" id="qazy" style="display: block;">
+            <div class="popup-head" style="background-color:#3a5795; color:#fff;">
+                <div class="popup-head-left" style="font-size:12px;" title="{{lookup.title}}">{{lookup.title|truncatechars:40}}</div>
+                <div class="popup-head-right">
+                    <a href="javascript:void(0);" class="maximize" id="maximize_{{lookup.id}}" title="Maximize" style="display:none">+</a>&nbsp;&nbsp;
+                    <a href="javascript:void(0);" class="minimize" id="minimize_{{lookup.id}}" title="Minimize">-</a>&nbsp;&nbsp;
+                    <a href="#" id="close" title="Offline Ticket">X</a>
+                </div>
+                <div style="clear: both"></div>
+            </div>
+            <div class="popup-head" style="background-color:#3a5795; color:#fff;">
+                <!-- <div class="popup-head-left"> -->
+                {% if user.agent %}
+                <div style="text-align:center;background-color:#fff; padding-top:5px; padding-bottom:5px;">
+                    <a href="javascript:void(0);" class="chat-settings fa fa-clock-o red_symbols" onclick="change_status(2);">Hold</a>
+                    <a href="#" class="chat-settings fa fa-folder-o green_symbols" onclick="change_status(3);">Resolve</a>
+                    <a href="#" class="chat-settings fa fa-star-o blue_symbols" onclick="change_status(4);">Close</a>
+                </div>
+                {% endif %}
+                <div class="popup-head-right">
+                    {% if user.customer %}
+                        <span id="agent_name" style="display:none;">
+                            {% if lookup.assigned.user.get_full_name|length > 0 %}
+                                {{lookup.assigned.user.get_full_name}}
+                            {% else %}
+                                {{lookup.assigned.user.username}}
+                            {% endif %}
+                        </span>
+                    {% endif %}
+                    <span id="countdown" class="countdown"></span>
+                    <span style="display:none;" id="info-message">
+                        <a href="#" onclick="reconect();">Reconect</a> or 
+                        <a href="#" onclick="offline_ticket( {{lookup.id}} )">Offline Ticket</a>
+                    </span>
+                </div>
+                <div style="clear: both"></div>
+            </div>
+            <div class="popup-messages" id="popup_messages_{{lookup.id}}">
+                <ul id="message_body" class="message_body_{{lookup.id}}" >
+                    {% if user.agent %}
+                        <li class="li_chat">
+                            <!-- Author : {{lookup.author}}<br /> -->
+                            <!-- Produk : {{lookup.department}}<br /> -->
+                            Mobile : {{lookup.author.customer.mobile_number}}<br />
+                            Account Number : {% if lookup.author.serviceprovider_set.all|length > 0 %}
+
+                                                {% for data in lookup.author.serviceprovider_set.all %}
+                                                    {% if forloop.first %}
+                                                        {{data.account_number}}<br />
+                                                    {% endif %}
+                                                {% endfor %}
+
+                                            {% else %}
+                                                Non Existing Customer<br />
+                                            {% endif %}
+
+                            DOB :   {% if lookup.author.serviceprovider_set.all|length > 0 %}
+
+                                        {% for data in lookup.author.serviceprovider_set.all %}
+                                            {% if forloop.first %}
+                                                {{data.dob}}
+                                            {% endif %}
+                                        {% endfor %}
+
+                                    {% else %}
+                                        Non Existing Customer
+                                    {% endif %}
+
+                        </li>
+                    {% endif %}
+                    {% for i in lookup.comments.all|dictsort:"id" %}
+                        {% include 'dashboard/ajax/comment1.html' %}
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="popup-input" id="popup-input-{{lookup.id}}">
+                <input type="text" class="input_chat" name="text" id="{{lookup.id}}" placeholder="Type a message">
+            </div>
+        </div>
+    </div>
+
+        <!-- end chat -->
+
+
+
+
+        

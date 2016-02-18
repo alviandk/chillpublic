@@ -1,0 +1,87 @@
+{% extends 'dashboard/base.html' %}
+
+{% block js %}
+<script type="text/javascript">
+function remove_form(obj, key) {
+    var ask = confirm('Do you really to delete this form?');
+    if (ask) {
+        $.ajax({
+            type:"POST",
+            cache:false,
+            url:"{% url 'form_delete' %}",
+            data:{
+                'csrfmiddlewaretoken':'{{ csrf_token }}',
+                'key':key
+            },
+            beforeSend:function(){
+                $(obj).html('Loading.. <span class="fa fa-trash-o"></span>');
+            },
+            success:function(resp){
+                if (resp['status']) {
+                    $(obj).parent().parent().fadeOut();
+                }
+
+            }
+        });
+    }
+}
+</script>
+{% endblock %}
+
+{% block breadcumb %}
+    <div class="pull-left breadcrumb_admin clear_both">
+        <div class="pull-left page_title theme_color">
+            <h1>dashboard</h1>
+            <h2 class="">Forms</h2>
+        </div>
+        <div class="pull-right">
+            <ol class="breadcrumb">
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="active">Forms</li>
+            </ol>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+
+    <div class="row">
+        <div class="col-lg-12">
+            <section class="panel default blue_title h2">
+                <div class="panel-heading">Form List
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Form Name</th>
+                                    <th>Department Name</th>
+                                    <th>Type Form</th>
+                                    <th style="width:200px;text-align:center;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for i in form_list %}
+                                <tr>
+                                    <td>{{forloop.counter}}</td>
+                                    <td>{{i.name}}</td>
+                                    <td>{{i.department.name}}</td>
+                                    <td>{{i.get_type_form_display}}</td>
+                                    <td>
+                                        <a href="{% url 'form_edit' key=i.id %}" class="btn btn-default">Edit <span class="fa fa-edit"></span></a>
+                                        <div class="btn btn-danger" onclick="remove_form(this, '{{i.id}}');">Remove <span class="fa fa-trash-o"></span></div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <a href="{% url 'form_create' %}" class="btn btn-primary"><span class="fa fa-plus"></span> Add Form</a>
+                </div>
+            </section>
+        </div>
+    </div>
+
+{% endblock %}

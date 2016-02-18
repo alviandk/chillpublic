@@ -1,0 +1,17 @@
+<script src="{{ MEDIA_URL }}dashboard/js/jquery.min.js" type="text/javascript"></script>
+<script src="http://192.168.1.6:4000/socket.io/socket.io.js"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+
+        var socket = io.connect('http://192.168.1.6:4000', { query: "type=notif" });
+
+        socket.on('connect', function(){
+            console.log("connect");
+        });
+
+        socket.on('message', function(message) {
+            alert('new chat request');
+        });
+
+    });
+</script>

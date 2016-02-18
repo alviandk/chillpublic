@@ -1,0 +1,277 @@
+{% extends 'dashboard/base.html' %}
+
+{% block css %}
+<script type="text/javascript" src="{{ MEDIA_URL }}dashboard/plugins/bootstrap-fileupload/bootstrap-fileupload.min.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}dashboard/plugins/dropzone/dropzone.min.js"></script>
+<style>
+.alert {display:none;margin-top:10px;}
+</style>
+{% endblock %}
+
+{% block js %}
+<link href="{{ MEDIA_URL }}dashboard/plugins/bootstrap-fileupload/bootstrap-fileupload.min.css" rel="stylesheet">
+<link href="{{ MEDIA_URL }}dashboard/plugins/dropzone/dropzone.css" rel="stylesheet">
+
+<script type="text/javascript">
+function save_profile(obj) {
+    $('.alert').hide();
+    var first_name = $('input[name=first_name]').val();
+    var last_name = $('input[name=last_name]').val();
+    var company_name = $('input[name=company_name]').val();
+    var company_address = $('input[name=company_address]').val();
+    var email = $('input[name=email]').val();
+    var password = $('input[name=password]').val();
+    var repassword = $('input[name=repassword]').val();
+
+    if ({% if request.is_company %}company_name && email{% else %}first_name && last_name && email{% endif %}) {
+        $('#profile_form').submit();
+    } else {
+        $('.alert').fadeIn();
+        $('.alert.alert-danger').show();
+    }
+
+}
+$(document).ready(function(){
+    {% if error %}
+        $('.alert').fadeIn();
+        $('.alert.alert-danger').text('{{error}}');
+    {% endif %}
+});
+</script>
+{% endblock %}
+
+{% block breadcumb %}
+    <div class="pull-left breadcrumb_admin clear_both">
+        <div class="pull-left page_title theme_color">
+            <h1>dashboard</h1>
+            <h2 class="">Profile</h2>
+        </div>
+        <div class="pull-right">
+            <ol class="breadcrumb">
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="active">Profile</li>
+            </ol>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+<div class="page-content">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="profile_bg">
+                <div class="user-profile-sidebar">
+                    <div class="row">
+                        <div class="col-md-4">
+                        {% if request.is_company and request.user.company.logo %}
+                            <img src="{{request.user.company.logo.url}}" style="width:80px;" />
+                        {% endif %}
+                        {% if request.is_head and request.user.head_company.photo %}
+                            <img src="{{request.user.head_company.photo.url}}" style="width:80px;" />
+                        {% endif %}
+                        {% if request.is_agent and request.user.agent.photo %}
+                            <img src="{{request.user.agent.photo.url}}" style="width:80px;" />
+                        {% endif %}
+                        {% if request.is_customer and request.user.customer.photo %}
+                            <img src="{{request.user.customer.photo.url}}" style="width:80px;" />
+                        {% endif %}
+                        {% if not request.user.company.logo and not request.user.head_company.photo and not request.user.agent.photo and not request.user.customer.photo %}
+                            <img src="http://www.placehold.it/80x80/CCC/AAAAAA&text=no+image" />
+                        {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <div class="user-identity">
+                                <h4><strong>{% if request.is_company %}{{request.user.company.company_name}}{% else %}{{ request.user.first_name }} {{ request.user.last_name }}{% endif %}</strong></h4>
+                                {% if request.is_company %}
+                                <p><i class="fa fa-map-marker"></i> {{request.user.company.address}}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- {% if not request.is_head and not request.is_customer %}
+                    <div class="user-button">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <button type="button" class=" btn btn-primary btn-rounded"><i class="fa fa-envelope"></i> Send Message</button>
+                            </div>
+                            <div class="col-sm-6">
+                                <button type="button" class="btn btn-default btn-rounded"><i class="fa fa-user"></i> Add as friend</button>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %} -->
+                <div class="user-button">
+                    <small class="">User Type</small>
+                    <p>
+                        {% if request.is_customer %}Customer{% endif %}
+                        {% if request.is_head %} Department Head {% endif %}
+                        {% if request.is_company %}Company Admin{% endif %}
+                        {% if request.is_agent %}Agent{% endif %}
+                    </p>
+                    <div class="line"></div>
+                    <p class="m-t-sm"> </p>
+                </div>
+                <h6><strong >CONNECTION</strong></h6>
+                <div class="">
+                    <ul class="social_icons ">
+                        <li><a href="#"><i class="fa fa-envelope-o"></i></a></li>
+                        <li><a href="#"><i class="fa fa-twitter"></i></a></li>
+                        <li><a href="#"><i class="fa fa-linkedin"></i></a></li>
+                        <li><a href="#"><i class="fa fa-facebook"></i></a></li>
+                        <li><a href="#"><i class="fa fa-skype"></i></a></li>
+                    </ul>
+                </div>
+            </div>
+            <!--/block-web-->
+
+        </div>
+        <!--/col-md-4-->
+        <div class="col-md-8">
+            <div class="block-web full">
+                <ul id="tabProfile" class="nav nav-tabs nav-justified nav_bg">
+                    <li class="{% if not icon_btn %}active{% endif %}"><a href="#edit-profile" data-toggle="tab"><i class="fa fa-pencil"></i> Edit</a></li>
+                    <li class="{% if icon_btn %}active{% endif %}"><a href="#user-activities" data-toggle="tab"><i class="fa fa-laptop"></i> Activities</a></li>
+                    <!-- <li class=""><a href="#mymessage" data-toggle="tab"><i class="fa fa-envelope"></i> Message</a></li> -->
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane animated fadeInRight {% if not icon_btn %}active{% endif %}" id="edit-profile">
+                        <div class="user-profile-content">
+                            <form id="profile_form" method="POST" action="{% url 'profile_save' %}" role="form" enctype="multipart/form-data">{% csrf_token %}
+                            {% if request.is_company %}
+                                <div class="form-group">
+                                    <label for="CompanyName">Company Logo</label>
+                                    <input type="file" name="company_logo" class="form-control" id="CompanyName">
+
+            <!--div class="porlets-content">
+              <p>This is just a demo. Uploaded files are <strong>not</strong> stored. This does not handle your file uploads on the server. You have to implement the code to receive and store the file yourself.</p>
+              <br>
+              <form class="dropzone dz-clickable" action="http://riaxe.com/file/post">
+
+              <div class="dz-default dz-message"><span>Drop files here to upload</span></div></form>
+            </div-->
+
+                                </div>
+                                <div class="form-group">
+                                    <label for="CompanyName">Company Name {{request.user.agent}}</label>
+                                    <input type="text" name="company_name" class="form-control" id="CompanyName" value="{{request.user.company.company_name}}">
+                                </div>
+                                <div class="form-group">
+                                    <label for="CompanyAddress">Company Address</label>
+                                    <input type="text" name="address" class="form-control" id="CompanyAddress" value="{{request.user.company.address}}">
+                                </div>
+
+                            {% else %}
+                                <div class="form-group">
+                                    <label for="CompanyName">Your Photo</label>
+                                    <input type="file" name="photo" class="form-control" id="CompanyName">
+                                </div>
+                                <div class="form-group">
+                                    <label for="FirstName">First Name</label>
+                                    <input type="text" name="first_name" class="form-control" id="FirstName" value="{{request.user.first_name}}">
+                                </div>
+                                <div class="form-group">
+                                    <label for="LastName">Last Name</label>
+                                    <input type="text" name="last_name" class="form-control" id="LastName" value="{{request.user.last_name}}">
+                                </div>
+                            {% endif %}
+                                <div class="form-group">
+                                    <label for="Email">Email</label>
+                                    <input type="email" name="email" class="form-control" id="Email" value="{{request.user.username}}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="Password">Password</label>
+                                    <input type="password" name="password" class="form-control" id="Password" placeholder="6 - 15 Characters">
+                                </div>
+                                <div class="form-group">
+                                    <label for="RePassword">Re-Password</label>
+                                    <input type="password" name="repassword" class="form-control" id="RePassword" placeholder="6 - 15 Characters">
+                                </div>
+                                {% if request.is_company %}
+                                <div class="form-group">
+                                    <label for="AboutMe">About Us</label>
+                                    <textarea class="form-control" id="AboutMe" style="height: 125px;">{% if request.user.company.about_us %}{{ request.user.company.about_us }}{% endif %}</textarea>
+                                </div>
+                                {% endif %}
+                                <div class="btn btn-primary" onclick="save_profile(this);">Save</div>
+                                <div class="alert alert-success">
+                                    successfully.
+                                </div>
+                                <div class="alert alert-danger">
+                                    please check again.
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                    <div class="tab-pane {% if icon_btn %}active{% endif %}" id="user-activities">
+                        <ul class="media-list">
+                            {% for i in activities %}
+                            <li class="media">
+                                <a href="#">
+                                    <p><strong>{{request.name}}</strong> {{ i.text }} <br>
+                                        <i>{{ i.created_at|timesince }} ago</i>
+                                    </p>
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="tab-pane" id="mymessage">
+                        <ul class="media-list">
+                            <li class="media">
+                                <a class="pull-left" href="#"><img src="{{ MEDIA_URL }}dashboard/images/gg.png" /></a>
+                                <div class="media-body">
+                                    <h4 class="media-heading"><a href="#fakelink">John Doe</a> <small>Just now</small></h4>
+                                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+                                </div>
+                            </li>
+                            <li class="media">
+                                <a class="pull-left" href="#"><img src="{{ MEDIA_URL }}dashboard/images/gg.png" /></a>
+                                <div class="media-body">
+                                    <h4 class="media-heading"><a href="#fakelink">Tim Southee</a> <small>Yesterday at 04:00 AM</small></h4>
+                                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam rhoncus</p>
+                                </div>
+                            </li>
+                            <li class="media">
+                                <a class="pull-left" href="#"><img src="{{ MEDIA_URL }}dashboard/images/gg.png" /></a>
+                                <div class="media-body">
+                                    <h4 class="media-heading"><a href="#fakelink">Kane Williamson</a> <small>January 17, 2014 05:35 PM</small></h4>
+                                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+                                </div>
+                            </li>
+                            <li class="media">
+                                <a class="pull-left" href="#"><img src="{{ MEDIA_URL }}dashboard/images/gg.png" /></a>
+                                <div class="media-body">
+                                    <h4 class="media-heading"><a href="#fakelink">Lonwabo Tsotsobe</a> <small>January 17, 2014 05:35 PM</small></h4>
+                                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+                                </div>
+                            </li>
+                            <li class="media">
+                                <a class="pull-left" href="#"><img src="{{ MEDIA_URL }}dashboard/images/gg.png" /></a>
+                                <div class="media-body">
+                                    <h4 class="media-heading"><a href="#fakelink">Dale Steyn</a> <small>January 17, 2014 05:35 PM</small></h4>
+                                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+                                </div>
+                            </li>
+                            <li class="media">
+                                <a class="pull-left" href="#"><img src="{{ MEDIA_URL }}dashboard/images/gg.png" /></a>
+                                <div class="media-body">
+                                    <h4 class="media-heading"><a href="#fakelink">John Doe</a> <small>Just now</small></h4>
+                                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!--/tab-content-->
+            </div>
+            <!--/block-web-->
+        </div>
+        <!--/col-md-8-->
+    </div>
+    <!--/row-->
+</div>
+{% endblock %}

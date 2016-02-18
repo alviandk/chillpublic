@@ -1,0 +1,794 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>CHILLPUBLIC</title>
+        <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+        <link href="{{ MEDIA_URL }}dashboard/css/font-awesome.css" rel="stylesheet" type="text/css" />
+        <link href="{{ MEDIA_URL }}dashboard/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+        <link href="{{ MEDIA_URL }}dashboard/css/animate.css" rel="stylesheet" type="text/css" />
+        <link href="{{ MEDIA_URL }}dashboard/css/admin.css" rel="stylesheet" type="text/css" />
+        {% if '/dashboard/agents/performance/' in request.path or '/dashboard/departments/performance/' in request.path %}
+        <link href="{{ MEDIA_URL }}dashboard/css/components-rounded.css" rel="stylesheet" type="text/css" />
+        {% endif %}
+        <link rel="stylesheet" href="{{ MEDIA_URL }}dashboard/js/jqueryui/themes/base/jquery-ui.css" />
+        {% block css %}{% endblock %}
+        <style>
+            a#logo:hover {text-decoration:none;}
+            body {background-color:#F1F1F1;}
+            .trial {background:#C00;color:#FFF;padding:5px 5px;text-align:center;}
+            .trial a {margin-top:0px;}
+            {% if request.is_company and request.user.company.is_trial %}
+            .fixed_header .contentpanel, .left_nav_fixed .left_nav {top:90px;}
+            {% else %}
+            .trial {display:none;}
+            {% endif %}
+            label[for=id_captcha_1] {display:none;}
+            .alert {display:none;}
+
+            .dd-image-right-selected {
+                float: right;
+                margin-right: 15px !important;
+                margin-left: 5px;
+                margin-top: 4px !important;
+            }
+        </style>
+    </head>
+    <body class="light_theme  fixed_header left_nav_fixed" id="rootbody">
+        <div class="wrapper">
+
+            <!--\\\\\\\ wrapper Start \\\\\\-->
+            <div class="header_bar">
+            <span id="loading_ajax" style="border:1px solid #c0c0c0; background-color:yellow;color:#000;padding:5px; position:fixed;bottom: 0;
+    right: 0; display:none;"><b>Loading....</b></span>
+            <div class="trial">You are currently using the trial version. <a href="{% url 'packages' %}" class="btn btn-primary btn-mini">Upgrade</a></div>
+                <!--\\\\\\\ header Start \\\\\\-->
+                <div class="brand">
+                    <!--\\\\\\\ brand Start \\\\\\-->
+                    <a id="logo" href="{% url 'dashboard' %}"><div class="logo" style="display:block"><span class="theme_color">CHILL</span>PUBLIC</div></a>
+                    <div class="small_logo" style="display:none"><img src="{{ MEDIA_URL }}dashboard/images/s-logo.png" width="50" height="47" alt="s-logo" /> <img src="{{ MEDIA_URL }}dashboard/images/r-logo.png" width="122" height="20" alt="r-logo" /></div>
+                </div>
+                <!--\\\\\\\ brand end \\\\\\-->
+                <div class="header_top_bar">
+                    <!--\\\\\\\ header top bar start \\\\\\-->
+                    <a href="javascript:void(0);" class="menutoggle"> <i class="fa fa-bars"></i> </a>
+                    <div class="top_left">
+                        <div class="top_left_menu">
+                            <ul>
+                                <!-- <li> <a href="javascript:void(0);"> <i class="fa fa-repeat"></i> </a> </li> -->
+                                <!-- <li> <a href="javascript:void(0);"> <i class="fa fa-th-large"></i> </a> </li> -->
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- <a href="javascript:void(0);" class="add_user" data-toggle="modal" data-target="#myModal"> <i class="fa fa-plus-square"></i> <span> New Task</span> </a> -->
+                    <div class="top_right_bar">
+                        {% if request.is_agent %}
+                            <div class="top_right">
+                                <button id="change_to_online" style="display: none;">a</button>
+                                <div class="top_right_menu" style="margin-top: 10px;margin-right: -25px;">
+                                    STATUS
+                                </div>
+                            </div>
+                            <div class="top_right">
+                                <div class="top_right_menu">
+                                    <input type="hidden" id="agent_status_now" value="{{ request.agent_status }}">
+                                    <select id="another_status" style="width: 150px;">
+                                        <option value="-">-- Select Status--</option>
+                                        <option value="0" data-imagesrc="{{ MEDIA_URL }}images/green.png" {% if request.agent_status == '' or request.agent_status == '0' %}selected{% endif %} >Online</option>
+                                        <option value="1" data-imagesrc="{{ MEDIA_URL }}images/orange.png" {% if request.agent_status == '1' %}selected{% endif %} >Away</option>
+                                        <option value="2" data-imagesrc="{{ MEDIA_URL }}images/grey.png" {% if request.agent_status == '2' %}selected{% endif %} >On Leave</option>
+                                    </select>
+                                    <!-- <ul>
+                                        <li class="dropdown" style="margin: 6px 0px 0px 0px;">
+                                            STATUS &nbsp;
+                                            <select id="another_status" style="width: 150px;">
+                                                <option value="" data-imagesrc="{{ MEDIA_URL }}images/green.png">Online</option>
+                                                <option value="1" data-imagesrc="{{ MEDIA_URL }}images/grey.png" {% if request.agent_status == '1' %} selected {% endif %} >Away</option>
+                                                <option value="2" data-imagesrc="{{ MEDIA_URL }}images/yellow.png" {% if request.agent_status == '2' %} selected {% endif %} >On Leave</option>
+                                            </select>
+                                        </li>
+                                    </ul> -->
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div class="top_right">
+                            <div class="top_right_menu" style="margin-top: 7px;margin-right: -35px;">
+                                <button onclick="redirect_act()" class="btn btn-default" ><i class="fa fa-laptop"></i> Activities</button>
+                            </div>
+                        </div>
+                        <div class="top_right">
+                            <div class="top_right_menu">
+                                <ul>
+                                    <li class="dropdown">
+                                        <a href="javascript:void(0);" data-toggle="dropdown"> Notification <span class="badge badge" id="notif">{{ request.notification.count }}</span> </a>
+                                        <ul class="drop_down_task dropdown-menu">
+                                            <div class="top_pointer"></div>
+                                            <li class="count_notif">
+                                                {% if request.notification %}
+                                                    <p class="number">You have {{ request.notification.count }} pending notification</p>
+                                                {% else %}
+                                                    <p class="number">You don't have notification</p>
+                                                {% endif %}
+                                            </li>
+                                            {% for i in request.notification %}
+                                            <li class="message_notif">
+                                                {% if i.notif_type == 1 %}
+                                                    <a href="#" onclick="update_notification( {{i.id}}, {{i.ref_id}} )">
+                                                        Ticket {{i.ref_id}} state changed into {{i.data.get_status_display}}
+                                                    </a>
+                                                {% else %}
+                                                    {% for a in i.data.ticket_set.all %}
+                                                        {% if forloop.first %} 
+                                                            <a href="#" onclick="update_notification({{i.id}}, {{a.id}})">
+                                                                New Comment in ticket {{a.id}}
+                                                            </a>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </li>
+                                            {% endfor %}
+                                            <li> 
+                                                <span class="new"> 
+                                                    <a href="{% url 'notification' %}" class="pull-right">View All</a> 
+                                                </span> 
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="user_admin dropdown">
+                            <a href="javascript:void(0);" data-toggle="dropdown">
+                        {% if request.is_company and request.user.company.logo %}
+                            <img id="base_photo" src="{{request.user.company.logo.url}}" style="width:40px;height:40px;" />
+                        {% endif %}
+                        {% if request.is_head and request.user.head_company.photo %}
+                            <img id="base_photo" src="{{request.user.head_company.photo.url}}" style="width:40px;height:40px;" />
+                        {% endif %}
+                        {% if request.is_agent and request.user.agent.photo %}
+                            <img id="base_photo" src="{{request.user.agent.photo.url}}" style="width:40px;height:40px;" />
+                        {% endif %}
+                        {% if request.is_customer and request.user.customer.photo %}
+                            <img id="base_photo" src="{{request.user.customer.photo.url}}" style="width:40px;height:40px;" />
+                        {% endif %}
+                        {% if not request.user.company.logo and not request.user.head_company.photo and not request.user.agent.photo and not request.user.customer.photo %}
+                            <img id="base_photo" src="{{MEDIA_URL}}images/no_images.png" />
+                        {% endif %}
+
+                            <span class="user_adminname">{{request.name}}</span> <b class="caret"></b> </a>
+                            <ul class="dropdown-menu">
+                                <div class="top_pointer"></div>
+                                <li> <a href="{% url 'profile' %}"><i class="fa fa-user"></i> Profile</a> </li>
+                                <li> <a href="#"><i class="fa fa-question-circle"></i> Help</a> </li>
+                                <li> <a href="{% url 'logout' %}"><i class="fa fa-power-off"></i> Logout</a> </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!--\\\\\\\ header top bar end \\\\\\-->
+            </div>
+            <!--\\\\\\\ header end \\\\\\-->
+            <div class="inner">
+                <!--\\\\\\\ inner start \\\\\\-->
+                <div class="left_nav">
+                    <!--\\\\\\\left_nav start \\\\\\-->
+                    <!-- <div class="search_bar"> <i class="fa fa-search"></i>
+                        <input name="" type="text" class="search" placeholder="Search Dashboard..." />
+                    </div> -->
+                    <div class="left_nav_slidebar">
+                    {% if request.is_customer %}
+                        <ul>
+                            <li{% if '/dashboard/' == request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <!-- <a href="{% url 'dashboard' %}"> <i class="fa fa-dashboard"></i> Dashboard</a> -->
+                                <a href="javascript:void(0);" onclick="ajax_load('');"><i class="fa fa-dashboard"></i> Dashboard</a>
+                            </li>
+                            <li{% if 'live-support' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="javascript:void(0);" onclick="ajax_load1('support', 'live');"><i class="fa fa-headphones"></i> Live Support</a>
+                            </li>
+                            <li{% if 'live-support' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="javascript:void(0);" onclick="ajax_load1('support', 'offline');"><i class="fa fa-headphones"></i> Offline Ticket</a>
+                            </li>
+                            <li{% if 'kyc' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <!-- <a href="{% url 'kyc' %}"> <i class="fa fa-users"></i> KYC Verification</a> -->
+                                <a href="javascript:void(0);" onclick="ajax_load('kyc');"><i class="fa fa-users"></i> KYC Verification</a>
+                            </li>
+                            <li{% if 'my-service-providers' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <!-- <a href="{% url 'service-provider' %}"> <i class="fa fa-rss"></i> My Service Providers</a> -->
+                                <a href="javascript:void(0);" onclick="ajax_load('my-service-providers');"><i class="fa fa-rss"></i> My Service Providers</a>
+                            </li>
+                            <li{% if 'tickets' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <!-- <a href="{% url 'tickets' %}"> <i class="fa fa-ticket"></i> Tickets</a> -->
+                                <a href="javascript:void(0);" onclick="ajax_load('tickets');"><i class="fa fa-ticket"></i> Tickets</a>
+                            </li>
+                            <!-- <li{% if 'resolved' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="javascript:void(0);" onclick="ajax_load('resolved');"><i class="fa fa-check-square-o"></i> Resolved</a>
+                            </li> -->
+                            <li{% if 'forms' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <!-- <a href="{% url 'forms_customer' %}"> <i class="fa fa-pencil-square-o"></i> Forms</a> -->
+                                <a href="javascript:void(0);" onclick="ajax_load('forms/customer');"><i class="fa fa-pencil-square-o"></i> Service/Application/Query Forms</a>
+                            </li>
+                            <li{% if 'profile' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <!-- <a href="{% url 'profile' %}"> <i class="fa fa-user"></i> Profile</a> -->
+                                <a href="javascript:void(0);" onclick="ajax_load('profile');"><i class="fa fa-user"></i> Profile</a>
+                            </li>
+                        </ul>
+                    {% endif %}
+                    {% if request.is_head %}
+                        <ul>
+                            <li{% if '/dashboard/' == request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'dashboard' %}"> <i class="fa fa-dashboard"></i> Dashboard</a>
+                            </li>
+
+                            <li{% if 'agents' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'agents' %}"> <i class="fa fa-users"></i> My Agents</a>
+                            </li>
+
+                            <li{% if 'departments' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'departments' %}"> <i class="fa fa-building-o"></i> My Departments</a>
+                            </li>
+
+                            <li{% if 'escalated_tickets' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'escalated_tickets' %}"> <i class="fa fa-ticket"></i> Escalated Tickets</a>
+                            </li>
+
+                            <li{% if 'packages' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'packages' %}"> <i class="fa fa-bars"></i> Brand Value</a>
+                            </li>
+
+                            <li{% if 'profile' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'profile' %}"> <i class="fa fa-user"></i> Profile</a>
+                            </li>
+                        </ul>
+                    {% endif %}
+
+                    {% if request.is_company %}
+                        <ul>
+
+                            <li{% if '/dashboard/' == request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'dashboard' %}"> <i class="fa fa-dashboard"></i> Dashboard</a>
+                            </li>
+
+                            <li{% if 'agents' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'agents' %}"> <i class="fa fa-users"></i> Agents</a>
+                            </li>
+
+                            <li{% if 'departments' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'departments' %}"> <i class="fa fa-building-o"></i> Departments</a>
+                            </li>
+
+                            <li{% if 'company_heads' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'company_heads' %}"> <i class="fa fa-male"></i> Department Heads</a>
+                            </li>
+                            <li{% if 'forms' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'forms_company' %}"> <i class="fa fa-pencil-square-o"></i> Forms</a>
+                            </li>
+
+                            <li{% if 'packages' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'packages' %}"> <i class="fa fa-bars"></i> Packages</a>
+                            </li>
+                            <li{% if 'profile' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'profile' %}"> <i class="fa fa-user"></i> Profile</a>
+                            </li>
+                            <li{% if 'settings' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'settings' %}"> <i class="fa fa-wrench"></i> Settings</a>
+                            </li>
+                        </ul>
+                    {% endif %}
+                    {% if request.is_agent %}
+                        <ul>
+                            <li{% if '/dashboard/' == request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'dashboard' %}"> <i class="fa fa-dashboard"></i> Dashboard</a>
+                            </li>
+                            <li{% if 'tickets' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'tickets' %}"> <i class="fa fa-ticket"></i> Tickets</a>
+                            </li>
+                            <li{% if 'service-provider' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'agent_service_provider' %}"> <i class="fa fa-rss"></i> Account Verification Service</a>
+                            </li>
+                            <li{% if 'service-provider' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'agent_view_forms' %}"> <i class="fa fa-credit-card"></i> View Form</a>
+                            </li>
+                            <li{% if 'profile' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'profile' %}"> <i class="fa fa-user"></i> Profile</a>
+                            </li>
+
+                        </ul>
+                    {% endif %}
+                    {% if request.is_kyc %}
+                        <ul>
+                            <li{% if 'kyc-partner' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'kyc-partner' %}"> <i class="fa fa-dashboard"></i> Dashboard</a>
+                            </li>
+                            <li{% if 'my-kyc-verification' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'my-kyc-verification' %}"> <i class="fa fa-ticket"></i> My KYC Verification</a>
+                            </li>
+                            <li{% if 'profile' in request.META.PATH_INFO %} class="left_nav_active"{% endif %}>
+                                <a href="{% url 'profile' %}"> <i class="fa fa-user"></i> Profile</a>
+                            </li>
+
+                        </ul>
+                    {% endif %}
+
+                    </div>
+                </div>
+                <!--\\\\\\\left_nav end \\\\\\-->
+                <div class="contentpanel">
+                    <!--\\\\\\\ contentpanel start\\\\\\-->
+                    <div id="breadcumb">
+                        {% block breadcumb %}{% endblock %}
+                    </div>
+                    <div class="container clear_both padding_fix" id="container">
+                        <div id="container_element">
+                            {% block body %}{% endblock %}
+                        </div>
+                    </div>
+                    <!--\\\\\\\ container  end \\\\\\-->
+                </div>
+                <!--\\\\\\\ content panel end \\\\\\-->
+            </div>
+            <!--\\\\\\\ inner end\\\\\\-->
+        </div>
+        <!--\\\\\\\ wrapper end\\\\\\-->
+        <!-- Modal -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Compose New Task</h4>
+                    </div>
+                    <div class="modal-body"> content </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="status_agent" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button> -->
+                <h4 class="modal-title" id="exampleModalLabel">How long was on leave</h4>
+              </div>
+              <div class="modal-body">
+                <form>
+                  <input type="hidden" id="agent_id">
+                  <input type="hidden" id="status_id">
+                  <div class="form-group">
+                    <label for="message-text" class="control-label">Day:</label>
+                    <input type="text" class="form-control" id="days">
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" id="close_modal" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" onclick="submit_on_leave()" class="btn btn-primary">Submit</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Compose New Task</h4>
+                    </div>
+                    <div class="modal-body"> sgxdfgxfg </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- sidebar chats -->
+        <nav class="atm-spmenu atm-spmenu-vertical atm-spmenu-right side-chat">
+            <div class="header">
+                <input type="text" class="form-control chat-search" placeholder=" Search">
+            </div>
+            <div href="#" class="sub-header">
+                <div class="icon"><i class="fa fa-user"></i></div>
+                <p>Online (4)</p>
+            </div>
+            <div class="content">
+                <p class="title">Family</p>
+                <ul class="nav nav-pills nav-stacked contacts">
+                    <li class="online"><a href="#"><i class="fa fa-circle-o"></i> Steven Smith</a></li>
+                    <li class="online"><a href="#"><i class="fa fa-circle-o"></i> John Doe</a></li>
+                    <li class="online"><a href="#"><i class="fa fa-circle-o"></i> Michael Smith</a></li>
+                    <li class="busy"><a href="#"><i class="fa fa-circle-o"></i> Chris Rogers</a></li>
+                </ul>
+                <p class="title">Friends</p>
+                <ul class="nav nav-pills nav-stacked contacts">
+                    <li class="online"><a href="#"><i class="fa fa-circle-o"></i> Vernon Philander</a></li>
+                    <li class="outside"><a href="#"><i class="fa fa-circle-o"></i> Kyle Abbott</a></li>
+                    <li><a href="#"><i class="fa fa-circle-o"></i> Dean Elgar</a></li>
+                </ul>
+                <p class="title">Work</p>
+                <ul class="nav nav-pills nav-stacked contacts">
+                    <li><a href="#"><i class="fa fa-circle-o"></i> Dale Steyn</a></li>
+                    <li><a href="#"><i class="fa fa-circle-o"></i> Morne Morkel</a></li>
+                </ul>
+            </div>
+            <div id="chat-box">
+                <div class="header">
+                    <span>Richard Avedon</span>
+                    <a class="close"><i class="fa fa-times"></i></a>    
+                </div>
+                <div class="messages nano nscroller has-scrollbar">
+                    <div class="content" tabindex="0" style="right: -17px;">
+                        <ul class="conversation">
+                            <li class="odd">
+                                <p>Hi John, how are you?</p>
+                            </li>
+                            <li class="text-right">
+                                <p>Hello I am also fine</p>
+                            </li>
+                            <li class="odd">
+                                <p>Tell me what about you?</p>
+                            </li>
+                            <li class="text-right">
+                                <p>Sorry, I'm late... see you</p>
+                            </li>
+                            <li class="odd unread">
+                                <p>OK, call me later...</p>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="pane" style="display: none;">
+                        <div class="slider" style="height: 20px; top: 0px;"></div>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <div class="input-group">
+                        <input type="text" placeholder="Enter a message..." class="form-control">
+                        <span class="input-group-btn">
+                        <button class="btn btn-danger" type="button">Send</button>
+                        </span>      
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <!-- /sidebar chats -->
+        <script src="{{ MEDIA_URL }}dashboard/js/jquery-2.1.0.js"></script>
+        <script type="text/javascript" src="{{ MEDIA_URL }}dashboard/js/jqueryui/ui/minified/jquery-ui.min.js"></script>
+        <script src="{{ MEDIA_URL }}dashboard/js/jquery.ddslick.min.js"></script>
+        <script src="{{ MEDIA_URL }}dashboard/js/bootstrap.min.js"></script>
+        <!-- <script src="{{ MEDIA_URL }}dashboard/js/common-script.js"></script> -->
+        <script src="{{ MEDIA_URL }}dashboard/js/jPushMenu.js"></script>
+        <script src="{{ MEDIA_URL }}dashboard/js/side-chats.js"></script>
+        <script src="{{ MEDIA_URL }}dashboard/js/handlebars.js"></script>
+        {% if request.is_agent %}
+        <script src="{{ MEDIA_URL }}dashboard/js/idle-timer.js"></script>
+        {% endif %}
+        <script type="text/javascript">
+
+        // auto active
+        {% if request.is_agent %}
+            (function ($) {
+                //Define default
+                var docTimeout = 300000;
+
+                $( document ).on( "idle.idleTimer", function(event, elem, obj, triggerevent){
+                    console.log('idle');
+                });
+
+                $( document ).on( "active.idleTimer", function(event, elem, obj, triggerevent){
+                    console.log('not idle');
+                    {% if request.agent_status != "2" %}
+                        $.ajax({
+                            type: "POST",
+                            url: '{% url "agent_change_status" %}',
+                            cache: false,
+                            data:{
+                                'csrfmiddlewaretoken':'{{ csrf_token }}',
+                                'status': "",
+                                'agent': '{{ request.user.id }}'
+                            },
+                            success:function(resp){
+                                if (resp['status']) {
+                                    $('#change_to_online').trigger('click');
+                                } else {
+                                    alert(resp['msg']);
+                                    $('#another_status').prop('selectedIndex',1);
+                                }
+                            }
+                        })
+                    {% endif %}
+                });
+
+                $(document).idleTimer(docTimeout);
+
+
+            })(jQuery);
+
+        
+        // ===================================================================
+
+        function change_agent_status(i) {
+            var index = parseInt(i) || 1;
+
+            $('#another_status').ddslick({
+                width: 145,
+                background: "#ffffff",
+                imagePosition: "right",
+                defaultSelectedIndex: index,
+                onSelected: function (data) {
+                    var select_index = data["selectedData"]["value"];
+                    var index_select = 1;
+
+                    if (select_index == '0') {
+                        index_select = 1;
+                    } else {
+                        index_select = select_index;
+                    }
+
+                    if (select_index != '{{ request.agent_status }}') {
+                        if (select_index == '2') {
+                            $('#agent_id').val('{{ request.user.id }}');
+                            $('#status_id').val(select_index);
+                            $('#status_agent').modal({
+                                show: true,
+                                backdrop: 'static'
+                            })
+                        } else if (select_index == '-') {
+                            $.ajax({
+                                type: "POST",
+                                url: '{% url "agent_change_status" %}',
+                                cache: false,
+                                data:{
+                                    'csrfmiddlewaretoken':'{{ csrf_token }}',
+                                    'status': '',
+                                    'agent': '{{ request.user.id }}'
+                                },
+                                success:function(resp){
+                                    if (resp['status']) {
+                                        $('#change_to_online').trigger('click');
+                                    } else {
+                                        alert(resp['msg']);
+                                        $('#another_status').prop('selectedIndex',0);
+                                    }
+                                }
+                            })
+                        } else {
+                            $.ajax({
+                                type: "POST",
+                                url: '{% url "agent_change_status" %}',
+                                cache: false,
+                                data:{
+                                    'csrfmiddlewaretoken':'{{ csrf_token }}',
+                                    'status': select_index,
+                                    'agent': '{{ request.user.id }}'
+                                },
+                                success:function(resp){
+                                    if (resp['status']) {
+                                    } else {
+                                        $('#another_status').prop('selectedIndex',0);
+                                    }
+                                }
+                            })
+                        }
+                    }
+                }
+            });
+        }
+        {% endif %}
+
+        // for redirect to activities
+
+        function redirect_act(){
+            $.ajax({
+                type:"GET",
+                url:"/dashboard/profile/?ajax=True&icon_btn=True",
+                cache:false,
+                beforeSend:function(){
+                    $('#loading_ajax').show();
+                },
+                success:function(resp){
+                    $('#container_element').remove();
+                    $("#breadcumb").remove();
+                    $('#container').append('<div id="container_element">'+resp+'</div>');
+                    window.history.pushState({}, "Title", "/dashboard/profile/");
+                    $('#loading_ajax').hide();
+                    $('ul li.left_nav_active').removeClass('left_nav_active');
+                    $(this).addClass('left_nav_active');
+                    $('#tabProfile a[href="#user-activities"]').tab('show');
+                }
+            });
+        }
+
+        $(document).ready(function(){
+
+            // Include Image in options agent status
+
+            $('#change_to_online').on('click', function () {
+                timer = setTimeout(function() {
+                    $('#another_status').ddslick('select', {index: 1 });
+                }, 10000);
+            })
+
+            $('#close_modal').on('click', function () {
+                $('#another_status').ddslick('select', {index: 1 });
+            })
+
+            {% if request.is_agent %}
+                var agent_status_now = $('#agent_status_now').val();
+                if (agent_status_now != '2') {
+                    change_agent_status(1);
+                } else if (agent_status_now == '') {
+                    change_agent_status(1);
+                }
+            {% endif %}
+
+            $( ".datepicker" ).datepicker({
+                changeMonth: true,
+                changeYear: true,
+                dateFormat: 'yy-mm-dd',
+                yearRange: '1950:' + + new Date().getFullYear()
+            });
+
+            // ===================================================================
+
+        });
+
+        function get_notification() {
+            $.ajax({
+                type:"GET",
+                url:"/api/realtime_get_notification/",
+                cache:false,
+                success:function(resp){
+                    $("#notif").text(resp.count);
+                    $(".number").html('You have '+resp.count+' pending notification');
+                    $(".message_notif").remove();
+                    $(resp.message).each(function(index, el) {
+                        // str_data = '<li class="message_notif"><a href="/dashboard/tickets/view1/?id='+el.id+'">'+el.message+'</a></li>';
+                        str_data = '<li class="message_notif"><a href="#" onclick="update_notification('+el.notif_id+', '+el.id+')">'+el.message+'</a></li>';
+                        $(str_data).insertAfter(".count_notif");
+                    });
+                }
+            });
+        }
+
+        var i = setInterval(function() { get_notification(); }, 10000);
+
+        function update_notification(obj, id){
+            $.ajax({
+                type:"GET",
+                url:"/api/update_notification/?id="+obj,
+                cache:false,
+                success:function(resp){
+                    console.log(resp);
+                    window.location = '/dashboard/tickets/view1/?id='+id;
+                }
+            });
+        }
+
+
+        function submit_on_leave(){
+            var agent_id = $('#agent_id').val();
+            var status_id = $('#status_id').val();
+            var day_on_leave = $('#days').val();
+            $.ajax({
+                type: "POST",
+                url: '{% url "agent_change_status" %}',
+                cache: false,
+                data:{
+                    'csrfmiddlewaretoken':'{{ csrf_token }}',
+                    'status': status_id,
+                    'agent': agent_id,
+                    'day_on_leave': day_on_leave
+                },
+                success:function(resp){
+                    // console.log(resp);
+                    if (resp['status']) {
+                        location.reload();
+                    } else {
+                        alert(resp['msg']);
+                        $('#another_status').prop('selectedIndex',0);
+                    }
+                }
+            })
+        }
+
+        function ajax_load(obj){
+            $.ajax({
+                type:"GET",
+                url:"/dashboard/"+obj+"?ajax=True",
+                cache:false,
+                beforeSend:function(){
+                    $('#loading_ajax').show();
+                },
+                success:function(resp){
+                    if(resp.status == true){
+                        $('#container_element').remove();
+                        $("#breadcumb").remove();
+                        $('#container').append('<div id="container_element">'+resp.msg+'</div>');
+                        window.history.pushState({}, "Title", "/dashboard/"+obj);
+                        $('#loading_ajax').hide();
+                        $('ul li.left_nav_active').removeClass('left_nav_active');
+                        $(this).addClass('left_nav_active');
+                    }
+                    else{
+                        window.location.href = "/";
+                    }
+                }
+            });
+        }
+
+
+        function ajax_load1(obj, type){
+            $.ajax({
+                type:"GET",
+                url:"/dashboard/"+obj+"?ajax=True&tlive="+type,
+                cache:false,
+                beforeSend:function(){
+                    $('#loading_ajax').show();
+                },
+                success:function(resp){
+                    $('#container_element').remove();
+                    $("#breadcumb").remove();
+                    $('#container').append('<div id="container_element">'+resp.msg+'</div>');
+                    window.history.pushState({}, "Title", "/dashboard/"+obj);
+                    $('#loading_ajax').hide();
+                    $('ul li.left_nav_active').removeClass('left_nav_active');
+                    $(this).addClass('left_nav_active');
+                }
+            });
+        }
+
+
+        function call_captcha() {
+            $.ajax({
+                type:"GET",
+                url:"{% url 'get_captcha' %}",
+                cache:false,
+                beforeSend:function(){
+                    $('#captcha').html('Loading Captcha..');
+                },
+                success:function(resp){
+                    $('#captcha').html(resp);
+                    $('input[name=captcha_1]').attr('placeholder', 'Insert Captcha');
+                }
+            });
+        }
+        </script>
+
+        {% if request.session.chat_id %}
+            {% for data in request.session.chat_id %}
+                    <script type="text/javascript">
+                        $(document).ready(function(){
+                            $('.test').append('<iframe src="{% url "ticket_view" %}?id='+{{data}}+'" style="position:relative; float:right; height:420px; width:310px; border:none;" id="frame_'+{{data}}+'"></iframe>');
+                        });
+                    </script>
+                {% endfor %}
+        {% endif %}
+        
+        {% block js %}
+        {% endblock %}
+        
+        {% if user.agent %}
+            {% include "agent_channel_new.html" %}
+        {% endif %}
+
+
+<style type="text/css">
+    .test{
+        position: fixed;
+        bottom:10px;
+        right:0;
+        z-index:99999 !important;
+    }
+</style>
+
+<!-- load chat -->
+<div id="test" class="test">
+</div>
+<div class="test_hide" style="display:none;"></div>
+
+<!-- modal change status for agent -->
+
+    </body>
+</html>

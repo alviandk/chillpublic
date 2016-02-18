@@ -1,0 +1,44 @@
+{% extends "landingpage/base.html" %}
+{% block js %}
+<script type="text/javascript">
+
+</script>
+{% endblock %}
+
+
+{% block body %}
+<div class="contentpanel">
+    <div class="row" style="padding:20px 20px;">
+
+
+                    <div class="portlet-body">
+                        <div class="row margin-bottom-40" style="text-aligh:centre">
+                        {% for i in plan_list %}
+                        	<div class="col-md-{% if plan_list.count == 1 %}12{% endif %}{% if plan_list.count == 2 %}6{% endif %}{% if plan_list.count == 3 %}4{% endif %}{% if plan_list.count == 4 %}3{% endif %}{% if plan_list.count == 6 %}2{% endif %}">
+                                <div class="pricing hover-effect">
+                                    <div class="pricing-head">
+                                        <h3>{{i.name}}</h3>
+                                        <h4><i>&#8377; {{i.price}}</i><span>Per Agent</span></h4>
+                                    </div>
+                                    <ul class="pricing-content list-unstyled">
+                                    {% for x in i.features.all %}
+                                        <li><i class="fa fa-tags"></i> {{x.title}}</li>
+                                    {% endfor %}
+                                    </ul>
+                                    <div class="pricing-footer">
+                                        <a href="{% url 'signup_company' %}" class="btn green">Sign Up <i class="m-icon-swapright m-icon-white"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                            <div class="free_trail_button" style="text-align: center;">
+                            	<a href="{% url 'signup_company' %}"><div class="btn btn-large btn-primary" style="padding: 10px 60px;border-radius: 3px !important;font-size: 17px;margin-top: 33px;"><i class="glyphicon glyphicon-gift"></i> Start your free trail now</div></a>
+                            </div>
+
+                        </div>
+                    </div>
+    </div>
+</div>
+<div style="height:100px;"></div>
+{% endblock %}

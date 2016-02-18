@@ -1,0 +1,9 @@
+	{% if i.change_status %}
+		<li><b>{{i.text}}</b></li>
+	{% else %}
+		{% if user != i.user %}
+	    	<li class="li_chat" style='float:right; padding:10px;'>{{ i.user.get_full_name|default:user.username }} >> {{i.text}}</li>
+	    {% else %}
+	    	<li class="li_chat" style="float:left; background-color:#f6f7f8; padding:10px;">{{i.user.get_full_name|default:user.username}} >> {{i.text}}</li>
+	    {% endif %}
+	{% endif %}

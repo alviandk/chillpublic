@@ -1,0 +1,262 @@
+{% extends 'dashboard/base.html' %}
+
+{% block js %}
+
+{% if user.agent %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        var ticket_status = '{{ lookup.status }}';
+        var total_reopen = $('#total_reopen').val();
+
+        $("#change_status").change(function(){
+            // alert($(this).val());
+            var value = $(this).val();
+            if(value == '3'){
+                $("#input_resolve_timer").val(96)
+                // $("#resolve_timer").show();
+            }
+
+            if (ticket_status == '3' && value == '5') {
+                $('#add_time_reopen').toggle(true);
+            }
+        });
+    });
+
+    function add_comment(obj){
+        var status = $("#change_status").val();
+        var comment = $("#input_comment").val();
+        var time = $("#input_resolve_timer").val();
+        var add_timer = $('#value_add_timer').val();
+
+        if (add_timer > 72) {
+            alert('Value Less than or equal to 72 hours');
+            return false;
+        }
+
+        if(status == '2' && comment.length <= 0){
+            alert('Please insert comment');
+            return false;
+        }
+
+        // else if(status == '3' && time.length <= 0){
+        //     alert('Please insert Time to Resolve');
+        //     return false;
+        // }
+
+        else if(status == '3' && comment.length <= 0){
+            alert('Please insert comment');
+            return false;
+        }
+
+        else{
+            $.ajax({
+                type:"POST",
+                cache:false,
+                url:"{% url 'change-status' %}",
+                data:{
+                    'csrfmiddlewaretoken':'{{ csrf_token }}',
+                    'id': '{{lookup.id}}',
+                    'status': status,
+                    'comment': comment,
+                    'add_timer': add_timer,
+                    'time': 96
+                },
+                success:function(resp){
+                    console.log(resp);
+
+                    $('#add_time_reopen').toggle(false);
+                    $("#input_comment").val('');
+                    if(resp.status == '1'){
+                        $( ".test" ).load( "{% url 'ticket_view' %}?id="+resp.id );
+                    }
+                    else{
+                        var str_response = '<li>'+resp.msg+' -- by {{request.user.first_name}} {{request.user.last_name}} on '+resp.time+'</li>';
+                        $(str_response).appendTo( "#list_comment" );
+                    }
+                }
+            });
+        }
+    }
+</script>
+{% else %}
+<script type="text/javascript">
+
+    $(document).ready(function(){
+        $("#change_status").change(function(){
+            var value = $(this).val();
+            if(value == '6'){
+                $("#attachment").show();
+            }
+        });
+    });
+
+    function load_chat(obj){
+        $( ".test" ).load( "{% url 'load_chat' %}?id="+obj );
+        window.top.location.reload();
+    }
+    
+    function add_comment(obj){
+        var status = $("#change_status").val();
+        var comment = $("#input_comment").val();
+
+        if(status == '2' && comment.length <= 0){
+            alert('Please insert comment');
+            return false;
+        }
+        else if(status == '6' && comment.length <= 0){
+            alert('Please insert comment');
+            return false;
+        }
+        else{
+            // console.log($("#attachment_file").val());
+            var data = new FormData();
+            data.append('csrfmiddlewaretoken', '{{ csrf_token }}')
+            data.append('id', '{{lookup.id}}');
+            data.append('status', status);
+            data.append('comment', comment);
+            data.append('attachment', $('#attachment_file').prop('files')[0]);
+            // console.log(data);
+
+            $.ajax({
+                type:"POST",
+                processData: false, 
+                contentType: false, 
+                cache:false,
+                url:"{% url 'change-status' %}",
+                data: data,
+                success:function(resp){
+                    $("#input_comment").val('');
+                    if(resp.status == '1'){
+                        $( ".test" ).load( "{% url 'ticket_view' %}?id="+{{lookup.id}} );
+                    }
+                    else{
+                        var str_response = '<li>'+resp.msg+' -- by {{request.user.first_name}} {{request.user.last_name}} on '+resp.time+'</li>';
+                        $(str_response).appendTo( "#list_comment" );
+                    }
+                }
+            });
+        }
+    }
+</script>
+{% endif %}
+
+{% endblock %}
+
+{% block breadcumb %}
+<div class="pull-left breadcrumb_admin clear_both">
+    <div class="pull-left page_title theme_color">
+        <h1>dashboard</h1>
+        <h2 class="">Ticket {{lookup.id}}</h2>
+    </div>
+    <div class="pull-right">
+        <ol class="breadcrumb">
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="active">Live Tickets</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+{% block body %}
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="panel-body">
+            <ul class="nav nav-tabs" id="myTab">
+                <li class="active"><a data-toggle="tab" href="#Tab1">Ticket Details - TICKET {{ lookup.id }}</a></li>
+                {% if user.agent %}
+                    <li><a data-toggle="tab" href="#Tab2">Customer Info</a></li>
+                {% endif %}
+            </ul>
+            <div class="block-web">
+                <div class="tab-content" id="myTabContent">
+                    <div id="Tab1" class="tab-pane fade in active">
+                        <input type="hidden" id="total_reopen" value="{{ lookup.reopen }}" >
+                        <div class="form-group">
+                            <label>Ticket Summary</label>
+                            <input class="form-control" value="{{lookup.title}}" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Ticket Description</label>
+                            <textarea class="form-control" disabled rows="7">{{lookup.description}}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            {% if user.agent %}
+                            <select class="form-control" id="change_status">
+                                <!-- <option {% if lookup.status == '1' %} selected {% endif %}>Live</option> -->
+                                <!-- <option value="2" {% if lookup.status == '2' %} selected {% endif %}>Open</option> -->
+                                <option value="2" {% if lookup.status == '2' %} selected {% endif %} {% if not user.agent %} disabled {% endif %}>On-Hold</option>
+                                <option value="3" {% if lookup.status == '3' %} selected {% endif %} {% if not user.agent %} disabled {% endif %}>Resolved</option>
+                                <option value="4" {% if lookup.status == '4' %} selected {% endif %} {% if not user.agent %} disabled {% endif %}>Close</option>
+                                <option value="5" {% if lookup.status == '5' %} selected {% endif %}>Re-Open</option>
+                                <option value="6" {% if lookup.status == '6' %} selected {% endif %}>Assigned</option>
+                            </select>
+                            {% else %}
+                
+                            <select class="form-control" id="change_status" name="change_status" {% if lookup.status == '5' %} disabled {% endif %}>
+                                {% if lookup.status == '2' %}
+                                    <option value="2" {% if lookup.status == '2' %} selected {% endif %}>Hold</option>
+                                    <option value="6"}>Assigned</option>
+                                {% endif %}
+                                {% if lookup.status == '3' %}
+                                    <option value="3" {% if lookup.status == '3' %} selected {% endif %}>Resolved</option>
+                                    <option value="5" {% if lookup.status == '5' %} selected {% endif %}>Re-Open</option>
+                                {% endif %}
+                                {% if lookup.status == '1' or lookup.status == '5' or lookup.status == '6' %}
+                                    <option value="{{lookup.status}}" {% if lookup.status %} selected {% endif %}>{{lookup.get_status_display}}</option>
+                                {% endif %}
+                            </select>
+                            {% endif %}
+                    </div>
+                    <div class="form-group" id="resolve_timer" style="display:none;">
+                        <label>Time to Resolve</label>
+                        <input type="text" id="input_resolve_timer" class="form-control" value="0">
+                    </div>
+                    <div class="form-group" id="add_time_reopen" style="display:none;">
+                        <label>Add Timer (Value Less than or equal to 72 hours) *only integer</label>
+                        <input type="text" id="value_add_timer" class="form-control" value="{{ lookup.add_timer_reopen }}">
+                    </div>
+                    {% if lookup.status != '4' %}
+                    <div class="form-group">
+                        <textarea name="text" id="input_comment" cols="" rows="2" class="form-control" placeholder="Add Offline Comment" style="border:1px solid #c0c0c0;"></textarea>
+                    </div>
+                    <div id="attachment" class="form-group" style="display:none;">
+                        <label>Attachment</label>
+                        <input type="file" name="attachment" id="attachment_file" class="form-control">
+                    </div>
+                        {% if user.customer and lookup.status in "2,5,6" %}
+                        <div class="form-group" style="margin-left:20px; margin-right:20px;">
+                            <a class="btn btn-success" onclick="load_chat({{lookup.id}});" style="float:right;">Start Chat</a>
+                        </div>
+                        {% endif %}
+                        <div class="form-group" style="">
+                            <a class="btn btn-primary" onclick="add_comment({{lookup.id}});" style="float:right; margin-right:10px;">Submit Comment</a>
+                        </div>
+                    {% endif %}
+                        <br />
+                        <div class="form-group">
+                <ul id="list_comment">
+                    {% for i in lookup.comments.all %}
+                        {% include 'dashboard/ajax/comment2.html' %}
+                    {% endfor %}
+                </ul>
+                        </div>
+                    </div>
+                    <div id="Tab2" class="tab-pane fade">
+                        <p><b>Customer Name :</b> {{lookup.author}}</p>
+                        
+                        {% for data in lookup.author.serviceprovider_set.all %}
+                            {% if data.product == lookup.department %}
+                                <p><b>Account Number :</b> {{data.account_number}}</p>
+                                <p><b>Registered Mobile Number :</b> {{data.registered_mobile_number}}</p>
+                                <p><b>Date of Birth :</b> {{data.dob}}</p>
+                                <p><b>Mother's Maiden Name :</b> {{data.mothers_name}}</p>
+                                <p><a href="{% url 'create_pdf' %}?username={{lookup.author.username}}">Download KYC Data</a></p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

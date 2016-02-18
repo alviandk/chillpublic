@@ -1,0 +1,10 @@
+            <a href="#" class="open_ticket_comment{% if i.user.is_agent %} active_ticket{% endif %}">
+                <div class="open_ticket_thumnail">
+                    <div class="btn-group">
+                        <i class="fa fa-user"></i>
+                    </div>
+                    {{i.user.first_name}} {{i.user.last_name}}
+                </div>
+                <span>{{i.text}}</span>
+                <p>-{{i.timestamp}}</p>
+            </a>

@@ -1,0 +1,643 @@
+{% extends 'dashboard/base.html' %}
+
+{% block css %}
+<style type="text/css">
+    .upload-drop-zone {
+        color: #ccc;
+        border-style: dashed;
+        border-color: #ccc;
+        line-height: 200px;
+        text-align: center;
+        height: 206px;
+        border-width: 2px;
+        margin-bottom: 20px;
+        width: 206px;
+    }
+
+    .droppedField {
+        padding-left:16px;
+        margin-bottom: 10px;
+        margin-left: 0px !important;
+        margin-right: 0px !important;
+    }
+
+    .upload-file-zone {
+        left: -99999px !important;
+        opacity: 0 !important;
+        position: absolute !important;
+    }
+
+    .well {
+        min-height: 20px !important;
+        padding: 19px !important;
+        margin-bottom: 20px !important;
+        background-color: #f5f5f5;
+        border: 1px solid #e3e3e3 !important;
+        -webkit-border-radius: 4px !important;
+        -moz-border-radius: 4px !important;
+        border-radius: 4px !important;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05) !important;
+        -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05) !important;
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .action-bar .droppedField {
+        float: left !important;
+    }
+
+    select[multiple], select[size] {
+      height: auto !important;
+    }
+</style>
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+$(document).ready(function(){
+    {% if value_select_form %}
+        $("input[name=type_form][value='{{ value_select_form }}']").prop('checked', true);
+        $('#next_to_form').trigger('click');
+    {% endif %}
+    
+    {% if company_id %}
+        $('select[name=company]').val("{{ company_id }}")
+        $.ajax({
+            type:"GET",
+            cache:false,
+            url:"{% url 'get_department_ajax' %}?key="+{{ company_id }},
+            success:function(resp){
+                var options = '<option value="">-- Select Department --</option>'
+                $('select[name=department]').html(options+resp);
+                $('select[name=department]').prop('disabled', false);
+                $('select[name=department]').val({{department_id}});
+
+                $.ajax({
+                    type:"GET",
+                    cache:false,
+                    url:"{% url 'get_form_ajax' %}?department="+{{department_id}}+"&company="+{{ company_id }}+"&form_type="+{{ value_select_form }},
+                    success:function(resp){
+                        {% if value_select_form %}
+                            // {% if value_select_form != "query_form" %}
+                                $('#list_form').toggle(true);
+                                var options = '<option value="">-- Select Form --</option>';
+                                $('select[name=form_filled]').html(options+resp);
+                                $('select[name=form_filled]').prop('disabled', false);
+                            // {% endif %}
+                        {% else %}
+                            $('#list_form').toggle(true);
+                            var options = '<option value="">-- Select Form --</option>';
+                            $('select[name=form_filled]').html(options+resp);
+                            $('select[name=form_filled]').prop('disabled', false);
+                        {% endif %}
+                        // $('#submit_form').prop('disabled', false);
+                    }
+                });
+            }
+        });
+    {% else %}
+        $('select[name=company]').change(function(){
+            var key = $(this).val();
+            $.ajax({
+                type:"GET",
+                cache:false,
+                url:"{% url 'get_department_ajax' %}?key="+key,
+                success:function(resp){
+                    var options = '<option value="">-- Select Department --</option>'
+                    $('select[name=department]').html(options+resp);
+                    $('select[name=department]').prop('disabled', false);
+                }
+            });
+        });
+    {% endif %}
+
+    $('select[name=department]').change(function(){
+        var company = $('select[name=company]').val();
+        var department = $(this).val();
+        var value_select_form = $('#value_select_form').val();
+
+        if (value_select_form == "service_request_form" || value_select_form == "application_form" || value_select_form == "query_form") {
+            $.ajax({
+                type:"GET",
+                cache:false,
+                url:"{% url 'get-subscribe-provider' %}?department="+department+"&company="+company,
+                success:function(resp){
+                    if (resp == 'False'){
+                        if (value_select_form == "service_request_form") {
+                            var t_alert = "<p>You have not added "+ $('#company option:selected').text() +" as Service Provider. Please Add to Continue</p>"
+                            $('.alert.alert-danger').fadeIn();
+                            $('#t_alert').append(t_alert);
+                            // window.location = "{% url 'add-new-provider' %}"
+                            $.ajax({
+                                type:"GET",
+                                url:"/dashboard/my-service-providers/add-new/?ajax=True&department="+department+"&company="+company+"&from=forms&value_select_form="+value_select_form,
+                                cache:false,
+                                success:function(resp){
+                                    $('#container_element').remove();
+                                    $("#breadcumb").remove();
+                                    $('#container').append('<div id="container_element">'+resp+'</div>');
+                                    window.history.pushState({}, "Title", "/dashboard/my-service-providers/add-new/");
+                                }
+                            });
+                        } else {
+                            $('#list_form').toggle(false);
+                            $('#existing_form').toggle(true);
+
+                            $("input:radio[name=existing]").click(function() {
+                                var value = $(this).val();
+                                if (value == "yes") {
+                                    callback(true, company, department, value_select_form);
+                                } else {
+                                    callback(false, company, department, value_select_form);
+                                }
+                            });
+                            
+                            // $("#dialog-confirm").html("Existing Customer");
+
+                            // // Define the Dialog and its properties.
+                            // $("#dialog-confirm").dialog({
+                            //     resizable: false,
+                            //     modal: true,
+                            //     title: false,
+                            //     height: 250,
+                            //     width: 400,
+                            //     buttons: {
+                            //         "Yes": function () {
+                            //             $(this).dialog('close');
+                            //             callback(true, company, department, value_select_form);
+                            //         },
+                            //         "No": function () {
+                            //             $(this).dialog('close');
+                            //             callback(false, company, department, value_select_form);
+                            //         }
+                            //     }
+                            // });
+                        }
+                    } else {
+                        // $('.alert.alert-success').fadeIn();
+                        $.ajax({
+                            type:"GET",
+                            cache:false,
+                            url:"{% url 'get_form_ajax' %}?department="+department+"&company="+company+"&form_type="+value_select_form,
+                            success:function(resp){
+                                $('#list_form').toggle(true);
+                                var options = '<option value="">-- Select Form --</option>';
+                                $('select[name=form_filled]').html(options+resp);
+                                $('select[name=form_filled]').prop('disabled', false);
+                                // $('#submit_form').prop('disabled', false);
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    });
+
+    $('select[name=form_filled]').change(function(){
+        var form_id = $(this).val();
+        if (form_id == "") {
+            $('#select_form').toggle(true);
+            $('#show_form').toggle(false);
+        } else {
+            $.ajax({
+                type: "GET",
+                cache: false,
+                url: "{% url 'iframe_customer' %}?id="+form_id+"&ajax=True",
+                success: function(resp){
+                    // console.log(resp);
+                    var company_name = $('#company option:selected').text();
+                    var department_name = $('#department option:selected').text();
+                    var form_name = $('#form_filled option:selected').text();
+                    var text_active_now = company_name + ' > ' + department_name + ' > ' + form_name;
+                    var text_bread = '<li><a href="/dashboard/">Dashboard</a></li><li><a href="/dashboard/forms/customer/">Forms</a></li><li class="active">'+ text_active_now +'</li>';
+                    var text_page = '<h1>DASHBOARD</h1><h2>FORMS > Online Form Submission</h2>';
+                    var image_logo;
+                    if (resp['logo'] == "") {
+                        image_logo = "<img src='http://www.placehold.it/40x40/CCC/AAAAAA&text=no+image' alt='Company Image' width='80px' height='54px;'>";
+                    } else {
+                        image_logo = "<img src='"+resp['logo']+"' alt='Company Image' width='80px' height='54px;'>";
+                    }
+                    $('#text-form').html("<b>"+resp['form_name'].toUpperCase()+"</b>");
+                    $('#bread').html(image_logo);
+                    $('#company_name').text(company_name);
+                    $('.breadcrumb').html(text_bread);
+                    $('.page_title').html(text_page);
+                    $('#field_form').append(resp['data']);
+                    var selected_content = $('#field_form').clone();
+                    selected_content.find("div").each(function(i,o) {
+                        var obj = $(o);
+                        obj.removeClass("draggableField ui-draggable well ui-droppable ui-sortable ");
+                        obj.removeAttr('style');
+                    });
+
+                    selected_content.find("input[type=text], input[type=password], select, textarea").each(function(i,o) {
+                        var obj = $(o);
+                        var div_id = obj.closest('.droppedField')[0].id;
+
+                        if (obj[0].name == "") {
+                            obj[0].name = div_id;
+                        }
+
+                        var name_class = obj.attr('class');
+
+                        if (name_class == "ctrl-text") {
+                            obj.attr('disabled', true);
+                        } else if (name_class == "ctrl-selectmultiplelist") {
+                            obj.parent().css('display', 'inline-block')
+                        }
+                    });
+
+                    $('#target').append(selected_content.html());
+                    $('#field_form').toggle(false);
+                    $('#field_form').text('');
+
+                    var upload_zone = $('.upload-drop-zone');
+                    if (upload_zone != undefined) {
+                        for (var i = 0; i < upload_zone.length; i++) {
+                            var data_id = upload_zone[i].id;
+                            $('#'+data_id).attr('onclick', 'upload_image("'+ data_id +'")');
+                        };
+                    }
+
+                    $('.ctrl-radiogroup').css({
+                        'display': 'inline-block',
+                        'margin-top': '8px',
+                        'margin-left': '7px'
+                    });
+                    $('.ctrl-checkboxgroup').css({
+                        'display': 'inline-block',
+                        'margin-top': '8px',
+                        'margin-left': '7px'
+                    });
+                }
+            })
+            $('#show_form').toggle(true);
+            $('#select_form').toggle(false);
+        }
+
+    });
+});
+
+
+function callback(value, company, department, value_select_form) {
+    if (value) {
+        $.ajax({
+            type:"GET",
+            url:"/dashboard/my-service-providers/add-new/?ajax=True&department="+department+"&company="+company+"&from=forms&value_select_form="+value_select_form,
+            cache:false,
+            success:function(resp){
+                $('#container_element').remove();
+                $("#breadcumb").remove();
+                $('#container').append('<div id="container_element">'+resp+'</div>');
+                window.history.pushState({}, "Title", "/dashboard/my-service-providers/add-new/");
+            }
+        });
+    } else {
+        $.ajax({
+            type:"GET",
+            cache:false,
+            url:"{% url 'get_form_ajax' %}?department="+department+"&company="+company+"&form_type="+value_select_form,
+            success:function(resp){
+                // if (value_select_form != "query_form") {
+                    $('#list_form').toggle(true);
+                    var options = '<option value="">-- Select Form --</option>';
+                    $('select[name=form_filled]').html(options+resp);
+                    $('select[name=form_filled]').prop('disabled', false);
+                // }
+                // $('#submit_form').prop('disabled', false);
+            }
+        });
+    }
+}
+
+function cancel_form(){
+    // alert('cancel');
+    $('select[name=department]').html('<option value="">--</option>');
+    $('select[name=department]').prop('disabled', true);
+    $('select[name=form_filled]').html('<option value="">--</option>');
+    $('select[name=form_filled]').prop('disabled', true);
+    $('#submit_form').prop('disabled', true);
+    $('#list_form').toggle(false);
+    $('#existing_form').toggle(false);
+}
+
+function save_submit_form(){
+    $('#message_error_submit').text('');
+    var department = $('select[name=department]').val();
+    var form_filled = $('select[name=form_filled]').val();
+
+    // check validation
+    var value_content = $('div[id^="CTRL-DIV-"]');
+    var message_error = [];
+    var content_files = []
+    // var fd = new FormData();
+    value_content.each(function(i,o){
+        var value_file = ""
+        var obj = $(o);
+        var file_input = obj.find('input[type="file"]')[0];
+        var label_input = obj.find('label').text();
+        var value_input = obj.find("[class*=ctrl]").val();
+        var required = obj.find('.hiddenObligatoire').val();
+
+        if (file_input != undefined) {
+            value_file = file_input.files[0];
+            if (value_file != undefined) {
+                content_files.push({ 'title': label_input, 'file': value_file })
+            }
+            // fd.append('file', value_file);
+        }
+        
+        if (value_input == "" && required == "true") {
+            value_message = label_input + " is required";
+            message_error.push(value_message);
+        }
+        
+    })    
+
+    var form_value_array = $('#form_cust').serializeArray();
+
+    if (message_error.length == 0) {
+        $.ajax({
+            type:"POST",
+            cache:false,
+            url:"{% url 'customer_ticket_create' %}",
+            data:{
+                'csrfmiddlewaretoken':'{{ csrf_token }}',
+                'department':department,
+                'form_id':form_filled,
+                'form_value': JSON.stringify(form_value_array)
+            },
+
+            success:function(resp){
+                if (resp['status']) {
+
+                    if (content_files.length == 0) {
+                        $.ajax({
+                            type:"GET",
+                            url:"/dashboard/tickets?ajax=True",
+                            cache:false,
+                            success:function(resp){
+                                $('#container_element').remove();
+                                $("#breadcumb").remove();
+                                $('#container').append('<div id="container_element">'+resp+'</div>');
+                                window.history.pushState({}, "Title", "/dashboard/tickets");
+                            }
+                        });
+                    } else {
+                        for (var i = 0; i < content_files.length; i++) {
+                            var fd = new FormData();
+                            fd.append('file', content_files[i]['file']);
+                            fd.append('label', content_files[i]['title']);
+                            fd.append('form_customer_id', resp['form_customer_id']);
+                            fd.append('csrfmiddlewaretoken', '{{ csrf_token }}')
+
+                            $.ajax({
+                                type:"POST",
+                                cache:false,
+                                url:"{% url 'form_customer_edit' %}",
+                                data: fd,
+                                processData: false,  // tell jQuery not to process the data
+                                contentType: false, 
+                                success:function(resp){
+                                    $.ajax({
+                                        type:"GET",
+                                        url:"/dashboard/tickets?ajax=True",
+                                        cache:false,
+                                        success:function(resp){
+                                            $('#container_element').remove();
+                                            $("#breadcumb").remove();
+                                            $('#container').append('<div id="container_element">'+resp+'</div>');
+                                            window.history.pushState({}, "Title", "/dashboard/tickets");
+                                        }
+                                    });
+                                }
+                            });
+                        };
+                    }
+                } else {
+                    $('.alert.alert-danger').fadeIn();
+                    $('.alert.alert-danger').text(resp['msg']);
+                }
+            }
+        });
+    } else {
+        $('#alert_error_submit').fadeIn();
+        var text_error = "";
+        for (var i = 0; i < message_error.length; i++) {
+            text_error += "<p>"+message_error[i]+"</p>"
+        };
+        $('#message_error_submit').append(text_error);
+    }
+}
+
+function cancel_submit_form(){
+    $('#target').text('');
+    $('#text-form').text('');
+    $('#bread').text('')
+    $('.alert.alert-success').fadeOut();
+    $('#show_form').toggle(false);
+    $('#select_form').toggle(true);
+    $('#company').prop('selectedIndex',0);
+    $('select[name=department]').html('<option value="">--</option>');
+    $('select[name=department]').prop('disabled', true);
+    $('select[name=form_filled]').html('<option value="">--</option>');
+    $('select[name=form_filled]').prop('disabled', true);
+}
+
+$(document).ready(function(){
+    $('.submit_form').click(function(){
+        $('#alert_error_submit').fadeOut();
+        $('#message_error_submit').text('');
+    })
+})
+
+function upload_image (ctrl_id) {
+    var div_ctrl = $('#CTRL-DIV-'+ctrl_id);
+
+    var ctrl = div_ctrl.find("input[type=file]");
+    $(ctrl).trigger('click');
+
+    ctrl.change(function(){
+        readURL(ctrl_id);
+    })
+    // readURL(ctrl_id);
+}
+
+function readURL(input) {
+    var div_ctrl = $('#CTRL-DIV-'+input);
+
+    var ctrl = div_ctrl.find("input[type=file]")[0];
+    if (ctrl.files && ctrl.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            var img = '<img src="'+ e.target.result +'" height="200" width="200" />';
+            $('#'+input).text('');
+            $('#'+input).append(img);
+        }
+        reader.readAsDataURL(ctrl.files[0]);
+    }
+}
+
+function next_form() {
+
+    var value_select = $('input:radio[name=type_form]:checked').val();
+
+    if (value_select) {
+        $('#first_form_customer').toggle(false);
+        $('#second_form_customer').toggle(true);
+        $('#value_select_form').val(value_select);
+        // if (value_select == 1) {
+        //     $('#second_form_customer').toggle(true);
+        // }
+    } else {
+        alert("Please select one")
+    }
+}
+
+function back_form() {
+    $('#first_form_customer').toggle(true);
+    $('#second_form_customer').toggle(false);
+    $('#list_form').toggle(false);
+    $('#cancel_filled_form').trigger('click');
+    $('#value_select_form').val("");
+}
+
+</script>
+{% endblock %}
+
+{% block breadcumb %}
+    <div class="pull-left breadcrumb_admin clear_both">
+        <div class="pull-left page_title theme_color">
+            <h1>dashboard</h1>
+            <h2 class="">Forms</h2>
+        </div>
+        <div class="pull-right">
+            <ol class="breadcrumb">
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="active">Forms</li>
+            </ol>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="block-web" id="select_form">
+            <div class="header">
+                <div class="actions"> <a class="minimize" href="#"><i class="fa fa-chevron-down"></i></a><a class="close-down" href="#"><i class="fa fa-times"></i></a> </div>
+                <h3 class="content-header"><span class="fa fa-pencil-square-o"></span> Online Form Submission</h3>
+            </div>
+            <div class="porlets-content">
+                <div class="alert alert-danger fade in">
+                    <button aria-hidden="true" data-dismiss="alert" class="close" type="button">×</button>
+                    <p>You have not been Subscription Services / Provider</p>
+                </div>
+                <div class="alert alert-success fade in">
+                    <button aria-hidden="true" data-dismiss="alert" class="close" type="button">×</button>
+                    <p>You've Subscription Services / Provider</p>
+                </div>
+                <div id="form_field" style="display: none;"></div>
+                <form action="" class="form-horizontal row-border">
+                    <div id="first_form_customer">
+                        <div class="form-group">
+                            <label class="col-md-3 control-label" for="radios"></label>
+                            <div class="col-md-9"> 
+                                <label class="radio-inline" for="type_form-0">
+                                    <input type="radio" name="type_form" id="type_form-0" value="service_request_form">
+                                    Service Request Form
+                                </label> 
+                                <label class="radio-inline" for="type_form-1">
+                                    <input type="radio" name="type_form" id="type_form-1" value="application_form">
+                                    Application Form
+                                </label> 
+                                <label class="radio-inline" for="type_form-2">
+                                    <input type="radio" name="type_form" id="type_form-2" value="query_form">
+                                    Query Form
+                                </label>
+                            </div>
+                        </div>
+                        <button type="button" onclick="next_form()" id="next_to_form" class="btn btn-primary">Next</button>
+                    </div>
+                    <div id="second_form_customer" style="display: none;">
+                        <div id="dialog-confirm"></div>
+                        <input type="hidden" id="value_select_form" value="">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Select Company</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="company" id="company">
+                                    <option value="">--</option>
+                                    {% for i in company_list %}
+                                        <option value="{{i.id}}"> {{i.company_name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <!--/col-sm-9-->
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Select Department</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="department" id="department" disabled>
+                                    <option value="">--</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="list_form" class="form-group" style="display: none;">
+                            <label class="col-sm-3 control-label">Select Form</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="form_filled" id="form_filled" disabled>
+                                    <option value="">--</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <button type="button" onclick="back_form()" class="btn btn-primary">Back</button>
+                            <button type="reset" onclick="cancel_form()" id="cancel_filled_form" class="btn btn-default">Cancel</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <!--/porlets-content-->
+        </div>
+        <!--/block-web-->
+        <div class="block-web" id="show_form" style="display: none;">
+            <div class="header">
+                <div class="actions"> <a class="minimize" href="#"><i class="fa fa-chevron-down"></i></a><a class="close-down" href="#"><i class="fa fa-times"></i></a> </div>
+                <h3 class="content-header"><span class="fa fa-pencil-square-o"></span> Online Form Submission</h3>
+            </div>
+            <div class="porlets-content">
+                <div style="margin-bottom: 15px;">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="col-md-6">
+                                <!-- <span id="bread"></span> -->
+                                <div class="col-md-3" id="bread"></div>
+                                <div class="col-md-9" id="company_name" style="margin-top: 15px;font-weight: bold;text-transform: uppercase;">a</div>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <span id="text-form"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-danger fade in" id="alert_error_submit">
+                    <button aria-hidden="true" class="close submit_form" type="button">×</button>
+                    <div id="message_error_submit">
+                    </div>
+                </div>
+                <div id="field_form"></div>
+                <form id="form_cust" action="#" class="form-horizontal row-border" enctype="multipart/form-data">
+                    <div class="form-group" id="target">
+
+                    </div>
+                    <div class="bottom">
+                        <button type="button" onclick="save_submit_form()" class="btn btn-primary">Submit</button>
+                        <button type="button" onclick="cancel_submit_form()" class="btn btn-default">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!--/col-md-6-->
+</div>
+{% endblock %}

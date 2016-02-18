@@ -1,0 +1,350 @@
+{% extends 'dashboard/base.html' %}
+
+{% block js %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+
+            // $(".datepicker").datepicker({format: 'yyyy-mm-dd'});
+
+            $("#next_form_provider").click(function(){
+                var company = $("#company").val();
+                var product = $("#product").val();
+                if(company.length !=0 && product.length != 0){
+
+                    $.ajax({
+                        type:"GET",
+                        cache:false,
+                        url:"{% url 'get-subscribe-provider' %}?company="+company+"&department="+product,
+                        success:function(resp){
+                            // console.log(resp);
+                            if (resp == 'False'){
+                                $("#next_form").show('slow');
+                                $("#first_form").hide('slow');
+                            }
+                            else{
+                                alert('Service Provider is Already Added');
+                                return false;
+                            }
+                            
+                        }
+                    });
+                }
+            });
+
+            $("#back_form_provider").click(function(){
+                $("#next_form").hide('slow');
+                $("#first_form").show('slow');
+            });
+
+            $(".existing").change(function() {
+                var value = $(this).val();
+                $("#existing_no").show();
+            });
+
+            {% if data_copy_company %}
+
+                var product_id = "";
+
+                if ("{{ data_copy_product.id }}") {
+                    product_id = "{{ data_copy_product.id }}";
+                } else {
+                    product_id = "{{ data_copy_product }}";
+                }
+
+                $.ajax({
+                    type:"GET",
+                    cache:false,
+                    url:"{% url 'get_department_ajax' %}?key="+{{ data_copy_company.id }},
+                    success:function(resp){
+                        var opt = "<option value>-- Select Department -- </option>";
+                        $('select[name=product]').html(opt+resp);
+                        $('select[name=product]').prop('disabled', false);
+                        $('select[name=product]').val(product_id);
+
+                        $.ajax({
+                            type:"GET",
+                            cache:false,
+                            url:"{% url 'get-subscribe-provider' %}?company="+{{ data_copy_company.id }}+"&department="+product_id,
+                            success:function(resp){
+                                // console.log(resp);
+                                if (resp == 'False'){
+                                    $('#select_provider').toggle(false);
+                                    $('#form_new').toggle(true);
+                                }
+                                else{
+                                    alert('Service Provider is Already Added');
+                                    return false;
+                                }
+                                
+                            }
+                        });
+                    }
+                });
+            {% else %}
+                $('select[name=company]').change(function(){
+                    var key = $(this).val();
+                    $.ajax({
+                        type:"GET",
+                        cache:false,
+                        url:"{% url 'get_department_ajax' %}?key="+key,
+                        success:function(resp){
+                            var opt = "<option value>-- Select Department -- </option>";
+                            $('select[name=product]').html(opt+resp);
+                            $('select[name=product]').prop('disabled', false);
+                        }
+                    });
+                });
+
+                $('#product').change(function(){
+                    var company = $("#company").val();
+                    var product = $("#product").val();
+                    if(company.length !=0 && product.length != 0){
+
+                        $.ajax({
+                            type:"GET",
+                            cache:false,
+                            url:"{% url 'get-subscribe-provider' %}?company="+company+"&department="+product,
+                            success:function(resp){
+                                // console.log(resp);
+                                if (resp == 'False'){
+                                    $('#select_provider').toggle(false);
+                                    $('#form_new').toggle(true);
+                                }
+                                else{
+                                    alert('Service Provider is Already Added');
+                                    return false;
+                                }
+                                
+                            }
+                        });
+                    }
+                })
+            {% endif %}
+
+        });
+
+        function submit_new_provider(){
+            $('#message_error_submit').text('');
+            var form = $('#ticket_form').serialize();
+            $.ajax({
+                type:"POST",
+                cache:false,
+                url:"{% url 'add-new-provider' %}",
+                data: form,
+                success:function(resp){
+                    if (resp['status'] == 'True'){
+                        if (resp['next_url'] == "forms") {
+                            $.ajax({
+                                type:"GET",
+                                url:"/dashboard/forms/customer?ajax=True&department="+resp['department']+"&company="+resp['company']+"&value_select_form="+resp['value_select_form'],
+                                cache:false,
+                                success:function(resp){
+                                    $('#container_element').remove();
+                                    $("#breadcumb").remove();
+                                    $('#container').append('<div id="container_element">'+resp+'</div>');
+                                    window.history.pushState({}, "Title", "/dashboard/forms/customer");
+                                }
+                            });
+                        } else {
+                            $.ajax({
+                                type:"GET",
+                                url:"{% url 'service-provider' %}?ajax=True",
+                                cache:false,
+                                success:function(resp){
+                                    $('#container_element').remove();
+                                    $("#breadcumb").remove();
+                                    $('#container').append('<div id="container_element">'+resp+'</div>');
+                                    window.history.pushState({}, "Title", "/dashboard/my-service-providers");
+                                }
+                            });
+                        }
+                        $("#next_form").show('slow');
+                        $("#first_form").hide('slow');
+                    } else {
+                        $('#alert_error_submit').fadeIn();
+                        var text_error = "";
+                        text_error += "<p>"+resp['msg']+"</p>";
+                        $('#message_error_submit').append(text_error);
+                        return false;
+                    }
+                }
+            });
+        }
+    </script>
+{% endblock %}
+
+{% block css %}
+    <!-- <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css"> -->
+    <!-- <link href="{{ MEDIA_URL }}dashboard/css/bootstrap-datepicker3.min.css" rel="stylesheet" type="text/css" /> -->
+{% endblock %}
+
+{% block breadcumb %}
+<div class="pull-left breadcrumb_admin clear_both">
+    <div class="pull-left page_title theme_color">
+        <h1>My Service Provider</h1>
+        <h2 class="">Add New</h2>
+    </div>
+    <div class="pull-right">
+        <ol class="breadcrumb">
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'service-provider' %}">My Service Provider</a></li>
+            <li class="active">Add New</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-lg-12">
+        <section class="panel default blue_title h2">
+        </section>
+    </div>
+</div>
+<div class="row">   
+    <div class="col-md-12">
+        <div class="block-web">
+            <div class="header">
+                <div class="actions"> <a class="minimize" href="#"><i class="fa fa-chevron-down"></i></a><a class="close-down" href="#"><i class="fa fa-times"></i></a> </div>
+                <h3 class="content-header"><span class="fa fa fa-plus-square"></span> Add New Service Provider </h3>
+            </div>
+            <div class="porlets-content">
+                <form id="ticket_form" action="" method="POST" class="form-horizontal row-border">{% csrf_token %}
+                    <input type="hidden" id="from_form" name="from_form" value="{{ from_forms|safe }}">
+                    <input type="hidden" id="value_select" name="value_select" value="{{ value_select_form|safe }}">
+                    <div id="first_form">
+                        <div id="select_provider" style="display: block;">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Select Provider or Company</label>
+                                <div class="col-sm-9">
+                                    <select class="form-control" name="company" id="company">
+                                        <option>--</option>
+                                        {% for data in company %}
+                                        <option value="{{data.id}}" {% if data.id == data_copy_company.id %} selected {% endif %} >{{data.company_name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Select Department</label>
+                                <div class="col-sm-9">
+                                    <select class="form-control" name="product" id="product" disabled>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="form_new" style="display: none;">
+                            <h2 style="text-align:center;">Account Information</h2>
+                            <form class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="col-sm-3">Account Number</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="acount_number" value="{{ data_copy_account_number }}">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3">Registered Mobile Number</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="registered_mobile_number" value="{{ data_copy_registered_mobile_number }}">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3">Date of Birth</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control datepicker" name="dob" value="{{ data_copy_dob|date:'Y-m-d' }}">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3">Mother's Maiden Name</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="mothers" value="{{ data_copy_mothers }}">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <button type="button" onclick="submit_new_provider()" class="btn btn-primary" style="float:right;">Submit</button>
+                                </div>
+                            </form>
+                        </div>
+                        <!-- <div class="bottom">
+                            <div class="btn btn-primary" id="next_form_provider">Next</div>
+                        </div> -->
+                    </div>
+                    <div id="next_form" style="display:none;">
+                        <h2 style="text-align:center;">Account Information</h2>
+                            <form class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="col-sm-3">Account Number</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="acount_number" value="{{ data_copy_account_number }}">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3">Registered Mobile Number</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="registered_mobile_number" value="{{ data_copy_registered_mobile_number }}">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3">Date of Birth</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control datepicker" name="dob" value="{{ data_copy_dob|date:'Y-m-d' }}">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3">Mother's Maiden Name</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="mothers" value="{{ data_copy_mothers }}">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <button type="button" onclick="submit_new_provider()" class="btn btn-primary" style="float:right;">Submit</button>
+                                </div>
+                            </form>
+                        <!-- <div class="form-group">
+                            <label>Existing Customer of the Service Provider or Company</label>
+                            <div class="col-md-12">
+                                <label class="radio-inline">
+                                    <input type="radio" name="existing_provider" id="inlineRadio1" class="existing" value="yes"> Yes
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" name="existing_provider" id="inlineRadio2" class="existing" value="no"> No
+                                </label>
+                            </div>
+                        </div> -->
+                        <!-- <div class="form-group" id="existing_no" style="display:none;">
+                            <a href="{% url 'live-support' %}">Live Support</a>
+                        </div> -->
+                        <!-- <div id="existing_yes" style="display:none;">
+                            <h2 style="text-align:center;">Please Insert Your Account Details</h2>
+                            <form class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="col-sm-3">Email</label>
+                                    <div class="col-sm-9">
+                                        <input type="email" class="form-control" name="acount_detail_email">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3">Mobile Phone Number</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="acount_detail_mobile">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <button class="btn btn-primary" style="float:right;">Submit</button>
+                                </div>
+                            </form>
+                        </div> -->
+                        <div class="bottom">
+                            <div class="btn btn-primary" id="back_form_provider">Back</div>
+                        </div>
+                        <!-- <div class="bottom">
+                            <button class="btn btn-primary" type="submit">Submit</button>
+                        </div> -->
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

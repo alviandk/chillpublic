@@ -1,0 +1,106 @@
+{% extends "landingpage/base.html" %}
+{% block js %}
+<script type="text/javascript">
+	var attempt=1;
+	var SID="";
+	
+		$(document).ready(function(){
+			$("#enter_number").submit(function(e) {
+			 e.preventDefault();
+			 initiateDial2Verify();
+		  	});
+		});
+		
+		function initiateDial2Verify() {
+			showCodeForm(1); 
+			GetVerificationImage();
+		}
+		
+		function showCodeForm(code) {
+			$("#dial2verify").fadeIn();
+			$("#enter_number").fadeOut();
+			$("#waiting_msg").text("Waiting for missed call from "+$("#phone_number").text());
+		}
+		
+		function GetVerificationImage() {
+			$.post("{% url 'api_mobile' %}", { phone_number : $("#phone_number").text() }, 
+				   function(data) { updateImage(data.ImageUrl,data.SessionId); }, "json");
+		}
+		
+
+
+		function updateImage(ImageURL, vSID) {
+				
+            if ( ImageURL === "Err" || ImageURL === ""  ) { Err(); }
+            else
+            {
+             	$("#Image").html("Please give a missed call to <br><img src=\""+ImageURL+"\"/>");
+                 SID = vSID;
+                 PollStart("UnVerified");
+            }
+        }
+		
+		function CheckStatus()
+		{
+			$.post("{% url 'verify_status' %}", { SID : SID }, 
+				   function(data) { PollStart(data.VerificationStatus); console.log(data);}, "json");
+		}
+		
+		
+		function PollStart(vStatus)
+		{
+			console.log(vStatus);
+            attempt =attempt+1;
+            if ( attempt >= 90  ) { TimeoutCheck(); }  
+          	else
+                if (vStatus === "UnVerified") { 
+                    $("#status").html("Please give a missed call in  <b><i>"+(90-attempt) +"</i></b> seconds.");
+                    setTimeout(CheckStatus, 1000);
+               	}                        
+                else if (vStatus === "VERIFIED")
+                {
+	          		success(); 
+            	}
+                else
+                    TimeoutCheck();
+				}
+		
+		
+                function Err() {
+                $("#status").html("Error!<br>Sorry something went wrong, Please cross check your telephone number."); 
+                }
+			
+		function success() {
+			$("#status").text("Congrats !!! Phone Number Verified!");
+                       
+		}
+
+		function TimeoutCheck() {
+			$("#status").text("Verification Failed!");
+		}
+
+	</script>
+{% endblock %}
+
+
+{% block body %}
+<div class="contentpanel">
+    <div class="row" style="padding:20px 20px;">
+        <h1>Activation Email Successful</h1>
+        <form id="enter_number">
+			<p>Now Please Verify your phone number</p>
+			<p id="phone_number">{{phone}}</p>
+			<p><input type="submit" name="submit" value="Verify" class="btn btn-default" /></p>
+		</form>
+        <!-- <p>Now you can login with your account.</p> -->
+
+        <div id="dial2verify" style="display: none;">
+			<p id="waiting_msg"></p>
+			<p id="Image">Loading ..</strong></p>
+	        <p id="status">Loading ..</strong></p>
+		</div>
+        
+    </div>
+</div>
+<div style="height:100px;"></div>
+{% endblock %}

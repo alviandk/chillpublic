@@ -1,0 +1,17 @@
+[
+  {
+    "fields": {
+      "id": {
+        "type": "input",
+        "label": "ID / Name",
+        "value": "filebutton"
+      },
+      "label": {
+        "type": "input",
+        "label": "Label Text",
+        "value": "File Button"
+      }
+    },
+    "title": "File Button"
+  }
+]

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Form Builder</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <link href="{{ MEDIA_URL }}css/form_builder/lib/bootstrap.min.css" rel="stylesheet">
+        <link href="{{ MEDIA_URL }}css/form_builder/lib/bootstrap-responsive.min.css" rel="stylesheet">
+        <link href="{{ MEDIA_URL }}css/form_builder/custom.css" rel="stylesheet">
+        <!--[if lt IE 9]>
+        <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        <link rel="shortcut icon" href="images/favicon.ico">
+        <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+        <style>
+        .form-horizontal .control-label {width:100px;}
+        .form-horizontal .controls {margin-left:110px;}
+        </style>
+    </head>
+
+    <body>
+        <div class="container" style="margin-left:0px;">
+          <div class="span12">
+            <div class="row clearfix">
+                <!-- Building Form. -->
+                <div class="span6">
+                    <div class="clearfix">
+                        <div id="build">
+                            <form id="target" class="form-horizontal" enctype="multipart/form-data">
+                                <fieldset style="min-height: 430px !important;">
+                                    
+                                </fieldset>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+          </div>
+        </div>
+        <!-- /container -->
+
+        <script src="{{MEDIA_URL}}js/jquery-1.11.0.min.js"></script>
+        <script src="{{MEDIA_URL}}js/bootstrap.min.js"></script>
+        {% if lookup %}
+            <div id="form_content" style="display:none;">{{lookup.form_content|safe}}</div>
+        {% endif %}
+
+        <script type="text/javascript">
+            $(document).ready(function (){
+                var form_content = $('#form_content').text();
+
+                if (form_content != "") {
+                    var parse_json = {};
+                    parse_json["items"] = jQuery.parseJSON(form_content);
+                    $.each(parse_json["items"], function (index, key){
+                        var key = jQuery.parseJSON(key);
+                        if (key["title"] == "Form Name") {
+                            var label = key["fields"]["name"]["value"];
+                            $('fieldset').append('<div class="components"><legend>'+ label +'</legend></div>');
+                        } else if (key["title"] == "Text Input" || key["title"] == "Password Input" || key["title"] == "Search Input") {
+                            var title = key["title"];
+                            var label = key["fields"]["label"]["value"];
+                            var id_name = key["fields"]["id"]["value"];
+                            var placeholder = key["fields"]["placeholder"]["value"];
+                            var required = key["fields"]["required"]["value"];
+                            var inputsize = key["fields"]["inputsize"]["value"];
+                            var inputsize_field = ""
+                            for(z = 0; z < inputsize.length; z++){
+                                if (inputsize[z]["selected"] == true) {
+                                    inputsize_field = inputsize[z]["value"];
+                                }
+                            }
+                            var search_input = ""
+                            var type = "text"
+
+                            if (title == "Text Input") {
+                                type = "text"
+                            } else if (title == "Password Input") {
+                                type = "password"
+                            } else if (title == "Search Input") {
+                                search_input = " search-query";
+                            }
+
+                            var required_field = "";
+                            if (required == true) {
+                                required_field = "required='true'";
+                            }
+
+                            field_textinput = '<div class="components"><div class="control-group"><label class="control-label" for="'+ id_name +'">'+ label +'</label><div class="controls"><input id="'+ id_name +'" name="'+ id_name +'" type="'+ type +'" placeholder="'+ placeholder +'" class="'+ inputsize_field + search_input +'" '+ required_field +' /></div></div></div>';
+                            $('fieldset').append(field_textinput);
+                        } else if (key["title"] == "Prepended Text" || key["title"] == "Appended Text") {
+                            var title = key["title"];
+                            var label = key["fields"]["label"]["value"];
+                            var id_name = key["fields"]["id"]["value"];
+                            var placeholder = key["fields"]["placeholder"]["value"];
+                            var required = key["fields"]["required"]["value"];
+                            var inputsize = key["fields"]["inputsize"]["value"];
+                            var inputsize_field = ""
+                            for(z = 0; z < inputsize.length; z++){
+                                if (inputsize[z]["selected"] == true) {
+                                    inputsize_field = inputsize[z]["value"];
+                                }
+                            }
+                            var span_prepend = ""
+                            var span_append = ""
+                            if (title == "Prepended Text") {
+                                var prepend = key["fields"]["prepend"]["value"];
+                                var text = "prepend"
+                                span_prepend = '<span class="add-on">'+ prepend +'</span>';
+                            } else {
+                                var append = key["fields"]["append"]["value"];
+                                var text = "append"
+                                span_append = '<span class="add-on">'+ append +'</span>';
+                            }
+
+                            var required_field = "";
+                            if (required == true) {
+                                required_field = "required='true'";
+                            }
+
+                            field_input = '<div class="components"><div class="control-group"><label class="control-label" for="'+ id_name +'">'+ label +'</label><div class="controls"><div class="input-'+ text +'">'+ span_prepend +'<input id="'+ id_name +'" name="'+ id_name +'" type="text" placeholder="'+ placeholder +'" class="'+ inputsize_field +'" '+ required_field +' />'+ span_append +'</div></div></div></div>';
+                            $('fieldset').append(field_input);
+                        } else if (key["title"] == "Prepended Checkbox" || key["title"] == "Appended Checkbox") {
+                            var title = key["title"];
+                            var label = key["fields"]["label"]["value"];
+                            var id_name = key["fields"]["id"]["value"];
+                            var placeholder = key["fields"]["placeholder"]["value"];
+                            var required = key["fields"]["required"]["value"];
+                            var inputsize = key["fields"]["inputsize"]["value"];
+                            var inputsize_field = "";
+                            for(z = 0; z < inputsize.length; z++){
+                                if (inputsize[z]["selected"] == true) {
+                                    inputsize_field = inputsize[z]["value"];
+                                }
+                            }
+                            var span_prepend = "";
+                            var span_append = "";
+                            if (title == "Prepended Checkbox") {
+                                var prepend = key["fields"]["checked"]["value"];
+                                var text = "prepend";
+                                var span_prepend = '<span class="add-on"><input type="checkbox"></span>';
+                            } else {
+                                var append = key["fields"]["checked"]["value"];
+                                var text = "append";
+                                var span_append = '<span class="add-on"><input type="checkbox"></span>';
+                            }
+
+                            var required_field = "";
+                            if (required == true) {
+                                required_field = "required='true'";
+                            }
+
+                            field_input = '<div class="components"><div class="control-group"><label class="control-label" for="'+ id_name +'">'+ label +'</label><div class="controls"><div class="input-'+ text +'">'+ span_prepend +'<input id="'+ id_name +'" name="'+ id_name +'" class="'+ inputsize_field +'" type="text" placeholder="'+ placeholder +'" '+ required_field +' />'+ span_append +'</div></div></div></div>';
+                            $('fieldset').append(field_input);
+                        } else if (key["title"] == "Button Drop Down") {
+                            var title = key["title"];
+                            var label = key["fields"]["label"]["value"];
+                            var id_name = key["fields"]["id"]["value"];
+                            var placeholder = key["fields"]["placeholder"]["value"];
+                            var required = key["fields"]["required"]["value"];
+                            var inputsize = key["fields"]["inputsize"]["value"];
+                            var buttontext = key["fields"]["buttontext"]["value"];
+                            var buttonoptions = key["fields"]["buttonoptions"]["value"];
+                            var inputsize_field = "";
+                            for(z = 0; z < inputsize.length; z++) {
+                                if (inputsize[z]["selected"] == true) {
+                                    inputsize_field = inputsize[z]["value"];
+                                }
+                            }
+                            var options = [];
+                            for(i = 0; i < buttonoptions.length; i++) {
+                                
+                                var value = buttonoptions[i];
+                                options.push("<li><a href='javascript:void(0)'>"+ value +"</a></li>");
+                            }
+
+                            var required_field = "";
+                            if (required == true) {
+                                required_field = "required='true'";
+                            }
+
+                            field_input = '<div class="components"><div class="control-group"><label class="control-label" for="'+ id_name +'">'+ label +'</label><div class="controls"><div class="input-append"><input id="'+ id_name +'" name="'+ id_name +'" class="'+ inputsize_field +'" type="text" placeholder="'+ placeholder +'" '+ required_field +' /><div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">'+ buttontext +'<span class="caret"></span></button><ul class="dropdown-menu">'+ options.join('') +'</ul></div></div></div></div></div>';
+                            $('fieldset').append(field_input);
+                        } else if (key["title"] == "Text Area") {
+                            var title = key["title"];
+                            var label = key["fields"]["label"]["value"];
+                            var id_name = key["fields"]["id"]["value"];
+                            var textarea = key["fields"]["textarea"]["value"];
+
+                            field_input = '<div class="components"><div class="control-group"><label class="control-label" for ="'+ id_name +'">'+ label +'</label><div class="controls"><textarea id="'+ id_name +'" name="'+ id_name +'" >'+ textarea +'</textarea></div></div></div>';
+                            $('fieldset').append(field_input);
+                        } else if (key["title"] == "Multiple Checkboxes" || key["title"] == "Multiple Checkboxes Inline") {
+                            var title = key["title"];
+                            var label = key["fields"]["label"]["value"];
+                            var name = key["fields"]["name"]["value"];
+                            var checkboxes = key["fields"]["checkboxes"]["value"];
+                            var required = key["fields"]["required"]["value"];
+
+                            var required_field = "";
+                            if (required == true) {
+                                required_field = "required='required'";
+                            }
+
+                            if (title == "Multiple Checkboxes") {
+                                var options = [];
+                                for(i = 0; i < checkboxes.length; i++) {  
+                                    var value = checkboxes[i];
+                                    options.push('<label class="checkbox" for="'+ name + "-" + i +'"><input type="checkbox" name="'+ name +'" id="'+ name + "-" + i +'" value="'+ $.trim(value) +'" '+ required_field +'>'+ $.trim(value) +'</label>');
+                                }
+                            } else {
+                                var options = [];
+                                for(i = 0; i < checkboxes.length; i++) {  
+                                    var value = checkboxes[i];
+                                    options.push('<label class="checkbox inline" for="'+ name + "-" + i +'"><input type="checkbox" name="'+ name +'" id="'+ name + "-" + i +'" value="'+ $.trim(value) +'" '+ required_field +'>'+ $.trim(value) +'</label>');
+                                }
+                            }
+
+                            field_input = '<div class="components"><div class="control-group"><label class="control-label" for="'+ name +'">'+ label +'</label><div class="controls">'+ options.join('') +'</div></div></div>';
+                            $('fieldset').append(field_input);
+                        } else if (key["title"] == "Multiple Radios" || key["title"] == "Multiple Radios Inline") {
+                            var title = key["title"];
+                            var label = key["fields"]["label"]["value"];
+                            var name = key["fields"]["name"]["value"];
+                            var radios = key["fields"]["radios"]["value"];
+                            var required = key["fields"]["required"]["value"];
+
+                            var required_field = "";
+                            if (required == true) {
+                                required_field = "required='required'";
+                            }
+                            
+                            if (title == "Multiple Radios") {
+                                var options = [];
+                                for(i = 0; i < radios.length; i++) {  
+                                    var value = radios[i];
+                                    options.push('<label class="radio" for="'+ name + "-" + i +'"><input type="radio" name="'+ name +'" id="'+ name + "-" + i +'" value="'+ $.trim(value) +'" '+ required_field +'>'+ $.trim(value) +'</label>');
+                                }
+                            } else {
+                                var options = [];
+                                for(i = 0; i < radios.length; i++) {  
+                                    var value = radios[i];
+                                    options.push('<label class="radio inline" for="'+ name + "-" + i +'"><input type="radio" name="'+ name +'" id="'+ name + "-" + i +'" value="'+ $.trim(value) +'" '+ required_field +'>'+ $.trim(value) +'</label>');
+                                }
+                            }
+
+                            field_input = '<div class="components"><div class="control-group"><label class="control-label" for="'+ name +'">'+ label +'</label><div class="controls">'+ options.join('') +'</div></div></div>';
+                            $('fieldset').append(field_input);
+                        } else if (key["title"] == "Select Basic" || key["title"] == "Select Multiple") {
+                            var title = key["title"];
+                            var label = key["fields"]["label"]["value"];
+                            var id_name = key["fields"]["id"]["value"];
+                            var inputsize = key["fields"]["inputsize"]["value"];
+                            var selectoptions = key["fields"]["options"]["value"];
+
+                            var inputsize_field = "";
+                            for(z = 0; z < inputsize.length; z++) {
+                                if (inputsize[z]["selected"] == true) {
+                                    inputsize_field = inputsize[z]["value"];
+                                }
+                            }
+
+                            var options = [];
+                            for(i = 0; i < selectoptions.length; i++) {
+                                
+                                var value = selectoptions[i];
+                                options.push("<option value='"+ $.trim(value) +"'>"+ $.trim(value) +"</option>");
+                            }
+
+                            var field_multipart = "";
+                            if (title == "Select Multiple") {
+                                field_multipart = "multiple='multiple'";
+                            }
+
+                            field_input = '<div class="components"><div class="control-group"><label class="control-label" for="'+ id_name +'">'+ label +'</label><div class="controls"><select id="'+ id_name +'" name="'+ id_name +'" class="'+ inputsize_field +'" '+ field_multipart +'>'+ options +'</select></div></div></div>';
+                            $('fieldset').append(field_input);
+                        } else if (key["title"] == "File Button") {
+                            var label = key["fields"]["label"]["value"];
+                            var id_name = key["fields"]["id"]["value"];
+
+                            field_input = '<div class="components"><div class="control-group"><label class="control-label" for="'+ id_name +'">'+ label +'</label><div class="controls"><input id="'+ id_name +'" name="'+ id_name +'" class="input-file" id="fileInput" type="file"></div></div></div>';
+
+                            $('fieldset').append(field_input);
+                        }
+                    })
+                }
+                
+            })
+        </script>
+    </body>
+</html>
