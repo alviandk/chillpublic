@@ -1,0 +1,22 @@
+{ "aaData": [
+
+	{
+		"#": "1",
+		"service": "iCollection ECommerce Private Limited",
+		"department": "Car Loan",
+		"status": "Apporoved",
+		"account": "Display Info",
+		"reason": "Verified/Approved by Agent Agent New",
+		"action": "Remove"
+	},
+	{
+		"#": "2",
+		"service": "iCollection ECommerce Private Limited",
+		"department": "Car Loan",
+		"status": "Apporoved",
+		"account": "Display Info",
+		"reason": "Verified/Approved by Agent Agent New",
+		"action": "Remove"
+	}
+	
+] }

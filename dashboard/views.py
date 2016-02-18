@@ -58,8 +58,8 @@ def dashboard(request):
         ticket_list = (Ticket.objects.filter(department__in=[request.user.agent]).select_related('author', 'department', 'comments'))
         subscribe_provider = ServiceProvider.objects.filter(status = 0, product__in=[request.user.agent])
         agent_status = Agent.objects.get(user=request.user).status
-        return render_to_response('agent/agent_dashboard.html', locals(),
-                                  context_instance=RequestContext(request))
+        # return render_to_response('agent/agent_dashboard.html', locals(), context_instance=RequestContext(request))
+        return render_to_response('new_template/agent/dashboard.html', locals(), context_instance=RequestContext(request))
 
     if request.is_kyc:
         return HttpResponseRedirect('/dashboard/kyc-partner')
@@ -69,15 +69,16 @@ def dashboard(request):
         return render_to_response('dashboard/head_dashboard.html', locals(), context_instance=RequestContext(request))
 
     company_list = Company.objects.filter(user__is_active = True, email_verified = True, phone_verified = True)
-    ajax = request.GET.get('ajax')
-    if ajax == 'True':
+    # ajax = request.GET.get('ajax')
+    # if ajax == 'True':
 
-        data    =   render_to_string('dashboard/ajax/customer_dashboard.html', locals(), context_instance=RequestContext(request))
-        resp    =   { 'status': True, 'msg': data }
-        return HttpResponse(json.dumps(resp), content_type='application/json')
-
-    else:
-        return render_to_response('dashboard/customer_dashboard.html', locals(), context_instance=RequestContext(request))
+    # data    =   render_to_string('new_template/customer/base.html', locals(), context_instance=RequestContext(request))
+    # resp    =   { 'status': True, 'msg': data }
+    # return HttpResponse(json.dumps(resp), content_type='application/json')
+    return render_to_response('new_template/customer/base.html', locals(), context_instance=RequestContext(request))
+    # else:
+        # return render_to_response('dashboard/customer_dashboard.html', locals(), context_instance=RequestContext(request))
+        # return render_to_response('new_template/customer/dashboard.html', locals(), context_instance=RequestContext(request))
 
 @login_required
 def live_support(request):
@@ -110,7 +111,8 @@ def agent_service_provider(request):
     # subscribe_provider = ServiceProvider.objects.filter(status = 1, product__in=[request.user.agent])
     subscribe_provider_news = ServiceProvider.objects.filter(status = 0, product__in=[request.user.agent.department])
     subscribe_provider_histories = ServiceProvider.objects.filter(status__in=[1,2], product__in=[request.user.agent.department])
-    return render_to_response('dashboard/agent_service_provider.html', locals(), context_instance=RequestContext(request))
+    # return render_to_response('dashboard/agent_service_provider.html', locals(), context_instance=RequestContext(request))
+    return render_to_response('new_template/agent/agent_service_provider.html', locals(), context_instance=RequestContext(request))
 
 @login_required
 def agent_change_status(request):
@@ -323,7 +325,10 @@ def profile(request):
         resp    = { 'status': True, 'msg': data }
         return HttpResponse(json.dumps(resp), content_type='application/json')
     else:
-        return render_to_response('dashboard/profile.html', locals(), context_instance=RequestContext(request))
+        if request.is_agent:
+            return render_to_response('new_template/agent/profile.html', locals(), context_instance=RequestContext(request))
+        else:
+            return render_to_response('dashboard/profile.html', locals(), context_instance=RequestContext(request))
 
 @login_required
 def tickets(request):
@@ -331,7 +336,7 @@ def tickets(request):
         ticket_list = Ticket.objects.filter(department=request.user.agent.department).exclude(status = '4').order_by('-id')
     else:
         ticket_list = Ticket.objects.filter(author=request.user).exclude(status = '4').order_by('-id')
-    # return render_to_response('dashboard/tickets.html', locals(), context_instance=RequestContext(request))
+    
     ticket_type = Ticket().STATUS_CHOICE
     ajax = request.GET.get('ajax')
     if ajax == 'True':
@@ -340,7 +345,10 @@ def tickets(request):
         resp    = { 'status': True, 'msg': data }
         return HttpResponse(json.dumps(resp), content_type='application/json')
     else:
-        return render_to_response('ticket/tickets.html', locals(), context_instance=RequestContext(request))
+        if request.is_agent:
+            return render_to_response('new_template/agent/tickets.html', locals(), context_instance=RequestContext(request))
+        else:
+            return render_to_response('ticket/tickets.html', locals(), context_instance=RequestContext(request))
 
 @login_required
 def escalated_tickets(request):
@@ -2119,7 +2127,8 @@ def agent_view_forms(request):
         resp    = { 'status': True, 'msg': data }
         return HttpResponse(json.dumps(resp), content_type='application/json')
     else:
-        return render_to_response('agent/view_forms.html', locals(), RequestContext(request))
+        # return render_to_response('agent/view_forms.html', locals(), RequestContext(request))
+        return render_to_response('new_template/agent/view_forms.html', locals(), RequestContext(request))
 
 
 

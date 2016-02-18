@@ -1,0 +1,85 @@
+{% extends "new_template/agent/base.html" %}
+
+{% block breadcumb %}
+<div class="col-sm-6 left">
+    <h3 class="m-b-xs text-black">DASHBOARD</h3>
+</div>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-sm-12">
+        <div class="outer-div" style=" border-top: 4px solid rgb(54, 109, 156);">
+            <div class="panel b-a">
+                <div class="row m-n">
+                    <div class="col-md-4 b-b b-r">
+                        <a href="{% url 'agent_service_provider' %}" class="block padder-v hover">
+                            <span class="i-s i-s-2x pull-left m-r-sm">
+			                   <i class="i i-hexagon2 i-s-base text-danger hover-rotate"></i>
+			                   <i class="fa fa-check-square-o i-1x text-white"></i>
+		                    </span>
+		                    <span class="clear">
+			                   <span class="h4 block m-t-xs text-danger">Account Verification Service</span>
+		                    </span>
+	                    </a>
+                    </div>
+  
+                    <div class="col-md-4 b-b b-r">
+	                    <a href="{% url 'tickets' %}" class="block padder-v hover">
+	                        <span class="i-s i-s-2x pull-left m-r-sm">
+		                       <i class="i i-hexagon2 i-s-base text-success-lt hover-rotate"></i>
+		                       <i class="fa fa-ticket i-1x text-white"></i>
+	                        </span>
+	                        <span class="clear">
+                                <span class="h4 block m-t-xs text-success"> Tickets</span>
+                            </span>
+	                    </a>
+                    </div>
+
+                    <div class="col-md-4 b-b b-r">
+	                    <a href="{% url 'agent_view_forms' %}" class="block padder-v hover">
+	                        <span class="i-s i-s-2x pull-left m-r-sm">
+		                       <i class="i i-hexagon2 i-s-base text-info hover-rotate"></i>
+		                       <i class="fa fa-file-text i-1x text-white"></i>
+	                        </span>
+	                        <span class="clear">
+		                       <span class="h4 block m-t-xs text-info">View Form</span>
+                            </span>
+	                    </a>
+                    </div>
+
+                    <div class="col-sm-3 hide">
+                        <section class="panel b-a">
+                            <header class="panel-heading b-b b-light">
+                                <ul class="nav nav-pills pull-right">
+                                    <li>
+                                        <a href="ajax.pie.html" class="text-muted" data-bjax data-target="#b-c">
+                                            <i class="i i-cycle"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" class="panel-toggle text-muted">
+                                            <i class="i i-plus text-active"></i>
+                                            <i class="i i-minus text"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                                Connection
+                            </header>
+
+                            <div class="panel-body text-center bg-light lter" id="b-c">
+                                <div class="easypiechart inline m-b m-t" data-percent="60" data-line-width="4" data-bar-Color="#23aa8c" data-track-Color="#c5d1da" data-color="#2a3844" data-scale-Color="false" data-size="120" data-line-cap='butt' data-animate="2000">
+                                    <div>
+                                        <span class="h2 m-l-sm step"></span>%
+                                        <div class="text text-xs">completed</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>                      
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,241 @@
+{% extends "new_template/agent/base.html" %}
+
+{% block breadcumb %}
+<div class="col-sm-6 left">
+    <h3 class="m-b-xs text-black">DASHBOARD <span class="text-grey"> > ACCOUNT VERIFICATION SERVICE</span></h3>
+</div>
+{% endblock %}
+
+{% block body %}
+
+<div class="row">
+	<div class="col-sm-12"><!----START COL-12---->
+		<section class="panel panel-default">
+			<header>
+				<h3 class="panel-heading"><i class="fa fa-check-square-o">
+					</i><span class="live">ACCOUNT VERIFICATION SERVICE</span>
+				</h3>
+			</header>
+			<div class="panel-body">
+				<ul class="nav nav-tabs">
+					<li class="active"><a data-toggle="tab" href="#tab1">New</a></li>
+					<li><a href="#tab2">History</a></li>                                  
+				</ul>
+				<div class="tab-content" id="myTabContent">
+					<section id="tab1" class="tab-content active">
+						<div>
+							<table class="display table table-bordered table-striped dataTable" id="tbl_Assigned">
+								<thead>
+									<tr>
+										<th>Creation Date</th>
+										<th>User Name</th>
+										<th>Account Details</th>
+										<th>Status</th>
+										<th>Reason</th>
+										<th>Action</th>
+									</tr>
+								</thead>
+								<tbody role="alert" aria-live="polite" aria-relevant="all">
+									{% for i in subscribe_provider_news %}
+                                            <tr id="row_{{i.id}}" class="gradeX odd">
+                                                <td>{{ i.created_at|date:'d M Y' }}</td>
+                                                <td>{{i.user.first_name}} {{i.user.last_name}}</td>
+                                                <td class="show_data" data-container="body" title="Account Information" data-toggle="popover" data-placement="bottom" data-content="- Account Number : {{ i.account_number }} <br> - Registered Mobile Number : {{ i.registered_mobile_number }} <br> - Date of Birth : {{ i.dob }} <br> - Mother's Maiden Name : {{ i.mothers_name }}">Display Info</td>
+                                                <td>{{i.get_status_display}}</td>
+                                                <td>{% if i.reason == None or i.reason == "" %} - {% else %} {{ i.reason }} {% endif %}</td>
+                                                <td>
+                                                    <a class="btn btn-primary btn-sm" href="javascript:void(0);" style="color:#fff;" onclick="accept_status({{i.id}}, 1);" {% if i.status == '1' %} disabled {% endif %}>Verified</a>
+                                                    <a class="btn btn-danger btn-sm" href="javascript:void(0);" style="color:#fff;" onclick="accept_status({{i.id}}, 2)" {% if i.status == '2' %} disabled {% endif %}>Rejected  </a>
+                                                </td>
+                                            </tr>
+                                        {% empty %}
+                                            <tr>
+                                                <td colspan="5" class="text-center">Nothing new for verification</td>
+                                            </tr>
+                                        {% endfor %}
+								</tbody>
+							</table>
+						</div>
+					</section>
+					<section id="tab2" class="tab-content hide">
+						<div>
+							<table class="display table table-bordered table-striped dataTable" id="tbl_Re-Open">
+								<thead>
+									<tr>
+										<th>Creation Date</th>
+										<th>User Name</th>
+										<th>Account Details</th>
+										<th>Status</th>
+										<th>Reason</th>
+										<th>Action</th>
+									</tr>
+								</thead><!--  -->
+								<tbody role="alert" aria-live="polite" aria-relevant="all">
+									{% for i in subscribe_provider_histories %}
+                                        <tr id="row_{{i.id}}">
+                                            <td>{{ i.created_at|date:'d M Y' }}</td>
+                                            <td>{{i.user.first_name}} {{i.user.last_name}}</td>
+                                            <td class="show_data" data-container="body" title="Account Information" data-toggle="popover" data-placement="bottom" data-content="- Account Number : {{ i.account_number }} <br> - Registered Mobile Number : {{ i.registered_mobile_number }} <br> - Date of Birth : {{ i.dob }} <br> - Mother's Maiden Name : {{ i.mothers_name }}">Display Info</td>
+                                            <td>
+                                                {{i.get_status_display}}
+                                            </td>
+                                            <td>{% if i.reason == None or i.reason == "" %} - {% else %} {{ i.reason }} {% endif %}</td>
+                                            <td>
+                                                -
+                                            </td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="text-center">Nothing history for verification</td>
+                                        </tr>
+                                    {% endfor %}
+								</tbody>
+							</table>
+						</div>
+					</section>
+				</div>
+			</div>
+		</section>
+	</div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+	$(document).ready(function() {
+		$('.nav-tabs > li > a').click(function(event){
+			event.preventDefault();//stop browser to take action for clicked anchor
+					
+			//get displaying tab content jQuery selector
+			var active_tab_selector = $('.nav-tabs > li.active > a').attr('href');					
+			
+			//find actived navigation and remove 'active' css
+			var actived_nav = $('.nav-tabs > li.active');
+			actived_nav.removeClass('active');
+			
+			//add 'active' css into clicked navigation
+			$(this).parents('li').addClass('active');
+			
+			//hide displaying tab content
+			$(active_tab_selector).removeClass('active');
+			$(active_tab_selector).addClass('hide');
+			
+			//show target tab content
+			var target_tab_selector = $(this).attr('href');
+			$(target_tab_selector).removeClass('hide');
+			$(target_tab_selector).addClass('active');
+		});
+
+		$('.show_data').popover({ 
+	        html : true,
+	        trigger: 'hover',
+	        template: '<div class="popover" style="width:300px;" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
+	    });
+
+	});
+
+function remove_agent(obj, key) {
+    var ask = confirm('Do you really to delete this agent?');
+    if (ask) {
+        $.ajax({
+            type:"POST",
+            cache:false,
+            url:"{% url 'agent_delete' %}",
+            data:{
+                'csrfmiddlewaretoken':'{{ csrf_token }}',
+                'key':key
+            },
+            beforeSend:function(){
+                $(obj).html('Loading.. <span class="fa fa-trash-o"></span>');
+            },
+            success:function(resp){
+                if (resp['status']) {
+                    $(obj).parent().parent().fadeOut();
+                }
+
+            }
+        });
+    }
+}
+
+function accept_status(id, val){
+    var get_id = id;
+    var status = val;
+
+    if (val == 1 || val == "1") {
+        var ask = confirm('Do you really to verified/approved request service provider?');
+        if (ask) {
+            $.ajax({
+                type:"POST",
+                cache:false,
+                url:"{% url 'verified-subscribe-provider' %}",
+                data:{
+                    'csrfmiddlewaretoken':'{{ csrf_token }}',
+                    'key':get_id,
+                    'reason': 'Verified/Approved by Agent {{ request.user.first_name }} {{ request.user.last_name }}',
+                    'val': status
+                },
+                success:function(resp){
+                    // console.log(resp['status']);
+                    if (resp['status']) {
+                        // $("#row_"+get_id).remove();
+                        location.reload();
+                    }
+                }
+            });
+        }
+    } else {
+        var ask = confirm('Do you really to rejected request service provider?');
+        if (ask) {
+            $('#key_id').val(id);
+            $('#status_id').val(val);
+            $('#reject_req').modal({
+                show: true,
+                backdrop: 'static',
+                keyboard: true
+            })
+            
+        }
+    }
+}
+
+function submit_reject(){
+    var get_id = $('#key_id').val();
+    var status = $('#status_id').val();
+    var reason = $('#reject-text').val();
+    $.ajax({
+        type:"POST",
+        cache:false,
+        url:"{% url 'verified-subscribe-provider' %}",
+        data:{
+            'csrfmiddlewaretoken':'{{ csrf_token }}',
+            'key':get_id,
+            'reason': reason,
+            'val': status
+        },
+        success:function(resp){
+            // console.log(resp['status']);
+            if (resp['status']) {
+                $('#reject_req').modal('hide');
+                location.reload();
+            }
+
+        }
+    });
+}
+
+function popup_chat(obj){
+    // $( "#test" ).load( "{% url 'ticket_view' %}?id="+obj );
+    $.ajax({
+        url: "{% url 'ticket_view' %}?id="+obj,
+        success: function (data) { 
+            console.log(data);
+            $('.test').append('<p style="position:relative; float:left;">'+data+'</p>'); 
+        },
+        // dataType: 'html'
+    });
+}
+
+
+</script>
+{% endblock %}

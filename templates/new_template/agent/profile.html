@@ -1,0 +1,234 @@
+{% extends "new_template/agent/base.html" %}
+
+{% block breadcumb %}
+<div class="col-sm-6 left">
+    <h3 class="m-b-xs text-black">DASHBOARD <span class="text-grey"> > PROFILE</span></h3>
+</div>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+	<div class="col-sm-12">
+		<div class="col-sm-4">
+			<div class="col-sm-12 icon-man">
+				<span class="thumb avatar pull-left m-r">
+					{% if request.is_company and request.user.company.logo %}
+                        <img src="{{request.user.company.logo.url}}" class="dker" />
+                        <i class="on md b-black"></i>
+                    {% endif %}
+                    {% if request.is_head and request.user.head_company.photo %}
+                        <img src="{{request.user.head_company.photo.url}}" class="dker" />
+                        <i class="on md b-black"></i>
+                    {% endif %}
+                    {% if request.is_agent and request.user.agent.photo %}
+                        <img src="{{request.user.agent.photo.url}}" class="dker" />
+                        <i class="on md b-black"></i>
+                    {% endif %}
+                    {% if request.is_customer and request.user.customer.photo %}
+                        <img src="{{request.user.customer.photo.url}}" class="dker" />
+                        <i class="on md b-black"></i>
+                    {% endif %}
+                    {% if not request.user.company.logo and not request.user.head_company.photo and not request.user.agent.photo and not request.user.customer.photo %}
+                        <img src="{{MEDIA_URL}}images/no_images.png" class="dker"/>
+                    {% endif %}
+                </span>
+			    <span class="hidden-nav-xs clear">
+                    <span class="p-name">
+						<strong class="name-p">{% if request.is_company %}{{request.user.company.company_name}}{% else %}{{ user.get_full_name|default:user.username }}{% endif %}</strong>
+						{% if request.is_company %}
+                        <p><i class="fa fa-map-marker"></i> {{request.user.company.address}}</p>
+                        {% endif %}
+			        </span>
+                </span>
+				<div class="p-user">
+					<strong class="user-p">User Type :- {% if request.is_customer %}Customer{% endif %}
+                        {% if request.is_head %} Department Head {% endif %}
+                        {% if request.is_company %}Company Admin{% endif %}
+                        {% if request.is_agent %}Agent{% endif %}</strong> 
+				</div>
+				<div class="socail-icon">
+					<h4 class="conection">CONNECTION</h4>
+                </div>
+				<div class="col-sm-12 connect-us-icon">
+					<a href="#" class="icon">
+						<span class="i-n i-n-1x m-r-sm">
+							<i class="i i-hexagon2 i-n-base text-danger hover-rotate"></i>
+							<i class="fa fa-facebook i-1x text-white"></i>
+						</span>
+					</a>
+					<a href="#" class="icon">
+						<span class="i-n i-n-1x m-r-sm">
+							<i class="i i-hexagon2 i-n-base text-danger hover-rotate"></i>
+							<i class="fa fa-linkedin i-1x text-white"></i>
+						</span>
+					</a>
+					<a href="#" class="icon">
+						<span class="i-n i-n-1x m-r-sm">
+							<i class="i i-hexagon2 i-n-base text-danger hover-rotate"></i>
+							<i class="fa fa-google-plus i-1x text-white"></i>
+						</span>
+					</a>
+					<a href="#" class="icon">
+						<span class="i-n i-n-1x m-r-sm">
+							<i class="i i-hexagon2 i-n-base text-danger hover-rotate"></i>
+							<i class="fa fa-youtube i-1x text-white"></i>
+						</span>
+					</a>
+					<a href="#" class="icon">
+						<span class="i-n i-n-1x m-r-sm">
+							<i class="i i-hexagon2 i-n-base text-danger hover-rotate"></i>
+							<i class="fa fa-twitter i-1x text-white"></i>
+						</span>
+					</a>
+				</div>
+			</div><!--man-icon-->
+		</div>
+		<div class="col-sm-8">
+			<!-- <form data-validate="parsley"> -->
+			<form id="profile_form" method="POST" action="{% url 'profile_save' %}" role="form" enctype="multipart/form-data">{% csrf_token %}
+                <section class="panel panel-default">
+			
+					<div class="edit left section">
+                        <ul class="nav nav-tabs nav-justified nav_bg" id="tabProfile">
+                    		<li class="active"><a data-toggle="tab" href="#tab1"><i class="fa fa-file-text-o"></i> Edit</a></li>
+                    		<li class=""><a data-toggle="tab" href="#tab2"><i class="fa fa-laptop"></i> Activities</a></li>
+                    <!-- <li class=""><a href="#mymessage" data-toggle="tab"><i class="fa fa-envelope"></i> Message</a></li> -->
+                		</ul>
+                        
+                    </div>
+                      <!--------------#tavb section-------------->
+                        <section id="tab1" class="tab-content active">
+                        	<div class="panel-body">
+
+                        		{% if request.is_company %}
+	                                <div class="form-group">
+	                                    <label for="CompanyName">Company Logo</label>
+	                                    <input type="file" name="company_logo" class="form-control" id="CompanyName">
+
+	                                </div>
+	                                <div class="form-group">
+	                                    <label for="CompanyName">Company Name {{request.user.agent}}</label>
+	                                    <input type="text" name="company_name" class="form-control" id="CompanyName" value="{{request.user.company.company_name}}">
+	                                </div>
+	                                <div class="form-group">
+	                                    <label for="CompanyAddress">Company Address</label>
+	                                    <input type="text" name="address" class="form-control" id="CompanyAddress" value="{{request.user.company.address}}">
+	                                </div>
+
+	                            {% else %}
+
+                        		<div class="form-group">
+                                    <label>Your Photo</label>
+                                    <div class="col-sm-12 Photodiv">
+                                    	<input type="file" name="photo" class="form-control" id="CompanyName"><div class="choose">No File Choose</div>
+                                    </div>
+                                  
+                                    <div class="form-group">
+	                                    <label for="FirstName">First Name</label>
+	                                    <input type="text" name="first_name" class="form-control" id="FirstName" value="{{request.user.first_name}}">
+	                                </div>
+	                                <div class="form-group">
+	                                    <label for="LastName">Last Name</label>
+	                                    <input type="text" name="last_name" class="form-control" id="LastName" value="{{request.user.last_name}}">
+	                                </div>
+
+                                {% endif %}
+                                    <div class="form-group">
+	                                    <label for="Email">Email</label>
+	                                    <input type="email" name="email" class="form-control" id="Email" value="{{request.user.username}}">
+	                                </div>
+
+	                                <div class="form-group">
+	                                    <label for="Password">Password</label>
+	                                    <input type="password" name="password" class="form-control" id="Password" placeholder="6 - 15 Characters">
+	                                </div>
+	                                <div class="form-group">
+	                                    <label for="RePassword">Re-Password</label>
+	                                    <input type="password" name="repassword" class="form-control" id="RePassword" placeholder="6 - 15 Characters">
+	                                </div>
+	                                {% if request.is_company %}
+	                                <div class="form-group">
+	                                    <label for="AboutMe">About Us</label>
+	                                    <textarea class="form-control" id="AboutMe" style="height: 125px;">{% if request.user.company.about_us %}{{ request.user.company.about_us }}{% endif %}</textarea>
+	                                </div>
+	                                {% endif %}
+                                    <div class="form-group">
+                                        <div class="col-lg-8">
+                                       <a href="#" class="btn btn-info" role="button" onclick="save_profile(this);">Save</a>
+                                    </div>
+                        		</div>
+                        	</div>
+                        </div>
+                   </section>
+                   <!---------------End #Tab 1---------------------->
+					
+                    <section id="tab2" class="tab-content hide"><!---------------Start #Tab 2---------------------->
+                        <div>
+                            <div class="panel-body">
+                            	{% for i in activities %}
+								    <div class="form-group-active">
+	                            		<label>{{request.name}} {{ i.text }} </label><br>
+								    	<label>{{ i.created_at|timesince }} ago</label>
+									</div>
+									<div class="bottom-line2"> </div>
+								{% endfor %}
+                       
+                      		</div>
+                        </div>
+                    </section><!---------------End #Tab 2---------------------->		   
+			</section></form></div>
+             </div>		  
+                    
+                  </div>
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('.nav-tabs > li > a').click(function(event){
+			event.preventDefault();//stop browser to take action for clicked anchor
+			
+			//get displaying tab content jQuery selector
+			var active_tab_selector = $('.nav-tabs > li.active > a').attr('href');					
+			
+			//find actived navigation and remove 'active' css
+			var actived_nav = $('.nav-tabs > li.active');
+			actived_nav.removeClass('active');
+			
+			//add 'active' css into clicked navigation
+			$(this).parents('li').addClass('active');
+			
+			//hide displaying tab content
+			$(active_tab_selector).removeClass('active');
+			$(active_tab_selector).addClass('hide');
+			
+			//show target tab content
+			var target_tab_selector = $(this).attr('href');
+			$(target_tab_selector).removeClass('hide');
+			$(target_tab_selector).addClass('active');
+		});
+		{% if error %}
+	        $('.alert').fadeIn();
+	        $('.alert.alert-danger').text('{{error}}');
+	    {% endif %}
+	});
+	function save_profile(obj) {
+	    $('.alert').hide();
+	    var first_name = $('input[name=first_name]').val();
+	    var last_name = $('input[name=last_name]').val();
+	    var company_name = $('input[name=company_name]').val();
+	    var company_address = $('input[name=company_address]').val();
+	    var email = $('input[name=email]').val();
+	    var password = $('input[name=password]').val();
+	    var repassword = $('input[name=repassword]').val();
+
+	    if ({% if request.is_company %}company_name && email{% else %}first_name && last_name && email{% endif %}) {
+	        $('#profile_form').submit();
+	    } else {
+	        $('.alert').fadeIn();
+	        $('.alert.alert-danger').show();
+	    }
+
+	}
+</script>
+{% endblock %}

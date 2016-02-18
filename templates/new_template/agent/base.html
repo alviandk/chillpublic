@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" class="app">
+<head>  
+  <meta charset="utf-8" />
+  <title>Dashboard | Web Application</title>
+  <meta name="description" content="app, web app, responsive, admin dashboard, admin, flat, flat ui, ui kit, off screen nav" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" /> 
+  <link rel="stylesheet" href="{{MEDIA_URL}}new_template/agent/css/bootstrap.css" type="text/css" />
+  <link rel="stylesheet" href="{{MEDIA_URL}}new_template/agent/css/animate.css" type="text/css" />
+  <link rel="stylesheet" href="{{MEDIA_URL}}new_template/agent/css/font-awesome.min.css" type="text/css" />
+  <link rel="stylesheet" href="{{MEDIA_URL}}new_template/agent/css/icon.css" type="text/css" />
+  <link rel="stylesheet" href="{{MEDIA_URL}}new_template/agent/css/font.css" type="text/css" />
+  <link rel="stylesheet" href="{{MEDIA_URL}}new_template/agent/css/app.css" type="text/css" />  
+  <link rel="stylesheet" href="{{MEDIA_URL}}new_template/agent/js/calendar/bootstrap_calendar.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="js/ie/html5shiv.js"></script>
+    <script src="js/ie/respond.min.js"></script>
+    <script src="js/ie/excanvas.js"></script>
+  <![endif]-->
+  <script type="text/javascript">
+</script>
+</head>
+<body class="">
+    <section class="vbox">
+        <header class="bg-white header header-md navbar navbar-fixed-top-xs box-shadow">
+            <div class="navbar-header aside-md dk">
+                <a class="btn btn-link visible-xs" data-toggle="class:nav-off-screen" data-target="#nav">
+                    <i class="fa fa-bars"></i>
+                </a>
+                <a href="index.html" class="navbar-brand">
+                    <img src="{{MEDIA_URL}}new_template/agent/images/Vodafone.png" class="m-r-sm" alt="">
+                </a>
+                <a class="btn btn-link visible-xs" data-toggle="dropdown" data-target=".user">
+                    <i class="fa fa-cog"></i>
+                </a>
+            </div>
+          
+            <ul class="nav navbar-nav navbar-right m-n hidden-xs nav-user user">
+                <li class="hidden-xs">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        <i class="fa fa-bell"></i>
+                        <span class="badge badge-sm up bg-danger count">{{ request.notification.count }}</span>
+                    </a>
+                    <section class="dropdown-menu aside-xl animated flipInY">
+                        <section class="panel bg-white">
+                            <div class="panel-heading b-light bg-light">
+                                <strong>You have <span class="count">{{ request.notification.count }}</span> notifications</strong>
+                            </div>
+                            <div class="list-group list-group-alt">
+                                {% for i in request.notification %}
+
+                                    {% if i.notif_type == 1 %}
+                                        <a href="#" onclick="update_notification( {{i.id}}, {{i.ref_id}} )" class="media list-group-item">
+                                            <span class="pull-left thumb-sm">
+                                                <img src="{{MEDIA_URL}}new_template/agent/images/a0.png" alt="..." class="img-circle">
+                                            </span>
+                                            <span class="media-body block m-b-none">
+                                                Ticket {{i.ref_id}} state changed into {{i.data.get_status_display}}
+                                            </span>
+                                        </a>
+                                    {% else %}
+                                        {% for a in i.data.ticket_set.all %}
+                                            {% if forloop.first %} 
+                                                <a href="#" onclick="update_notification({{i.id}}, {{a.id}})">
+                                                    New Comment in ticket {{a.id}}
+                                                    <span class="pull-left thumb-sm">
+                                                        <img src="{{MEDIA_URL}}new_template/agent/images/a0.png" alt="..." class="img-circle">
+                                                    </span>
+                                                    <span class="media-body block m-b-none">
+                                                        New Comment in ticket {{a.id}}
+                                                    </span>
+                                                </a>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="panel-footer text-sm">
+                                <a href="#" class="pull-right"><i class="fa fa-cog"></i></a>
+                                <a class="notification" href="{% url 'notification' %}">See all the notifications</a>
+                            </div>
+                        </section>
+                    </section>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        <span class="thumb-sm avatar pull-left">
+                            <img alt="..." src="{{MEDIA_URL}}new_template/agent/images/a0.png">
+                        </span>
+                        {{ user.get_full_name|default:user.username }}<b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu animated fadeInRight">
+                        <li>
+                            <a href="{% url 'profile' %}">Profile</a>
+                        </li>
+                        <li>
+                            <a href="notification.html">
+                                <span class="badge bg-danger pull-right">{{ request.notification.count }}</span>
+                                Notifications
+                            </a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="{% url 'logout' %}">Logout</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>      
+        </header>
+    <section>
+    <section class="hbox stretch">
+        <!-- .aside -->
+        {% include "new_template/agent/left_menu.html" %}
+        <!-- /.aside -->
+        <section id="content">
+            <section class="hbox stretch">
+                <section>
+                    <section class="vbox">
+                        <section class="scrollable padder">              
+                            <section class="row m-b-md">
+                                <div class="col-sm-6 text-right text-left-xs m-t-md right">
+                                    <div class="btn-group dropdown1">
+                                        <a class="btn btn-rounded btn-default b-2x dropdown-toggle" data-toggle="dropdown"><i class="fa fa-chevron-circle-down"></i> Status</a>
+                                        <ul class="dropdown-menu mymenu">
+                                            <li class="col-sm-12" ><a href="#"><span class="col-sm-6 onlineoutersec">Online</span><span class="col-sm-6 onlinesec"><i class="fa fa-circle onlinesec1"></i></span></a></li>
+                                            <li class="col-sm-12" ><a href="#"><span class="col-sm-6 awayoutersec">Away</span><span class="col-sm-6 awaysec"><i class="fa fa-circle awaysec1"></i></span></a></li>
+                                            <li class="col-sm-12" ><a href="#"><span class="col-sm-6 leaveoutersec">Leave</span><span class="col-sm-6 leavesec"><i class="fa fa-circle leavesec1"></i></span></a></li>
+						                  </ul>
+                                    </div>
+
+                                    <div class="btn-group">
+                                        <a class="btn btn-rounded btn-default b-2x dropdown-toggle" href="active.html"><i class="fa fa-laptop"></i> Activities</a>
+                                    </div>
+                                </div>
+                   
+                                {% block breadcumb %}
+                                {% endblock %}
+                            </section>
+
+                            {% block body %}
+                            
+                            {% endblock %}
+                            <!-- load chat -->
+                            <div id="test" class="test"></div>
+
+                        </section>
+                    </section>
+                </section>
+			     {% if request.session.chat_id %}
+                    {% for data in request.session.chat_id %}
+                            <script type="text/javascript">
+                                $(document).ready(function(){
+                                    $('.test').append('<iframe src="{% url "ticket_view" %}?id='+{{data}}+'" style="position:relative; float:right; height:420px; width:310px; border:none;" id="frame_'+{{data}}+'"></iframe>');
+                                });
+                            </script>
+                        {% endfor %}
+                {% endif %}
+
+                {% if user.agent %}
+                  {% include "agent_channel.html" %}
+              {% endif %}
+    
+
+          </section>
+          <a href="#" class="hide nav-off-screen-block" data-toggle="class:nav-off-screen" data-target="#nav"></a>
+        </section>
+      </section>
+    </section>
+  </section>
+  
+  <script src="{{MEDIA_URL}}new_template/agent/js/jquery.min.js"></script>
+  <!-- Bootstrap -->
+  <script src="{{MEDIA_URL}}new_template/agent/js/bootstrap.js"></script>
+  <!-- App -->
+  <script src="{{MEDIA_URL}}new_template/agent/js/app.js"></script> 
+  <script src="{{MEDIA_URL}}new_template/agent/js/slimscroll/jquery.slimscroll.min.js"></script>
+    <script src="{{MEDIA_URL}}new_template/agent/js/charts/easypiechart/jquery.easy-pie-chart.js"></script>
+  <script src="{{MEDIA_URL}}new_template/agent/js/charts/sparkline/jquery.sparkline.min.js"></script>
+  <script src="{{MEDIA_URL}}new_template/agent/js/charts/flot/jquery.flot.min.js"></script>
+  <script src="{{MEDIA_URL}}new_template/agent/js/charts/flot/jquery.flot.tooltip.min.js"></script>
+  <script src="{{MEDIA_URL}}new_template/agent/js/charts/flot/jquery.flot.spline.js"></script>
+  <script src="{{MEDIA_URL}}new_template/agent/js/charts/flot/jquery.flot.pie.min.js"></script>
+  <script src="{{MEDIA_URL}}new_template/agent/js/charts/flot/jquery.flot.resize.js"></script>
+  <script src="{{MEDIA_URL}}new_template/agent/js/charts/flot/jquery.flot.grow.js"></script>
+  <script src="{{MEDIA_URL}}new_template/agent/js/charts/flot/demo.js"></script>
+
+  <script src="{{MEDIA_URL}}new_template/agent/js/calendar/bootstrap_calendar.js"></script>
+  <script src="{{MEDIA_URL}}new_template/agent/js/calendar/demo.js"></script>
+
+  <script src="{{MEDIA_URL}}new_template/agent/js/sortable/jquery.sortable.js"></script>
+  
+
+  {% block js %}
+
+  {% endblock %}
+
+</body>
+</html>

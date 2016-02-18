@@ -1,0 +1,181 @@
+{% extends "new_template/agent/base.html" %}
+
+{% block breadcumb %}
+<div class="col-sm-6 left">
+    <h3 class="m-b-xs text-black">DASHBOARD <span class="text-grey"> > VIEW FORM</span></h3>
+</div>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+	<div class="col-sm-12"><!----START COL-12---->
+		<section class="panel panel-default">
+			<header>
+				<h3 class="panel-heading"><i class="fa fa-file-text">
+					</i><span class="live">VIEW FORM</span>
+				</h3>
+			</header>
+			<div class="panel-body">
+				<form class="bs-example form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"> Form Type</label>
+	                  	<div class="col-sm-10">
+							<select name="account" class="form-control m-b">
+								<option>-- Select Form Type--</option>
+								<option>Service Request Form</option>
+								<option>Application Form</option>
+								<option>Query Form</option>
+							</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-2 control-label">Form Name</label>
+						<div class="col-sm-10">
+							<select name="account" class="form-control m-b">
+							<option>-- Select Form Name --</option>
+							</select>
+						</div>
+                    </div>
+					<div class="form-group">
+						<div class="col-lg-offset-1 col-lg-8">
+							<button type="submit" class="btn btn-sm btn-default">Cancel</button>
+						</div>
+					</div>
+				</form>
+
+				<div class="block-web" id="show_form" style="display: none;">
+		            <div class="header">
+		                <div class="actions"> <a class="minimize" href="#"><i class="fa fa-chevron-down"></i></a><a class="close-down" href="#"><i class="fa fa-times"></i></a> </div>
+		                <h3 class="content-header"><span class="fa fa-pencil-square-o"></span> View Forms</h3>
+		            </div>
+		            <div class="porlets-content">
+		                <div style="margin-bottom: 15px;">
+		                    <div class="row">
+		                        <div class="col-md-12">
+		                            <div class="col-md-6">
+		                                <span id="bread"></span>
+		                            </div>
+		                            <div class="col-md-6 text-right">
+		                                <span id="text-form"></span>
+		                            </div>
+		                        </div>
+		                    </div>
+		                </div>
+		                <div class="alert alert-danger fade in" id="alert_error_submit">
+		                    <button aria-hidden="true" class="close submit_form" type="button">×</button>
+		                    <div id="message_error_submit">
+		                    </div>
+		                </div>
+		                <div id="field_form"></div>
+		                <form id="form_cust" action="#" class="form-horizontal row-border" enctype="multipart/form-data">
+		                    <div class="form-group" id="target">
+
+		                    </div>
+		                    <div class="bottom">
+		                        <!-- <button type="button" onclick="save_submit_form()" class="btn btn-primary">Submit</button> -->
+		                        <button type="button" onclick="cancel_submit_form()" class="btn btn-default">Cancel</button>
+		                    </div>
+		                </form>
+		            </div>
+		        </div>
+			</div>
+		</section>
+	</div>
+</div>
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+
+        $(document).ready(function(){
+            $('#type_form').change(function(){
+                var type_form = $(this).val();
+
+                $.ajax({
+                    type: "GET",
+                    cache: false,
+                    url: "{% url 'get_form_ajax' %}?company="+{{ company.id }}+"&department="+{{ department.id }}+"&form_type="+type_form,
+                    success:function(resp){
+                        if (resp.length == "0") {
+                            var options = '<option value="">-- Select Forms Name --</option>';
+                            $('select[name=form_name]').html(options);
+                            $('select[name=form_name]').prop('disabled', false);
+                            // $('#submit_form').prop('disabled', true);
+                        } else {
+                            var options = '<option value="">-- Select Forms Name --</option>';
+                            $('select[name=form_name]').html(options+resp);
+                            $('select[name=form_name]').prop('disabled', false);
+                            // $('#submit_form').prop('disabled', false);
+                        }
+                    }
+                })
+            });
+
+            $('#form_name').change(function(){
+                var form_id = $(this).val();
+                $.ajax({
+                    type: "GET",
+                    cache: false,
+                    url: "{% url 'iframe_customer' %}?id="+form_id+"&ajax=True",
+                    success: function(resp){
+                        var text_bread = '<li><a href="/dashboard/">Dashboard</a></li><li class="active">View Forms</li>';
+                        var text_page = '<h1>DASHBOARD</h1><h2>VIEW FORMS</h2>';
+                        var image_logo;
+                        if (resp['logo'] == "") {
+                            image_logo = "<img src='http://www.placehold.it/40x40/CCC/AAAAAA&text=no+image' alt='Company Image' width='80px' height='54px;'>";
+                        } else {
+                            image_logo = "<img src='"+resp['logo']+"' alt='Company Image' width='80px' height='54px;'>";
+                        }
+                        $('#text-form').text(resp['form_name']);
+                        $('#bread').html(image_logo);
+                        $('.breadcrumb').html(text_bread);
+                        $('.page_title').html(text_page);
+                        $('#field_form').append(resp['data']);
+                        var selected_content = $('#field_form').clone();
+                        selected_content.find("div").each(function(i,o) {
+                            var obj = $(o);
+                            obj.removeClass("draggableField ui-draggable well ui-droppable ui-sortable ");
+                            obj.removeAttr('style');
+                        });
+
+                        selected_content.find("input[type=text], input[type=password], select, textarea").each(function(i,o) {
+                            var obj = $(o);
+                            var div_id = obj.closest('.droppedField')[0].id;
+
+                            obj.prop('disabled', true);
+
+                            if (obj[0].name == "") {
+                                obj[0].name = div_id;
+                            }
+                        });
+
+                        $('#target').append(selected_content.html());
+                        $('#field_form').toggle(false);
+                        $('#field_form').text('');
+                    }
+                })
+                $('#show_form').toggle(true);
+                $('#select_form').toggle(false);
+            })
+
+        });
+
+        function cancel_form() {
+            $('#type_form').prop('selectedIndex',0);
+            var options = '<option value="">-- Select Forms Name --</option>';
+            $('select[name=form_name]').html(options);
+        }
+
+        function cancel_submit_form(){
+            $('#target').text('');
+            $('#text-form').text('');
+            $('#bread').text('')
+            $('.alert.alert-success').fadeOut();
+            $('#show_form').toggle(false);
+            $('#select_form').toggle(true);
+            $('#type_form').prop('selectedIndex',0);
+            var options = '';
+            $('select[name=form_name]').html(options);
+        }
+    </script>
+{% endblock %}

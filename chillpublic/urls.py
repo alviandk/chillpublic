@@ -33,3 +33,8 @@ urlpatterns = patterns('',
 
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT,}),
 )
+
+#ajax
+urlpatterns += patterns('service.ajax',
+    url(r'^customer-dashboard/', 'dashboard_customer', name="customer-dashboard"),
+)   

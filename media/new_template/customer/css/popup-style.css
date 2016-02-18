@@ -1,0 +1,108 @@
+.share-popup {
+  background: rgba(0, 0, 0, 0) none repeat scroll 0 0 !important;
+  border: medium none !important;
+  color: #428bca !important;
+  font-size: 13px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+}
+.share-popup:hover{
+	color:#000 !important;	
+}
+.headbtn h4{font-size:25px !important;;}
+.headouter{
+padding-bottom:20px;
+padding-top:20px;
+padding-left: 0px !important;
+padding-right: 0px !important;	
+}
+.headbg{
+background-color: #366d9c;
+color: #ffffff;	
+}
+.headbtn{
+color: #ffffff !important;
+opacity: 1 !important;	
+border-radius: 50% 50%;
+border: 2px solid #ffffff !important;
+width: 24px;
+height: 25px;
+}
+.bodymod{
+padding-top: 24px !important;
+padding-bottom: 20px !important;	
+}
+.bodymod p{
+color:#a9a5a5;
+font-size:14px;	
+}
+#sel1{
+	height:34px;
+}
+.footerdiv .subbtn{
+}
+.footerdiv .subbtn:hover{
+opacity:0.8;
+}
+/*---------------------notification page css--------------------------*/
+.bodymod1{
+padding-left: 50px !important;	
+}
+.emaildiv p{
+padding-left: 71px;	
+font-size:12px;
+color:#8d8a8a;
+}
+.emaildiv span{
+padding-left:30px;
+
+}
+.emaildiv1{
+padding-left: 14px;	
+}
+.emaildiv1 span{
+padding-left:44px;
+padding-right:10px;
+	
+}
+.emaildiv1 p{
+padding-left:56px;
+font-size:12px;
+color:#8d8a8a;
+}
+.emaildiv img{
+    border-radius: 50%;
+    border: 1px solid #ffffff;
+    box-shadow: 1px 0px 1px;	
+}
+/*---------------query for notification----------------*/
+@media (max-width:360px){
+.bodymod1{
+padding-left: 15px !important;	
+}	
+.emaildiv p{
+padding-left: 45px;
+font-size:11px;
+color:#8d8a8a;	
+}
+.emaildiv span{
+padding-left:10px;
+font-size:13px;
+
+}
+.emaildiv1{
+padding-left: 10px;	
+}
+.emaildiv1 span{
+padding-left:10px;
+padding-right:0px;
+font-size:13px;
+	
+}
+.emaildiv1 p{
+padding-left:20px;
+font-size:11px;
+color:#8d8a8a;	
+}	
+}
